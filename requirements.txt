@@ -1,0 +1,4 @@
+duckdb==1.4.3
+pyarrow>=25
+geosql>=0.36
+dekart>=0.19

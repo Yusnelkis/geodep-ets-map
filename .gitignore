@@ -1,0 +1,14 @@
+# Dekart local server state (SQLite, uploads, results)
+docker/dekart-data/
+docker/.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Scratch / OS
+scratch/
+.DS_Store
+Thumbs.db

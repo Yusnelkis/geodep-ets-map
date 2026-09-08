@@ -1,0 +1,14 @@
+services:
+  dekart:
+    image: dekartxyz/dekart:latest
+    container_name: dekart-ets-map
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dekart-data:/dekart/data
+    environment:
+      DEKART_ALLOW_FILE_UPLOAD: "1"
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped

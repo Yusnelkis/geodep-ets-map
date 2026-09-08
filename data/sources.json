@@ -1,0 +1,48 @@
+{
+  "output": "ets_installations_2025.parquet",
+  "rows": 16733,
+  "columns": [
+    "installation_id",
+    "country",
+    "installation_name",
+    "activity_code",
+    "activity",
+    "nace",
+    "permit_id",
+    "permit_revocation_date",
+    "city",
+    "postal_code",
+    "year_first_emissions",
+    "year_last_emissions",
+    "account_holder",
+    "holder_lei",
+    "lat",
+    "lon",
+    "coord_source",
+    "em_2024_t",
+    "em_2025_t",
+    "em_last_year",
+    "em_last_value_t",
+    "n_years_with_emissions",
+    "source_base",
+    "as_of"
+  ],
+  "stationary_in_base": 16752,
+  "dropped_without_coordinates": 19,
+  "rows_with_any_emission": 16076,
+  "inputs": [
+    {
+      "file": "eutl_canonico_2025.parquet",
+      "role": "installations + verified coordinates",
+      "as_of": [
+        "2026-07-10"
+      ]
+    },
+    {
+      "file": "installation_year.csv",
+      "role": "verified emissions 2005-2025 (EUTL public data download)"
+    }
+  ],
+  "sentinel_rule": "VERIFIED_EMISSIONS = -1 (not reported) -> NULL, never 0",
+  "join_key": "(REGISTRY_CODE, INSTALLATION_IDENTIFIER)"
+}
