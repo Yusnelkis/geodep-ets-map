@@ -121,7 +121,59 @@
      }
     }
    ],
-   "filters": [],
+   "filters": [
+    {
+     "id": "f_sector",
+     "dataId": [
+      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+     ],
+     "name": [
+      "map_class"
+     ],
+     "type": "multiSelect",
+     "value": [],
+     "view": "side"
+    },
+    {
+     "id": "f_country",
+     "dataId": [
+      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+     ],
+     "name": [
+      "country"
+     ],
+     "type": "multiSelect",
+     "value": [],
+     "view": "side"
+    },
+    {
+     "id": "f_em2025",
+     "dataId": [
+      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+     ],
+     "name": [
+      "em_2025_t"
+     ],
+     "type": "range",
+     "value": [
+      0.0,
+      25103854.0
+     ],
+     "view": "side"
+    },
+    {
+     "id": "f_holder",
+     "dataId": [
+      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+     ],
+     "name": [
+      "account_holder"
+     ],
+     "type": "input",
+     "value": "",
+     "view": "side"
+    }
+   ],
    "interactionConfig": {
     "tooltip": {
      "enabled": true,
