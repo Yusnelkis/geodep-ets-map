@@ -1,0 +1,182 @@
+{
+ "version": "v1",
+ "config": {
+  "visState": {
+   "layers": [
+    {
+     "id": "ets_points",
+     "type": "geojson",
+     "config": {
+      "dataId": "c93fad81-52e3-4068-9424-cccf59ecda2f",
+      "label": "ETS installations (size = CO2 last reported year, Mt)",
+      "columns": {
+       "geojson": "geometry"
+      },
+      "isVisible": true,
+      "visConfig": {
+       "opacity": 0.75,
+       "filled": true,
+       "stroked": false,
+       "radius": 2.5,
+       "radiusRange": [
+        1.5,
+        28
+       ],
+       "fixedRadius": false,
+       "colorRange": {
+        "name": "ETS sectors",
+        "type": "custom",
+        "category": "Custom",
+        "colors": [
+         "#E15759",
+         "#B07AA1",
+         "#F28E2B",
+         "#4E79A7",
+         "#6E6E6E",
+         "#9C755F",
+         "#EDC948",
+         "#59A14F",
+         "#76B7B2"
+        ],
+        "colorMap": [
+         [
+          "Cement & lime",
+          "#E15759"
+         ],
+         [
+          "Chemicals",
+          "#B07AA1"
+         ],
+         [
+          "Glass, ceramics & minerals",
+          "#F28E2B"
+         ],
+         [
+          "Iron, steel & metals",
+          "#4E79A7"
+         ],
+         [
+          "No reported emissions",
+          "#6E6E6E"
+         ],
+         [
+          "Other",
+          "#9C755F"
+         ],
+         [
+          "Power & heat (combustion)",
+          "#EDC948"
+         ],
+         [
+          "Pulp & paper",
+          "#59A14F"
+         ],
+         [
+          "Refineries & coke",
+          "#76B7B2"
+         ]
+        ]
+       }
+      }
+     },
+     "visualChannels": {
+      "colorField": {
+       "name": "map_class",
+       "type": "string"
+      },
+      "colorScale": "ordinal",
+      "radiusField": {
+       "name": "em_last_mt",
+       "type": "real"
+      },
+      "radiusScale": "sqrt"
+     }
+    },
+    {
+     "id": "src_hidden",
+     "type": "point",
+     "config": {
+      "dataId": "70d2a81d-fc38-48f0-9a0d-24f65b816f66",
+      "label": "source (hidden)",
+      "columns": {
+       "lat": "lat",
+       "lng": "lon"
+      },
+      "isVisible": false,
+      "hidden": true
+     }
+    },
+    {
+     "id": "scratch_hidden",
+     "type": "point",
+     "config": {
+      "dataId": "21b28f48-f100-4b64-9e3a-566c937d3637",
+      "label": "scratch (hidden)",
+      "columns": {
+       "lat": "lat_min",
+       "lng": "lon_min"
+      },
+      "isVisible": false,
+      "hidden": true
+     }
+    }
+   ],
+   "filters": [],
+   "interactionConfig": {
+    "tooltip": {
+     "enabled": true,
+     "fieldsToShow": {
+      "c93fad81-52e3-4068-9424-cccf59ecda2f": [
+       {
+        "name": "installation_name"
+       },
+       {
+        "name": "account_holder"
+       },
+       {
+        "name": "country"
+       },
+       {
+        "name": "city"
+       },
+       {
+        "name": "sector"
+       },
+       {
+        "name": "activity"
+       },
+       {
+        "name": "em_last_year"
+       },
+       {
+        "name": "em_last_mt"
+       },
+       {
+        "name": "n_years_with_emissions"
+       },
+       {
+        "name": "installation_id"
+       }
+      ]
+     }
+    }
+   },
+   "layerBlending": "normal",
+   "layerOrder": [
+    "ets_points",
+    "src_hidden",
+    "scratch_hidden"
+   ]
+  },
+  "mapState": {
+   "latitude": 51.0,
+   "longitude": 10.0,
+   "zoom": 3.6,
+   "pitch": 0,
+   "bearing": 0
+  },
+  "mapStyle": {
+   "styleType": "dark"
+  }
+ }
+}

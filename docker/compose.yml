@@ -8,7 +8,4 @@ services:
       - ./dekart-data:/dekart/data
     environment:
       DEKART_ALLOW_FILE_UPLOAD: "1"
-    env_file:
-      - path: .env
-        required: false
     restart: unless-stopped

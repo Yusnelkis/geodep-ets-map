@@ -1,0 +1,11 @@
+{
+ "report_id": "2f5526ab-f713-456b-8b77-16ef993eb752",
+ "src_dataset_id": "70d2a81d-fc38-48f0-9a0d-24f65b816f66",
+ "file_id": "45a1f4ab-5404-4443-bc70-a8b266742fd6",
+ "scratch_dataset_id": "21b28f48-f100-4b64-9e3a-566c937d3637",
+ "scratch_query_id": "3e74fabb-deeb-4910-bbf5-539c229288fa",
+ "map_dataset_id": "c93fad81-52e3-4068-9424-cccf59ecda2f",
+ "map_query_id": "8db9e97e-8a58-4555-af7b-3ea8c3ceaaac",
+ "report_url": "http://localhost:8080/reports/2f5526ab-f713-456b-8b77-16ef993eb752",
+ "note": "Local Dekart (docker/compose.yml). IDs are only valid for this local instance (docker/dekart-data)."
+}
