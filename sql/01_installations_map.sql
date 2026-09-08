@@ -1,33 +1,34 @@
--- Map layer: one point per EU ETS stationary installation with a verified coordinate.
--- Colour = map_class (sector, or neutral class when no emission was ever reported).
--- Size  = em_last_mt (verified CO2 of the last reported year, Mt). NULL emissions -> 0 for sizing only.
-SELECT installation_id, installation_name, country, city, account_holder,
-       activity_code, activity,
-       CASE
-         WHEN activity_code IN ('20','1')                              THEN 'Power & heat (combustion)'
-         WHEN activity_code IN ('21','2','22','3')                     THEN 'Refineries & coke'
-         WHEN activity_code IN ('24','5','25','23','4','28','26','27') THEN 'Iron, steel & metals'
-         WHEN activity_code IN ('29','6','30')                         THEN 'Cement & lime'
-         WHEN activity_code IN ('42','43','41','38','39','40','37','44') THEN 'Chemicals'
-         WHEN activity_code IN ('36','9','35')                         THEN 'Pulp & paper'
-         WHEN activity_code IN ('32','8','31','7','33','34')           THEN 'Glass, ceramics & minerals'
-         ELSE 'Other' END AS sector,
-       CASE WHEN em_last_value_t IS NULL THEN 'No reported emissions' ELSE
-         CASE
-           WHEN activity_code IN ('20','1')                              THEN 'Power & heat (combustion)'
-           WHEN activity_code IN ('21','2','22','3')                     THEN 'Refineries & coke'
-           WHEN activity_code IN ('24','5','25','23','4','28','26','27') THEN 'Iron, steel & metals'
-           WHEN activity_code IN ('29','6','30')                         THEN 'Cement & lime'
-           WHEN activity_code IN ('42','43','41','38','39','40','37','44') THEN 'Chemicals'
-           WHEN activity_code IN ('36','9','35')                         THEN 'Pulp & paper'
-           WHEN activity_code IN ('32','8','31','7','33','34')           THEN 'Glass, ceramics & minerals'
-           ELSE 'Other' END END AS map_class,
-       CAST(em_last_year AS INTEGER)                        AS em_last_year,
-       em_last_value_t,
-       ROUND(COALESCE(em_last_value_t, 0) / 1e6, 3)         AS em_last_mt,
-       em_2025_t, em_2024_t,
-       CAST(n_years_with_emissions AS INTEGER)              AS n_years_with_emissions,
-       coord_source, as_of,
-       ST_Point(lon, lat)                                   AS geometry
-FROM datasets."ets_installations_2025"
-ORDER BY em_last_mt DESC
+-- Map layer (DuckDB): one row per EU ETS stationary installation with a verified coordinate.
+-- Column names are display labels: Kepler shows them verbatim in filters, tooltips and legends.
+-- "Sector" carries a neutral class when the installation never reported emissions.
+-- {SRC} is replaced by the extract path.
+WITH s AS (
+  SELECT *,
+    CASE
+      WHEN activity_code IN ('20','1')                              THEN 'Power & heat (combustion)'
+      WHEN activity_code IN ('21','2','22','3')                     THEN 'Refineries & coke'
+      WHEN activity_code IN ('24','5','25','23','4','28','26','27') THEN 'Iron, steel & metals'
+      WHEN activity_code IN ('29','6','30')                         THEN 'Cement & lime'
+      WHEN activity_code IN ('42','43','41','38','39','40','37','44') THEN 'Chemicals'
+      WHEN activity_code IN ('36','9','35')                         THEN 'Pulp & paper'
+      WHEN activity_code IN ('32','8','31','7','33','34')           THEN 'Glass, ceramics & minerals'
+      ELSE 'Other' END AS ets_sector
+  FROM read_parquet('{SRC}')
+)
+SELECT installation_id                                        AS "Installation ID",
+       installation_name                                      AS "Installation",
+       account_holder                                         AS "Account holder",
+       country                                                AS "Country",
+       city                                                   AS "City",
+       CASE WHEN em_last_value_t IS NULL THEN 'No reported emissions' ELSE ets_sector END AS "Sector",
+       activity                                               AS "ETS activity",
+       CAST(em_last_year AS INTEGER)                          AS "Last year reported",
+       ROUND(COALESCE(em_last_value_t, 0) / 1e6, 3)           AS "CO2 last year (Mt)",
+       ROUND(em_2025_t / 1e6, 3)                              AS "CO2 2025 (Mt)",
+       ROUND(em_2024_t / 1e6, 3)                              AS "CO2 2024 (Mt)",
+       CAST(n_years_with_emissions AS INTEGER)                AS "Years reporting",
+       coord_source                                           AS "Coordinate source",
+       lat                                                    AS latitude,
+       lon                                                    AS longitude
+FROM s
+ORDER BY "CO2 last year (Mt)" DESC

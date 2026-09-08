@@ -19,6 +19,7 @@ SETUP = Path(os.environ.get("GEODEP_SETUP_DIR", REPO.parent / "geodep_setup"))
 BASE = SETUP / "public/data/_intermediate/a8_ets/eutl_canonico_2025.parquet"
 EMIS = SETUP / "public/external/eutl/dumps/eutl_2025_shareable/installation_year.csv"
 OUT = REPO / "data/ets_installations_2025.parquet"
+MAP_OUT = REPO / "data/ets_map_layer_2025.parquet"
 
 REQ_BASE = ["installation_id", "REGISTRY_CODE", "INSTALLATION_IDENTIFIER", "INSTALLATION_NAME",
             "ACTIVITY_TYPE_CODE", "ACTIVITY_TYPE", "PERMIT_IDENTIFIER", "PERMIT_REVOCATION_DATE", "CITY",
@@ -104,6 +105,16 @@ def main():
     }
     (OUT.parent / "sources.json").write_text(json.dumps(prov, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps({k: v for k, v in prov.items() if k != "columns"}, indent=2, ensure_ascii=False))
+
+    # Map layer: run the versioned DuckDB SQL over the extract (same SQL GeoSQL validated in Dekart).
+    sql = lambda name: (REPO / "sql" / name).read_text(encoding="utf-8").replace("{SRC}", OUT.as_posix())
+    print("\nValidation (sql/00):")
+    print(con.sql(sql("00_scratch_validation.sql")))
+    con.sql(f"COPY ({sql('01_installations_map.sql')}) TO '{MAP_OUT.as_posix()}' (FORMAT parquet)")
+    n_map = con.sql(f"SELECT count(*) FROM '{MAP_OUT.as_posix()}'").fetchone()[0]
+    if n_map != n:
+        sys.exit(f"ERROR map layer has {n_map} rows, extract has {n}")
+    print(f"map layer: {MAP_OUT.name} ({n_map} rows)")
 
 
 if __name__ == "__main__":

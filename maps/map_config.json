@@ -5,18 +5,19 @@
    "layers": [
     {
      "id": "ets_points",
-     "type": "geojson",
+     "type": "point",
      "config": {
-      "dataId": "c93fad81-52e3-4068-9424-cccf59ecda2f",
+      "dataId": "55f4f4e3-f299-45e3-9ebe-f871ce0ce700",
       "label": "ETS installations (size = CO2 last reported year, Mt)",
       "columns": {
-       "geojson": "geometry"
+       "lat": "latitude",
+       "lng": "longitude"
       },
       "isVisible": true,
       "visConfig": {
        "opacity": 0.75,
        "filled": true,
-       "stroked": false,
+       "outline": false,
        "radius": 2.5,
        "radiusRange": [
         1.5,
@@ -81,54 +82,29 @@
      },
      "visualChannels": {
       "colorField": {
-       "name": "map_class",
+       "name": "Sector",
        "type": "string"
       },
       "colorScale": "ordinal",
-      "radiusField": {
-       "name": "em_last_mt",
+      "sizeField": {
+       "name": "CO2 last year (Mt)",
        "type": "real"
       },
-      "radiusScale": "sqrt"
-     }
-    },
-    {
-     "id": "src_hidden",
-     "type": "point",
-     "config": {
-      "dataId": "70d2a81d-fc38-48f0-9a0d-24f65b816f66",
-      "label": "source (hidden)",
-      "columns": {
-       "lat": "lat",
-       "lng": "lon"
-      },
-      "isVisible": false,
-      "hidden": true
-     }
-    },
-    {
-     "id": "scratch_hidden",
-     "type": "point",
-     "config": {
-      "dataId": "21b28f48-f100-4b64-9e3a-566c937d3637",
-      "label": "scratch (hidden)",
-      "columns": {
-       "lat": "lat_min",
-       "lng": "lon_min"
-      },
-      "isVisible": false,
-      "hidden": true
+      "sizeScale": "sqrt"
      }
     }
+   ],
+   "layerOrder": [
+    "ets_points"
    ],
    "filters": [
     {
      "id": "f_sector",
      "dataId": [
-      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
      ],
      "name": [
-      "map_class"
+      "Sector"
      ],
      "type": "multiSelect",
      "value": [],
@@ -137,10 +113,10 @@
     {
      "id": "f_country",
      "dataId": [
-      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
      ],
      "name": [
-      "country"
+      "Country"
      ],
      "type": "multiSelect",
      "value": [],
@@ -149,28 +125,28 @@
     {
      "id": "f_em2025",
      "dataId": [
-      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
      ],
      "name": [
-      "em_2025_t"
+      "CO2 2025 (Mt)"
      ],
      "type": "range",
      "value": [
       0.0,
-      25103854.0
+      25.104
      ],
      "view": "side"
     },
     {
      "id": "f_holder",
      "dataId": [
-      "c93fad81-52e3-4068-9424-cccf59ecda2f"
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
      ],
      "name": [
-      "account_holder"
+      "Account holder"
      ],
-     "type": "input",
-     "value": "",
+     "type": "multiSelect",
+     "value": [],
      "view": "side"
     }
    ],
@@ -178,47 +154,45 @@
     "tooltip": {
      "enabled": true,
      "fieldsToShow": {
-      "c93fad81-52e3-4068-9424-cccf59ecda2f": [
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700": [
        {
-        "name": "installation_name"
+        "name": "Installation"
        },
        {
-        "name": "account_holder"
+        "name": "Account holder"
        },
        {
-        "name": "country"
+        "name": "Country"
        },
        {
-        "name": "city"
+        "name": "City"
        },
        {
-        "name": "sector"
+        "name": "Sector"
        },
        {
-        "name": "activity"
+        "name": "ETS activity"
        },
        {
-        "name": "em_last_year"
+        "name": "Last year reported"
        },
        {
-        "name": "em_last_mt"
+        "name": "CO2 last year (Mt)"
        },
        {
-        "name": "n_years_with_emissions"
+        "name": "CO2 2025 (Mt)"
        },
        {
-        "name": "installation_id"
+        "name": "Years reporting"
+       },
+       {
+        "name": "Installation ID"
        }
       ]
      }
     }
    },
-   "layerBlending": "normal",
-   "layerOrder": [
-    "ets_points",
-    "src_hidden",
-    "scratch_hidden"
-   ]
+   "layerBlending": "normal"
   },
   "mapState": {
    "latitude": 51.0,
