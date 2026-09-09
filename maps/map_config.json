@@ -8,7 +8,7 @@
      "type": "point",
      "config": {
       "dataId": "55f4f4e3-f299-45e3-9ebe-f871ce0ce700",
-      "label": "ETS installations (size = CO2 last reported year, Mt)",
+      "label": "1 \u00b7 All installations \u00b7 colour = sector, size = CO2 last reported year",
       "columns": {
        "lat": "latitude",
        "lng": "longitude"
@@ -92,10 +92,130 @@
       },
       "sizeScale": "sqrt"
      }
+    },
+    {
+     "id": "top500",
+     "type": "point",
+     "config": {
+      "dataId": "55f4f4e3-f299-45e3-9ebe-f871ce0ce700",
+      "label": "2 \u00b7 Top 500 emitters (71% of 2025 CO2) \u00b7 colour = rank tier",
+      "columns": {
+       "lat": "latitude",
+       "lng": "longitude"
+      },
+      "isVisible": false,
+      "visConfig": {
+       "opacity": 0.75,
+       "filled": true,
+       "outline": false,
+       "radius": 2.5,
+       "radiusRange": [
+        1.5,
+        28
+       ],
+       "fixedRadius": false,
+       "colorRange": {
+        "name": "Emitter rank",
+        "type": "custom",
+        "category": "Custom",
+        "colors": [
+         "#1B2430",
+         "#2E3A4A",
+         "#FF7F0E",
+         "#FFD400",
+         "#D62728"
+        ],
+        "colorMap": [
+         [
+          "No 2025 emissions",
+          "#1B2430"
+         ],
+         [
+          "Other emitter 2025",
+          "#2E3A4A"
+         ],
+         [
+          "Top 100",
+          "#FF7F0E"
+         ],
+         [
+          "Top 20",
+          "#FFD400"
+         ],
+         [
+          "Top 500",
+          "#D62728"
+         ]
+        ]
+       }
+      }
+     },
+     "visualChannels": {
+      "colorField": {
+       "name": "Emitter rank",
+       "type": "string"
+      },
+      "colorScale": "ordinal",
+      "sizeField": {
+       "name": "CO2 2025 (Mt)",
+       "type": "real"
+      },
+      "sizeScale": "sqrt"
+     }
+    },
+    {
+     "id": "closures",
+     "type": "point",
+     "config": {
+      "dataId": "55f4f4e3-f299-45e3-9ebe-f871ce0ce700",
+      "label": "3 \u00b7 Closures \u00b7 colour = year permit revoked (set Status filter = Closed)",
+      "columns": {
+       "lat": "latitude",
+       "lng": "longitude"
+      },
+      "isVisible": false,
+      "visConfig": {
+       "opacity": 0.75,
+       "filled": true,
+       "outline": false,
+       "radius": 2.5,
+       "radiusRange": [
+        1.5,
+        28
+       ],
+       "fixedRadius": false,
+       "colorRange": {
+        "name": "Viridis",
+        "type": "sequential",
+        "category": "Uber",
+        "colors": [
+         "#440154",
+         "#3B528B",
+         "#21908C",
+         "#5DC863",
+         "#FDE725"
+        ]
+       }
+      }
+     },
+     "visualChannels": {
+      "colorField": {
+       "name": "Permit revoked (year)",
+       "type": "integer"
+      },
+      "colorScale": "quantize",
+      "sizeField": {
+       "name": "CO2 last year (Mt)",
+       "type": "real"
+      },
+      "sizeScale": "sqrt"
+     }
     }
    ],
    "layerOrder": [
-    "ets_points"
+    "ets_points",
+    "top500",
+    "closures"
    ],
    "filters": [
     {
@@ -117,6 +237,30 @@
      ],
      "name": [
       "Country"
+     ],
+     "type": "multiSelect",
+     "value": [],
+     "view": "side"
+    },
+    {
+     "id": "f_rank",
+     "dataId": [
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
+     ],
+     "name": [
+      "Emitter rank"
+     ],
+     "type": "multiSelect",
+     "value": [],
+     "view": "side"
+    },
+    {
+     "id": "f_status",
+     "dataId": [
+      "55f4f4e3-f299-45e3-9ebe-f871ce0ce700"
+     ],
+     "name": [
+      "Status"
      ],
      "type": "multiSelect",
      "value": [],
@@ -174,13 +318,25 @@
         "name": "ETS activity"
        },
        {
+        "name": "Status"
+       },
+       {
+        "name": "Emitter rank"
+       },
+       {
         "name": "Last year reported"
+       },
+       {
+        "name": "Permit revoked (year)"
        },
        {
         "name": "CO2 last year (Mt)"
        },
        {
         "name": "CO2 2025 (Mt)"
+       },
+       {
+        "name": "CO2 change vs 2021-23 (%)"
        },
        {
         "name": "Years reporting"

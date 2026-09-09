@@ -24,6 +24,8 @@
     "em_last_year",
     "em_last_value_t",
     "n_years_with_emissions",
+    "em_base_2021_23_t",
+    "change_vs_2021_23_pct",
     "source_base",
     "as_of"
   ],

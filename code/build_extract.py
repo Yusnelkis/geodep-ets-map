@@ -38,7 +38,8 @@ WITH e AS (
          MAX(CASE WHEN yr = 2024 THEN em END)            AS em_2024_t,
          MAX(CASE WHEN yr = 2025 THEN em END)            AS em_2025_t,
          MAX(CASE WHEN em > 0 THEN yr END)               AS em_last_year,
-         COUNT(CASE WHEN em > 0 THEN 1 END)              AS n_years_with_emissions
+         COUNT(CASE WHEN em > 0 THEN 1 END)              AS n_years_with_emissions,
+         AVG(CASE WHEN yr BETWEEN 2021 AND 2023 AND em > 0 THEN em END) AS em_base_2021_23_t
   FROM e GROUP BY 1, 2
 ), last AS (
   SELECT rc, iid, em AS em_last_value_t FROM e
@@ -54,6 +55,9 @@ SELECT b.installation_id, b.REGISTRY_CODE AS country, b.INSTALLATION_NAME AS ins
        CAST(a.em_2024_t AS DOUBLE) AS em_2024_t, CAST(a.em_2025_t AS DOUBLE) AS em_2025_t,
        a.em_last_year, CAST(CASE WHEN a.em_last_year IS NOT NULL THEN l.em_last_value_t END AS DOUBLE) AS em_last_value_t,
        COALESCE(a.n_years_with_emissions, 0)::INTEGER AS n_years_with_emissions,
+       CAST(a.em_base_2021_23_t AS DOUBLE) AS em_base_2021_23_t,
+       CAST(CASE WHEN a.em_base_2021_23_t > 0 AND a.em_2025_t > 0
+                 THEN 100.0 * (a.em_2025_t - a.em_base_2021_23_t) / a.em_base_2021_23_t END AS DOUBLE) AS change_vs_2021_23_pct,
        b.fuente_base AS source_base, b.as_of
 FROM '{BASE.as_posix()}' b
 LEFT JOIN agg a ON a.rc = b.REGISTRY_CODE AND a.iid = b.INSTALLATION_IDENTIFIER
