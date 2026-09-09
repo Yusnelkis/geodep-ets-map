@@ -44,6 +44,10 @@
   .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none}
   .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
   .stat{font:12.5px var(--mono);color:var(--ink2);margin:6px 0 14px}
+  .actions{display:flex;gap:6px;margin:0 0 14px} .actions button{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font:inherit;font-size:12.5px;cursor:pointer} .actions button:hover{border-color:var(--ink2);color:var(--ink)}
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px} .kpi{border:1px solid var(--rule);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
+  #bar-sector,#bar-country{width:100%;height:auto;display:block;overflow:visible}
+  #detail:empty{display:none} #detail{border:1px solid var(--amber);padding:10px 12px;margin-bottom:14px;position:relative} #detail h3{font:600 15px var(--serif);margin:0 0 4px;padding-right:20px} #detail .x{position:absolute;right:8px;top:6px;cursor:pointer;color:var(--ink3)} #detail p{margin:0 0 4px;color:var(--ink2);font-size:12.5px} #detail svg{width:100%;height:auto;display:block;overflow:visible;margin-top:6px}
   details{border-top:1px solid var(--rule);padding:10px 0} summary{cursor:pointer;font:11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)} details p{margin:8px 0 0;color:var(--ink2);font-size:13px}
   .foot{padding:10px 20px;border-top:1px solid var(--rule)}
   /* map */
@@ -74,6 +78,11 @@
         <div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div>
         <div class="fld"><label>Search plant or operator</label><input type="text" id="f-q" placeholder="e.g. Bełchatów, ArcelorMittal"></div>
         <div class="stat" id="f-stat"></div>
+        <div class="actions"><button id="btn-export" title="Download the current selection as CSV">Export CSV</button><button id="btn-share" title="Copy a link that reproduces these filters">Copy link</button><button id="btn-reset">Reset</button></div>
+        <div id="detail"></div>
+        <div class="kpis" id="kpis"></div>
+        <div class="fld"><label>Selection by sector · Mt CO<sub>2</sub> 2025</label><svg id="bar-sector"></svg></div>
+        <div class="fld"><label>Selection by country · Mt CO<sub>2</sub> 2025 (top 8)</label><svg id="bar-country"></svg></div>
         <details open><summary>Largest in selection · click to fly</summary><table class="t" id="toplist"></table></details>
       </div>
     </div>
@@ -101,9 +110,10 @@
   const STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json', SEA = '#0f2a47';
 
   const [rows, S] = await Promise.all([
-    d3.csv('data/installations.csv', d => ({id: d.id, name: d.name, holder: d.holder, country: d.country, city: d.city, sector: d.sector, status: d.status,
+    d3.csv('data/installations.csv', d => ({id: d.id, name: d.name, holder: d.holder, country: d.country, city: d.city, activity: d.activity, sector: d.sector, status: d.status,
       rank: d.rank === '' ? null : +d.rank, last_year: d.last_year === '' ? null : +d.last_year, revoked_year: d.revoked_year === '' ? null : +d.revoked_year,
-      mt_last: +d.mt_last || 0, mt_2025: d.mt_2025 === '' ? null : +d.mt_2025, chg: d.chg === '' ? null : +d.chg, lat: +d.lat, lon: +d.lon})),
+      mt_last: +d.mt_last || 0, mt_2025: d.mt_2025 === '' ? null : +d.mt_2025, mt_base: d.mt_base === '' ? null : +d.mt_base, chg: d.chg === '' ? null : +d.chg, lat: +d.lat, lon: +d.lon,
+      years: d3.range(2013, 2026).map(y => d['y' + y] === '' ? null : +d['y' + y])})),
     d3.json('data/summary.json')
   ]);
   const T = S.totals, C = Object.fromEntries(S.concentration.map(c => [c.top_n, c.share_pct])), ch = S.change_vs_baseline, core = S.hard_to_abate_core, tr = S.trend, sp = S.spike_2020;
@@ -137,7 +147,8 @@
   map.addControl(new maplibregl.AttributionControl({compact: true})); map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'top-right');
   map.on('style.load', () => map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); }));
   const tipEl = document.getElementById('tip');
-  const overlay = new MapboxOverlay({interleaved: false, layers: [], onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; }});
+  const overlay = new MapboxOverlay({interleaved: false, layers: [], onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; },
+    onClick: info => { if (info.object) showDetail(info.object); }});
   map.addControl(overlay);
   let cur = {mode: null, data: null};
   function show(mode, data = rows) { if (mode === cur.mode && data === cur.data) return; cur = {mode, data}; const M = MODES[mode];
@@ -216,26 +227,70 @@
   const countries = d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).sort((a, b) => b[1] - a[1]);
   d3.select('#f-country').selectAll('option.c').data(countries).join('option').attr('class', 'c').attr('value', d => d[0]).text(d => `${d[0]} · ${fmt(Math.round(d[1]))} Mt`);
   const filtered = () => { const q = state.q.toLowerCase(); return rows.filter(d => (state.sel.size === 0 || state.sel.has(d.sector)) && (state.status === 'all' || d.status === state.status) && (state.country === 'all' || d.country === state.country) && (d.mt_2025 || 0) >= state.min && (!q || d.name.toLowerCase().includes(q) || (d.holder || '').toLowerCase().includes(q))); };
-  function sync() {
+  // small horizontal bars for the selection summary (one hue; label + value)
+  function hbars(svgId, items, colorOf) {
+    const W = 340, m = {l: 118, r: 70}, rowH = 20, w = W - m.l - m.r, h = items.length * rowH, svg = d3.select('#' + svgId).attr('viewBox', `0 0 ${W} ${Math.max(h, 4)}`); svg.selectAll('*').remove();
+    const x = d3.scaleLinear().domain([0, d3.max(items, d => d.v) || 1]).range([0, w]);
+    const r = svg.selectAll('g').data(items).join('g').attr('transform', (d, i) => `translate(${m.l},${i * rowH})`);
+    r.append('text').attr('x', -8).attr('y', 13).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11).text(d => d.k.length > 18 ? d.k.slice(0, 17) + '…' : d.k);
+    r.append('rect').attr('y', 4).attr('height', 11).attr('width', d => Math.max(1.5, x(d.v))).attr('fill', d => colorOf(d)).attr('rx', 2);
+    mono(r.append('text').attr('x', d => x(d.v) + 6).attr('y', 13).attr('fill', INK2)).text(d => `${f1(d.v)} · ${f1(d.share)} %`);
+  }
+  let lastData = rows;
+  function sync(pushHash = true) {
     chips.classed('on', d => state.sel.has(d)); clear.style('display', state.sel.size ? null : 'none');
-    const data = filtered(); show(state.colour, data);
-    document.getElementById('f-stat').textContent = `${fmt(data.length)} installations · ${f1(d3.sum(data, d => d.mt_2025 || 0))} Mt CO₂ in 2025`;
+    const data = filtered(); lastData = data; show(state.colour, data);
+    const mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
+    const closed = data.filter(d => d.status === 'closed').length, closed5 = data.filter(d => d.status === 'closed' && d.revoked_year >= 2021).length;
+    document.getElementById('f-stat').textContent = `${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in 2025 · ${f1(100 * mt / T.mt_2025)} % of the ETS total`;
+    document.getElementById('kpis').innerHTML = [
+      [f1(mt), 'Mt CO₂ 2025'], [base ? signed(100 * (now - base) / base) + ' %' : '—', 'vs 2021-23 baseline, same sites'], [fmt(closed), `closed (permit revoked), ${fmt(closed5)} since 2021`]
+    ].map(([v, l]) => `<div class="kpi"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join('');
+    const bySec = d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d.sector).map(([k, v]) => ({k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v);
+    hbars('bar-sector', bySec, d => state.colour === 'sector' ? SECTOR_COLOR[d.k] : AMBER);
+    const byC = d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).map(([k, v]) => ({k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v).slice(0, 8);
+    hbars('bar-country', byC, () => AMBER);
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 15);
     d3.select('#toplist').html(top.map((d, i) => `<tr data-id="${d.id}"><td class="n num">${i + 1}</td><td>${d.name} <span class="h">· ${d.holder} · ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td></tr>`).join(''));
-    document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); });
+    document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); showDetail(d); });
+    if (pushHash) { const p = new URLSearchParams(); if (state.colour !== 'mono') p.set('c', state.colour); if (state.sel.size) p.set('s', [...state.sel].join('|')); if (state.status !== 'all') p.set('st', state.status); if (state.country !== 'all') p.set('co', state.country); if (state.min) p.set('min', state.min); if (state.q) p.set('q', state.q); history.replaceState(null, '', p.toString() ? '#' + p.toString() : location.pathname); }
   }
+  function showDetail(d) {
+    const el = document.getElementById('detail'), ys = d.years, yrs = d3.range(2013, 2026);
+    el.innerHTML = `<span class="x" id="dx">✕</span><h3>${d.name}</h3><p>${d.holder}<br>${d.city}, ${d.country} · ${d.activity}</p>
+      <p><b class="num">${d.mt_2025 != null ? f1(d.mt_2025) + ' Mt' : '—'}</b> in 2025${d.mt_base ? ` · baseline 2021-23 <span class="num">${f1(d.mt_base)}</span> · <span class="num">${signed(d.chg)} %</span>` : ''}<br>${statusLabel(d)}${d.rank ? ` · rank ${d.rank} of ${fmt(T.emitting_2025)}` : ''} · <span class="num">${d.id}</span></p><svg></svg>`;
+    el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
+    if (ys.some(v => v != null)) { const W = 316, H = 70, m = {t: 8, r: 34, b: 14, l: 4}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select(el).select('svg').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const pts = yrs.map((y, i) => ({y, v: ys[i]})).filter(p => p.v != null), x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), yS = d3.scaleLinear().domain([0, d3.max(pts, p => p.v)]).range([h, 0]);
+      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', AMBER).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => yS(p.v)));
+      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => yS(p.v)).attr('r', 2).attr('fill', AMBER);
+      mono(g.append('text').attr('x', 0).attr('y', h + 11).attr('fill', INK3)).text('2013'); mono(g.append('text').attr('x', w).attr('y', h + 11).attr('text-anchor', 'end').attr('fill', INK3)).text('2025');
+      const l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 5).attr('y', yS(l.v) + 4).attr('fill', INK)).text(f1(l.v)); }
+    document.querySelector('.tab[data-tab="explore"]').classList.contains('on') || document.querySelector('.tab[data-tab="explore"]').click();
+    document.querySelector('.body').scrollTop = 0;
+  }
+  document.getElementById('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'country', 'city', 'activity', 'sector', 'status', 'last_year', 'revoked_year', 'mt_last', 'mt_2025', 'mt_base', 'chg', 'lat', 'lon'];
+    const esc = v => v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v;
+    const csv = [cols.concat(d3.range(2013, 2026).map(y => 'mt_' + y)).join(','), ...lastData.map(d => cols.map(c => esc(d[c])).concat(d.years.map(esc)).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'})); a.download = `ets_installations_selection_${lastData.length}.csv`; a.click(); };
+  document.getElementById('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
+  document.getElementById('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: ''}); state.sel.clear(); document.getElementById('f-colour').value = 'mono'; document.getElementById('f-status').value = 'all'; document.getElementById('f-country').value = 'all'; document.getElementById('f-min').value = 0; document.getElementById('f-min-v').textContent = '0 Mt'; document.getElementById('f-q').value = ''; document.getElementById('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   document.getElementById('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   document.getElementById('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   document.getElementById('f-country').addEventListener('change', e => { state.country = e.target.value; sync(); });
   document.getElementById('f-min').addEventListener('input', e => { state.min = +e.target.value; document.getElementById('f-min-v').textContent = f1(state.min) + ' Mt'; sync(); });
   document.getElementById('f-q').addEventListener('input', e => { state.q = e.target.value.trim(); sync(); });
+  // restore filters from a shared link
+  const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
+  if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.min = +(H0.get('min') || 0); state.q = H0.get('q') || '';
+    document.getElementById('f-colour').value = state.colour; document.getElementById('f-status').value = state.status; document.getElementById('f-country').value = state.country; document.getElementById('f-min').value = state.min; document.getElementById('f-min-v').textContent = f1(state.min) + ' Mt'; document.getElementById('f-q').value = state.q; }
 
   // ---------- tabs ----------
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === t.dataset.tab));
     clearTimeout(thenTimer); if (t.dataset.tab === 'story') renderChapter(ci); else { cur.mode = null; sync(); fly(VIEWS.eu); }
   });
-  renderChapter(0);
+  if (hasHash) document.querySelector('.tab[data-tab="explore"]').click(); else renderChapter(0);
 })().catch(err => { console.error(err); document.getElementById('asof').textContent = 'data failed to load: ' + err.message; });
 </script>
 </body>

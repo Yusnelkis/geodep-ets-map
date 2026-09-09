@@ -43,12 +43,15 @@ def main():
     con.sql(f"""CREATE TABLE e AS SELECT REGISTRY_CODE rc, INSTALLATION_IDENTIFIER iid, PERIOD_YEAR yr,
              NULLIF(VERIFIED_EMISSIONS, -1) em, EXCLUDED ex FROM read_csv('{EMIS.as_posix()}')""")
 
-    # 1. per-installation CSV (compact: rounded numbers, short names)
-    con.sql(f"""COPY (SELECT installation_id AS id, installation_name AS name, account_holder AS holder, country, city,
+    # 1. per-installation CSV (compact: rounded numbers, short names) + yearly trajectory 2013-2025 in Mt
+    con.sql("""CREATE TABLE traj AS SELECT rc || '_' || iid AS id, yr, ROUND(em / 1e6, 3) AS mt FROM e WHERE yr BETWEEN 2013 AND 2025 AND em IS NOT NULL""")
+    years = ", ".join(f"MAX(CASE WHEN yr = {y} THEN mt END) AS y{y}" for y in range(2013, 2026))
+    con.sql(f"""COPY (SELECT s.installation_id AS id, installation_name AS name, account_holder AS holder, country, city, activity,
               sector, status, rank_2025 AS rank, em_last_year AS last_year, revoked_year,
-              ROUND(em_last_value_t / 1e6, 3) AS mt_last, ROUND(em_2025_t / 1e6, 3) AS mt_2025,
-              ROUND(change_vs_2021_23_pct, 1) AS chg, ROUND(lat, 5) AS lat, ROUND(lon, 5) AS lon
-              FROM s ORDER BY em_2025_t DESC NULLS LAST) TO '{(OUT / 'installations.csv').as_posix()}' (HEADER)""")
+              ROUND(em_last_value_t / 1e6, 3) AS mt_last, ROUND(em_2025_t / 1e6, 3) AS mt_2025, ROUND(em_base_2021_23_t / 1e6, 3) AS mt_base,
+              ROUND(change_vs_2021_23_pct, 1) AS chg, ROUND(lat, 5) AS lat, ROUND(lon, 5) AS lon, {", ".join(f"y{y}" for y in range(2013, 2026))}
+              FROM s LEFT JOIN (SELECT id, {years} FROM traj GROUP BY id) t ON t.id = s.installation_id
+              ORDER BY em_2025_t DESC NULLS LAST) TO '{(OUT / 'installations.csv').as_posix()}' (HEADER)""")
 
     rows = lambda q: [dict(zip([d[0] for d in con.sql(q).description], r)) for r in con.sql(q).fetchall()]
     one = lambda q: con.sql(q).fetchone()
