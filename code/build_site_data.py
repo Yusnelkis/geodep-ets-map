@@ -90,10 +90,14 @@ def main():
                     round(100.0 * count(*) FILTER (WHERE change_vs_2021_23_pct <= -10) / count(*), 1),
                     round(100.0 * count(*) FILTER (WHERE change_vs_2021_23_pct >= 10) / count(*), 1)
                     FROM s WHERE change_vs_2021_23_pct IS NOT NULL""")
-    change_sector = rows("""SELECT sector, count(*) AS n,
+    change_sector = rows("""SELECT sector, count(*) AS n, round(sum(em_base_2021_23_t)/1e6, 1) AS base_mt, round(sum(em_2025_t)/1e6, 1) AS mt_2025,
                             round(100 * (sum(em_2025_t) - sum(em_base_2021_23_t)) / sum(em_base_2021_23_t), 1) AS chg_pct,
                             round((sum(em_2025_t) - sum(em_base_2021_23_t))/1e6, 1) AS delta_mt
                             FROM s WHERE change_vs_2021_23_pct IS NOT NULL GROUP BY 1 ORDER BY delta_mt""")
+    core = one("""SELECT count(*), round(sum(em_2025_t)/1e6, 1), round(sum(em_base_2021_23_t) FILTER (WHERE change_vs_2021_23_pct IS NOT NULL)/1e6, 1),
+                  round(sum(em_2025_t) FILTER (WHERE change_vs_2021_23_pct IS NOT NULL)/1e6, 1)
+                  FROM s WHERE sector IN ('Cement & lime','Iron, steel & metals','Refineries & coke')""")
+    s13, s25 = one("SELECT (SELECT round(sum(em)/1e6,0) FROM e JOIN s ON s.installation_id = e.rc || '_' || e.iid WHERE yr = 2013), (SELECT round(sum(em_2025_t)/1e6,0) FROM s)")
     as_of = one("SELECT min(as_of), max(as_of) FROM s")
     summary = {
         "source": {"dataset": "EU Transaction Log (EUTL), European Commission — public data download",
@@ -103,6 +107,10 @@ def main():
         "series": series, "revoked_by_year": revoked, "last_year_hist": last_year,
         "spike_2020": {"total": spike[0], "revoked": spike[1], "excluded_from_2021": spike[2], "unexplained": spike[3]},
         "status": status,
+        "trend": {"mt_2013": s13, "mt_2025": s25, "pct_2013_2025": round(100 * (s25 - s13) / s13, 1)},
+        "hard_to_abate_core": {"sectors": ["Cement & lime", "Iron, steel & metals", "Refineries & coke"], "installations": core[0], "mt_2025": core[1],
+                               "base_mt_same_sites": core[2], "mt_2025_same_sites": core[3],
+                               "chg_pct_same_sites": round(100 * (core[3] - core[2]) / core[2], 1)},
         "change_vs_baseline": {"installations": change[0], "aggregate_pct": change[1], "median_pct": change[2],
                                 "pct_down_10": change[3], "pct_up_10": change[4], "baseline": "mean of 2021-2023 (years with emissions > 0)",
                                 "by_sector": change_sector},

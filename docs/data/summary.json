@@ -1377,6 +1377,23 @@
    "n": 254
   }
  ],
+ "trend": {
+  "mt_2013": 1904.0,
+  "mt_2025": 1007.0,
+  "pct_2013_2025": -47.1
+ },
+ "hard_to_abate_core": {
+  "sectors": [
+   "Cement & lime",
+   "Iron, steel & metals",
+   "Refineries & coke"
+  ],
+  "installations": 1576,
+  "mt_2025": 323.7,
+  "base_mt_same_sites": 354.1,
+  "mt_2025_same_sites": 323.5,
+  "chg_pct_same_sites": -8.6
+ },
  "change_vs_baseline": {
   "installations": 7540,
   "aggregate_pct": -17.4,
@@ -1388,48 +1405,64 @@
    {
     "sector": "Power & heat",
     "n": 4588,
+    "base_mt": 744.7,
+    "mt_2025": 576.0,
     "chg_pct": -22.7,
     "delta_mt": -168.7
    },
    {
     "sector": "Cement & lime",
     "n": 386,
+    "base_mt": 127.2,
+    "mt_2025": 108.3,
     "chg_pct": -14.8,
     "delta_mt": -18.9
    },
    {
     "sector": "Iron, steel & metals",
     "n": 480,
+    "base_mt": 117.4,
+    "mt_2025": 107.6,
     "chg_pct": -8.4,
     "delta_mt": -9.8
    },
    {
     "sector": "Glass, ceramics & minerals",
     "n": 939,
+    "base_mt": 30.1,
+    "mt_2025": 25.1,
     "chg_pct": -16.7,
     "delta_mt": -5.0
    },
    {
     "sector": "Chemicals",
     "n": 362,
+    "base_mt": 62.2,
+    "mt_2025": 58.3,
     "chg_pct": -6.3,
     "delta_mt": -3.9
    },
    {
     "sector": "Pulp & paper",
     "n": 562,
+    "base_mt": 20.0,
+    "mt_2025": 17.2,
     "chg_pct": -14.2,
     "delta_mt": -2.8
    },
    {
     "sector": "Refineries & coke",
     "n": 115,
+    "base_mt": 109.5,
+    "mt_2025": 107.6,
     "chg_pct": -1.8,
     "delta_mt": -2.0
    },
    {
     "sector": "Other",
     "n": 108,
+    "base_mt": 0.9,
+    "mt_2025": 0.9,
     "chg_pct": -1.9,
     "delta_mt": 0.0
    }
