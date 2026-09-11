@@ -43,7 +43,7 @@ def main():
     con.sql(f"""CREATE TABLE e AS SELECT REGISTRY_CODE rc, INSTALLATION_IDENTIFIER iid, PERIOD_YEAR yr,
              NULLIF(VERIFIED_EMISSIONS, -1) em, EXCLUDED ex, NULLIF(ALLOCATION, -1) alloc FROM read_csv('{EMIS.as_posix()}')""")
     # free allocation 2025 per installation (Mt); NULL when no allocation row
-    con.sql("""CREATE TABLE a25 AS SELECT rc || '_' || iid AS id, ROUND(MAX(alloc) / 1e6, 3) AS alloc_2025 FROM e WHERE yr = 2025 AND alloc > 0 GROUP BY 1""")
+    con.sql("""CREATE TABLE a25 AS SELECT rc || '_' || iid AS id, ROUND(MAX(alloc) / 1e6, 3) AS alloc_2025, MAX(alloc) AS alloc_t FROM e WHERE yr = 2025 AND alloc > 0 GROUP BY 1""")
 
     # 1. per-installation CSV (compact: rounded numbers, short names) + yearly trajectory 2013-2025 in Mt
     con.sql("""CREATE TABLE traj AS SELECT rc || '_' || iid AS id, yr, ROUND(em / 1e6, 3) AS mt FROM e WHERE yr BETWEEN 2013 AND 2025 AND em IS NOT NULL""")
@@ -114,7 +114,7 @@ def main():
         "status": status,
         "allocation_2025": {"alloc_mt": one("SELECT round(sum(alloc_2025), 1) FROM a25 JOIN s ON s.installation_id = a25.id")[0],
                             "installations_with_allocation": one("SELECT count(*) FROM a25 JOIN s ON s.installation_id = a25.id")[0],
-                            "installations_surplus": one("SELECT count(*) FROM a25 JOIN s ON s.installation_id = a25.id WHERE em_2025_t > 0 AND alloc_2025 * 1e6 > em_2025_t")[0],
+                            "installations_surplus": one("SELECT count(*) FROM a25 JOIN s ON s.installation_id = a25.id WHERE em_2025_t > 0 AND alloc_t > em_2025_t")[0],
                             "by_sector": rows("""SELECT sector, round(sum(alloc_2025), 1) AS alloc_mt, round(sum(em_2025_t)/1e6, 1) AS em_mt FROM s LEFT JOIN a25 ON a25.id = s.installation_id GROUP BY 1 ORDER BY em_mt DESC""")},
         "trend": {"mt_2013": s13, "mt_2025": s25, "pct_2013_2025": round(100 * (s25 - s13) / s13, 1)},
         "hard_to_abate_core": {"sectors": ["Cement & lime", "Iron, steel & metals", "Refineries & coke"], "installations": core[0], "mt_2025": core[1],

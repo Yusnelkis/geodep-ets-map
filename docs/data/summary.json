@@ -1380,7 +1380,7 @@
  "allocation_2025": {
   "alloc_mt": 480.5,
   "installations_with_allocation": 6907,
-  "installations_surplus": 1518,
+  "installations_surplus": 1606,
   "by_sector": [
    {
     "sector": "Power & heat",
