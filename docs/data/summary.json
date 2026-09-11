@@ -1377,6 +1377,53 @@
    "n": 254
   }
  ],
+ "allocation_2025": {
+  "alloc_mt": 480.5,
+  "installations_with_allocation": 6907,
+  "installations_surplus": 1518,
+  "by_sector": [
+   {
+    "sector": "Power & heat",
+    "alloc_mt": 71.8,
+    "em_mt": 580.9
+   },
+   {
+    "sector": "Cement & lime",
+    "alloc_mt": 105.5,
+    "em_mt": 108.4
+   },
+   {
+    "sector": "Iron, steel & metals",
+    "alloc_mt": 130.7,
+    "em_mt": 107.7
+   },
+   {
+    "sector": "Refineries & coke",
+    "alloc_mt": 76.5,
+    "em_mt": 107.6
+   },
+   {
+    "sector": "Chemicals",
+    "alloc_mt": 55.4,
+    "em_mt": 58.6
+   },
+   {
+    "sector": "Glass, ceramics & minerals",
+    "alloc_mt": 19.9,
+    "em_mt": 25.8
+   },
+   {
+    "sector": "Pulp & paper",
+    "alloc_mt": 20.2,
+    "em_mt": 17.2
+   },
+   {
+    "sector": "Other",
+    "alloc_mt": 0.7,
+    "em_mt": 0.9
+   }
+  ]
+ },
  "trend": {
   "mt_2013": 1904.0,
   "mt_2025": 1007.0,

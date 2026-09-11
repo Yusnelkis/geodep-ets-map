@@ -41,7 +41,9 @@ def main():
                   WHEN em_last_value_t IS NULL THEN 'never' ELSE 'stopped' END AS status
       FROM read_parquet('{SRC.as_posix()}')""")
     con.sql(f"""CREATE TABLE e AS SELECT REGISTRY_CODE rc, INSTALLATION_IDENTIFIER iid, PERIOD_YEAR yr,
-             NULLIF(VERIFIED_EMISSIONS, -1) em, EXCLUDED ex FROM read_csv('{EMIS.as_posix()}')""")
+             NULLIF(VERIFIED_EMISSIONS, -1) em, EXCLUDED ex, NULLIF(ALLOCATION, -1) alloc FROM read_csv('{EMIS.as_posix()}')""")
+    # free allocation 2025 per installation (Mt); NULL when no allocation row
+    con.sql("""CREATE TABLE a25 AS SELECT rc || '_' || iid AS id, ROUND(MAX(alloc) / 1e6, 3) AS alloc_2025 FROM e WHERE yr = 2025 AND alloc > 0 GROUP BY 1""")
 
     # 1. per-installation CSV (compact: rounded numbers, short names) + yearly trajectory 2013-2025 in Mt
     con.sql("""CREATE TABLE traj AS SELECT rc || '_' || iid AS id, yr, ROUND(em / 1e6, 3) AS mt FROM e WHERE yr BETWEEN 2013 AND 2025 AND em IS NOT NULL""")
@@ -49,8 +51,8 @@ def main():
     con.sql(f"""COPY (SELECT s.installation_id AS id, installation_name AS name, account_holder AS holder, country, city, activity,
               sector, status, rank_2025 AS rank, em_last_year AS last_year, revoked_year,
               ROUND(em_last_value_t / 1e6, 3) AS mt_last, ROUND(em_2025_t / 1e6, 3) AS mt_2025, ROUND(em_base_2021_23_t / 1e6, 3) AS mt_base,
-              ROUND(change_vs_2021_23_pct, 1) AS chg, ROUND(lat, 5) AS lat, ROUND(lon, 5) AS lon, {", ".join(f"y{y}" for y in range(2013, 2026))}
-              FROM s LEFT JOIN (SELECT id, {years} FROM traj GROUP BY id) t ON t.id = s.installation_id
+              ROUND(change_vs_2021_23_pct, 1) AS chg, a25.alloc_2025, ROUND(lat, 5) AS lat, ROUND(lon, 5) AS lon, {", ".join(f"y{y}" for y in range(2013, 2026))}
+              FROM s LEFT JOIN (SELECT id, {years} FROM traj GROUP BY id) t ON t.id = s.installation_id LEFT JOIN a25 ON a25.id = s.installation_id
               ORDER BY em_2025_t DESC NULLS LAST) TO '{(OUT / 'installations.csv').as_posix()}' (HEADER)""")
 
     rows = lambda q: [dict(zip([d[0] for d in con.sql(q).description], r)) for r in con.sql(q).fetchall()]
@@ -110,6 +112,10 @@ def main():
         "series": series, "revoked_by_year": revoked, "last_year_hist": last_year,
         "spike_2020": {"total": spike[0], "revoked": spike[1], "excluded_from_2021": spike[2], "unexplained": spike[3]},
         "status": status,
+        "allocation_2025": {"alloc_mt": one("SELECT round(sum(alloc_2025), 1) FROM a25 JOIN s ON s.installation_id = a25.id")[0],
+                            "installations_with_allocation": one("SELECT count(*) FROM a25 JOIN s ON s.installation_id = a25.id")[0],
+                            "installations_surplus": one("SELECT count(*) FROM a25 JOIN s ON s.installation_id = a25.id WHERE em_2025_t > 0 AND alloc_2025 * 1e6 > em_2025_t")[0],
+                            "by_sector": rows("""SELECT sector, round(sum(alloc_2025), 1) AS alloc_mt, round(sum(em_2025_t)/1e6, 1) AS em_mt FROM s LEFT JOIN a25 ON a25.id = s.installation_id GROUP BY 1 ORDER BY em_mt DESC""")},
         "trend": {"mt_2013": s13, "mt_2025": s25, "pct_2013_2025": round(100 * (s25 - s13) / s13, 1)},
         "hard_to_abate_core": {"sectors": ["Cement & lime", "Iron, steel & metals", "Refineries & coke"], "installations": core[0], "mt_2025": core[1],
                                "base_mt_same_sites": core[2], "mt_2025_same_sites": core[3],

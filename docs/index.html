@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EU ETS installations map — Europe's industrial CO2, 2025</title>
-<meta name="description" content="16,733 EU ETS installations with verified 2025 CO2, sector, operator and status. A guided reading and an explorer, on one map.">
+<title>EU ETS Installations Atlas</title>
+<meta name="description" content="Verified emissions, free allocation and closures of Europe's industrial installations, 2013–2025. A guided reading and an explorer, on one map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
@@ -45,8 +45,9 @@
   .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
   .stat{font:12.5px var(--mono);color:var(--ink2);margin:6px 0 14px}
   .actions{display:flex;gap:6px;margin:0 0 14px} .actions button{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font:inherit;font-size:12.5px;cursor:pointer} .actions button:hover{border-color:var(--ink2);color:var(--ink)}
-  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px} .kpi{border:1px solid var(--rule);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
-  #bar-sector,#bar-country{width:100%;height:auto;display:block;overflow:visible}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px} .kpi{border:1px solid var(--rule);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
+  #bar-sector,#bar-country,#bar-holder,#traj{width:100%;height:auto;display:block;overflow:visible}
+  #map.drawing{cursor:crosshair}
   #detail:empty{display:none} #detail{border:1px solid var(--amber);padding:10px 12px;margin-bottom:14px;position:relative} #detail h3{font:600 15px var(--serif);margin:0 0 4px;padding-right:20px} #detail .x{position:absolute;right:8px;top:6px;cursor:pointer;color:var(--ink3)} #detail p{margin:0 0 4px;color:var(--ink2);font-size:12.5px} #detail svg{width:100%;height:auto;display:block;overflow:visible;margin-top:6px}
   details{border-top:1px solid var(--rule);padding:10px 0} summary{cursor:pointer;font:11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)} details p{margin:8px 0 0;color:var(--ink2);font-size:13px}
   .foot{padding:10px 20px;border-top:1px solid var(--rule)}
@@ -64,14 +65,15 @@
 <div id="app">
   <aside id="panel">
     <div class="head">
-      <h1>Europe's industrial CO<sub>2</sub>, <em>on one map</em></h1>
-      <div class="sub small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025</div>
+      <h1>EU ETS <em>Installations Atlas</em></h1>
+      <div class="sub small">Verified emissions, free allocation and closures of Europe's industrial installations, 2013–2025<br><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025</div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
       <div class="view story on" id="story"></div>
       <div class="view" id="explore">
-        <div class="fld"><label>Colour by</label><select id="f-colour"><option value="mono">Emissions only (size = Mt 2025)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23 baseline</option><option value="status">Status (closed / reporting)</option></select></div>
+        <div class="fld"><label>Colour by</label><select id="f-colour"><option value="mono">Emissions only (size = Mt 2025)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23 baseline</option><option value="alloc">Free allocation coverage, 2025</option><option value="status">Status (closed / reporting)</option></select></div>
+        <div class="fld"><label>Area <span class="small">· click to add corners, double-click to close</span></label><div class="actions" style="margin:0"><button id="btn-draw">Draw area</button><button id="btn-area-clear" style="display:none">Clear area</button></div></div>
         <div class="fld"><label>Sectors <span class="small">· pick to keep, none = all</span></label><div class="chips" id="chips"></div></div>
         <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
         <div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div>
@@ -81,8 +83,10 @@
         <div class="actions"><button id="btn-export" title="Download the current selection as CSV">Export CSV</button><button id="btn-share" title="Copy a link that reproduces these filters">Copy link</button><button id="btn-reset">Reset</button></div>
         <div id="detail"></div>
         <div class="kpis" id="kpis"></div>
+        <div class="fld"><label>Selection over time · Mt CO<sub>2</sub> per year</label><svg id="traj"></svg></div>
         <div class="fld"><label>Selection by sector · Mt CO<sub>2</sub> 2025</label><svg id="bar-sector"></svg></div>
         <div class="fld"><label>Selection by country · Mt CO<sub>2</sub> 2025 (top 8)</label><svg id="bar-country"></svg></div>
+        <div class="fld"><label>Main operators of record · Mt CO<sub>2</sub> 2025 (top 8)</label><svg id="bar-holder"></svg></div>
         <details open><summary>Largest in selection · click to fly</summary><table class="t" id="toplist"></table></details>
       </div>
     </div>
@@ -112,13 +116,13 @@
   const [rows, S] = await Promise.all([
     d3.csv('data/installations.csv', d => ({id: d.id, name: d.name, holder: d.holder, country: d.country, city: d.city, activity: d.activity, sector: d.sector, status: d.status,
       rank: d.rank === '' ? null : +d.rank, last_year: d.last_year === '' ? null : +d.last_year, revoked_year: d.revoked_year === '' ? null : +d.revoked_year,
-      mt_last: +d.mt_last || 0, mt_2025: d.mt_2025 === '' ? null : +d.mt_2025, mt_base: d.mt_base === '' ? null : +d.mt_base, chg: d.chg === '' ? null : +d.chg, lat: +d.lat, lon: +d.lon,
+      mt_last: +d.mt_last || 0, mt_2025: d.mt_2025 === '' ? null : +d.mt_2025, mt_base: d.mt_base === '' ? null : +d.mt_base, chg: d.chg === '' ? null : +d.chg, alloc: d.alloc_2025 === '' ? null : +d.alloc_2025, lat: +d.lat, lon: +d.lon,
       years: d3.range(2013, 2026).map(y => d['y' + y] === '' ? null : +d['y' + y])})),
     d3.json('data/summary.json')
   ]);
   const T = S.totals, C = Object.fromEntries(S.concentration.map(c => [c.top_n, c.share_pct])), ch = S.change_vs_baseline, core = S.hard_to_abate_core, tr = S.trend, sp = S.spike_2020;
   const sec = Object.fromEntries(S.sectors.map(s => [s.sector, s])), chs = Object.fromEntries(ch.by_sector.map(s => [s.sector, s])), power = chs['Power & heat'];
-  const st = Object.fromEntries(S.status.map(s => [s.status, s.n])), totalDelta = d3.sum(ch.by_sector, d => d.delta_mt), heavy = [...CORE].map(k => sec[k]);
+  const st = Object.fromEntries(S.status.map(s => [s.status, s.n])), totalDelta = d3.sum(ch.by_sector, d => d.delta_mt), heavy = [...CORE].map(k => sec[k]), AL = S.allocation_2025;
   const byName = n => S.top20.find(t => t.name.toLowerCase().includes(n)), neu = byName('neurath'), nie = byName('niederau'), bel = S.top20[0];
   document.getElementById('asof').textContent = `EUTL · extract ${S.source.extract_as_of}`; document.getElementById('m-asof').textContent = S.source.extract_as_of;
   document.getElementById('k-n').textContent = fmt(T.installations); document.getElementById('k-mt').textContent = fmt(Math.round(T.mt_2025));
@@ -137,6 +141,8 @@
     sector: {color: d => hex(d.mt_last > 0 ? SECTOR_COLOR[d.sector] : GREY), radius: rMt, opacity: .85, legend: Object.entries(SECTOR_COLOR).map(([k, c]) => `<span>${sw(c)}${k}</span>`).join('')},
     change: {color: d => hex(d.chg == null ? DIM : d.chg <= -10 ? BLUE : d.chg >= 10 ? RED : GREY), radius: d => d.chg == null ? 1 : Math.max(2, rScale(d.mt_2025)), opacity: .85, legend: `${sw(BLUE)}down &gt;10 % &nbsp; ${sw(GREY)}within ±10 % &nbsp; ${sw(RED)}up &gt;10 % &nbsp; size = Mt 2025`},
     closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#1a1e26'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
+    alloc:  {color: d => { if (!d.mt_2025) return hex(DIM); if (!d.alloc) return hex(GREY); const c = d.alloc / d.mt_2025; return hex(c >= 1 ? BLUE : c >= .5 ? AMBER : RED); }, radius: rMt, opacity: .85,
+             legend: `${sw(BLUE)}allocation ≥ emissions &nbsp; ${sw(AMBER)}covers 50–100 % &nbsp; ${sw(RED)}covers &lt;50 % &nbsp; ${sw(GREY)}no free allocation &nbsp; size = Mt 2025`},
     status: {color: d => hex(d.status === 'closed' ? BLUE : d.status === 'reporting' ? AMBER : GREY), radius: d => d.status === 'closed' ? Math.max(2, rScale(d.mt_last) * .8) : rMt(d), opacity: .85, legend: `${sw(AMBER)}reporting in 2025 &nbsp; ${sw(BLUE)}closed (permit revoked) &nbsp; ${sw(GREY)}stopped / never`},
     core:   {color: d => hex(CORE.has(d.sector) && d.mt_2025 ? AMBER : DIM), radius: d => CORE.has(d.sector) && d.mt_2025 ? Math.max(2.2, rScale(d.mt_2025)) : 1, opacity: .9, legend: `${sw(AMBER)}cement &amp; lime · iron &amp; steel · refineries &nbsp; ${sw(DIM)}everything else`}
   };
@@ -149,7 +155,7 @@
   const tipEl = document.getElementById('tip');
   const overlay = new MapboxOverlay({interleaved: false, layers: [], onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; },
     onClick: info => { if (info.object) showDetail(info.object); }});
-  map.addControl(overlay);
+  map.addControl(overlay); window.__map = map;
   let cur = {mode: null, data: null};
   function show(mode, data = rows) { if (mode === cur.mode && data === cur.data) return; cur = {mode, data}; const M = MODES[mode];
     overlay.setProps({layers: [new ScatterplotLayer({id: 'pts', data, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 1, radiusMaxPixels: 30, stroked: false, opacity: M.opacity, getPosition: d => [d.lon, d.lat], getRadius: M.radius, getFillColor: M.color, updateTriggers: {getRadius: mode, getFillColor: mode}})]});
@@ -179,6 +185,13 @@
       r.append('text').attr('x', -8).attr('y', 14).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11.5).text(d => d.sector);
       r.append('rect').attr('x', d => x(Math.min(0, d.delta_mt))).attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, Math.abs(x(d.delta_mt) - x(0)))).attr('fill', d => d.sector === 'Power & heat' ? AMBER : BLUE).attr('rx', 2);
       mono(r.append('text').attr('x', x(0) + 6).attr('y', 14).attr('fill', INK2)).text(d => `${signed(d.delta_mt)} Mt`); g.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', h).attr('stroke', INK3); },
+    alloc(svg) { const data = AL.by_sector.filter(d => d.em_mt > 0.5).map(d => ({k: d.sector, cov: 100 * d.alloc_mt / d.em_mt, a: d.alloc_mt, e: d.em_mt})).sort((a, b) => b.cov - a.cov), W = 340, m = {t: 4, r: 108, b: 4, l: 132}, rowH = 22, w = W - m.l - m.r, h = data.length * rowH; svg.attr('viewBox', `0 0 ${W} ${h + m.t + m.b}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain([0, Math.max(100, d3.max(data, d => d.cov))]).range([0, w]);
+      const r = g.selectAll('g').data(data).join('g').attr('transform', (d, i) => `translate(0,${i * rowH})`);
+      r.append('text').attr('x', -8).attr('y', 14).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11.5).text(d => d.k);
+      r.append('rect').attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, x(d.cov))).attr('fill', d => d.cov >= 100 ? BLUE : AMBER).attr('rx', 2);
+      mono(r.append('text').attr('x', d => x(d.cov) + 6).attr('y', 14).attr('fill', INK2)).text(d => `${f1(d.cov)} % · ${f1(d.a)}/${f1(d.e)} Mt`);
+      g.append('line').attr('x1', x(100)).attr('x2', x(100)).attr('y1', 0).attr('y2', h).attr('stroke', INK3).attr('stroke-dasharray', '2 3'); },
     closures(svg) { const W = 340, H = 200, m = {t: 8, r: 14, b: 24, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.last_year_hist; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleBand().domain(data.map(d => d.year)).range([0, w]).padding(.3), y = d3.scaleLinear().domain([0, d3.max(data, d => d.n)]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues(data.map(d => d.year).filter(v => v % 2 === 0)).tickSize(0));
@@ -203,7 +216,9 @@
     {k: '06 · Closures, counted properly', h: 'A third of the map is already history.', mode: 'closed', view: 'eu', chart: 'closures',
      p: [`<b>${fmt(st.closed)}</b> installations have had their ETS permit revoked, shown by year and sized by their last reported CO<sub>2</sub>. Another <b>${fmt(st.stopped)}</b> simply stopped reporting: <b>${fmt(sp.total)}</b> of them in 2020 alone, five times a normal year, but only <b>${fmt(sp.revoked)}</b> were revoked; <b>${fmt(sp.excluded_from_2021)}</b> were excluded from 2021 under the small-emitter opt-out and <b>${fmt(sp.unexplained)}</b> left no reason. That is why a closure here means a revoked permit.`], cap: 'Installations by last year with reported emissions; 2020 split by reason.'},
     {k: '07 · What has not moved', h: `The hard-to-abate core: ${fmt(Math.round(core.mt_2025))} Mt, almost flat.`, mode: 'core', view: 'eu',
-     p: [`Take coal out and what remains is cement and lime, iron and steel, and refineries: <b>${fmt(core.installations)}</b> installations, down only <b>${pct(Math.abs(core.chg_pct_same_sites))}</b> against their baseline, against <b>${pct(Math.abs(power.chg_pct))}</b> for power. The next phase of European decarbonisation lives in these dots: kilns, furnaces and crackers, where there is no fuel switch to make.`, `Switch to <b>Explore</b> to filter them, or search a plant.`]}
+     p: [`Take coal out and what remains is cement and lime, iron and steel, and refineries: <b>${fmt(core.installations)}</b> installations, down only <b>${pct(Math.abs(core.chg_pct_same_sites))}</b> against their baseline, against <b>${pct(Math.abs(power.chg_pct))}</b> for power. The next phase of European decarbonisation lives in these dots: kilns, furnaces and crackers, where there is no fuel switch to make.`]},
+    {k: '08 · Who is still allocated for free', h: `${fmt(Math.round(AL.alloc_mt))} Mt of free allowances against ${fmt(Math.round(T.mt_2025))} Mt emitted.`, mode: 'alloc', view: 'eu', chart: 'alloc',
+     p: [`In 2025, <b>${fmt(AL.installations_with_allocation)}</b> installations received free allowances worth <b>${fmt(Math.round(AL.alloc_mt))}</b> Mt; <b>${fmt(AL.installations_surplus)}</b> of them received more than they emitted. Power buys its allowances at auction; the industries exposed to carbon leakage are still largely covered: metals above their emissions, cement almost fully, refineries and chemicals partly. This is the allocation that the CBAM phase-in starts to remove from 2026.`, `Switch to <b>Explore</b> to see coverage plant by plant, or search an operator.`], cap: 'Free allocation 2025 as a share of verified emissions, by sector.'}
   ];
   const storyEl = document.getElementById('story'); let ci = 0, thenTimer = null;
   function renderChapter(i) {
@@ -226,7 +241,19 @@
   const clear = chipsEl.append('span').attr('class', 'chip clear').text('× clear').on('click', () => { state.sel.clear(); sync(); });
   const countries = d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).sort((a, b) => b[1] - a[1]);
   d3.select('#f-country').selectAll('option.c').data(countries).join('option').attr('class', 'c').attr('value', d => d[0]).text(d => `${d[0]} · ${fmt(Math.round(d[1]))} Mt`);
-  const filtered = () => { const q = state.q.toLowerCase(); return rows.filter(d => (state.sel.size === 0 || state.sel.has(d.sector)) && (state.status === 'all' || d.status === state.status) && (state.country === 'all' || d.country === state.country) && (d.mt_2025 || 0) >= state.min && (!q || d.name.toLowerCase().includes(q) || (d.holder || '').toLowerCase().includes(q))); };
+  // point-in-polygon (ray casting) for the drawn area
+  const inPoly = (d, poly) => { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > d.lat) !== (yj > d.lat) && d.lon < (xj - xi) * (d.lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
+  const filtered = () => { const q = state.q.toLowerCase(); return rows.filter(d => (state.sel.size === 0 || state.sel.has(d.sector)) && (state.status === 'all' || d.status === state.status) && (state.country === 'all' || d.country === state.country) && (d.mt_2025 || 0) >= state.min && (!q || d.name.toLowerCase().includes(q) || (d.holder || '').toLowerCase().includes(q)) && (!state.area || inPoly(d, state.area))); };
+  // selection trajectory (sum of yearly Mt over the selection; years with no data are skipped)
+  function trajChart(data) {
+    const W = 340, H = 120, m = {t: 10, r: 40, b: 18, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#traj').attr('viewBox', `0 0 ${W} ${H}`); svg.selectAll('*').remove();
+    const pts = d3.range(2013, 2026).map((y, i) => ({y, v: d3.sum(data, d => d.years[i] || 0)})).filter(p => p.v > 0); if (pts.length < 2) return;
+    const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`), x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(pts, p => p.v)]).nice().range([h, 0]);
+    g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2017, 2021, 2025]).tickFormat(d3.format('d')).tickSize(0));
+    g.append('path').datum(pts).attr('fill', 'none').attr('stroke', AMBER).attr('stroke-width', 2).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
+    const f = pts[0], l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 6).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v));
+    mono(g.append('text').attr('x', x(f.y)).attr('y', y(f.v) - 6).attr('fill', INK3)).text(`${f1(f.v)} · ${signed(100 * (l.v - f.v) / f.v)} % since ${f.y}`);
+  }
   // small horizontal bars for the selection summary (one hue; label + value)
   function hbars(svgId, items, colorOf) {
     const W = 340, m = {l: 118, r: 70}, rowH = 20, w = W - m.l - m.r, h = items.length * rowH, svg = d3.select('#' + svgId).attr('viewBox', `0 0 ${W} ${Math.max(h, 4)}`); svg.selectAll('*').remove();
@@ -242,10 +269,15 @@
     const data = filtered(); lastData = data; show(state.colour, data);
     const mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
     const closed = data.filter(d => d.status === 'closed').length, closed5 = data.filter(d => d.status === 'closed' && d.revoked_year >= 2021).length;
+    const alloc = d3.sum(data, d => d.alloc || 0), emAlloc = d3.sum(data.filter(d => d.alloc), d => d.mt_2025 || 0);
     document.getElementById('f-stat').textContent = `${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in 2025 · ${f1(100 * mt / T.mt_2025)} % of the ETS total`;
     document.getElementById('kpis').innerHTML = [
-      [f1(mt), 'Mt CO₂ 2025'], [base ? signed(100 * (now - base) / base) + ' %' : '—', 'vs 2021-23 baseline, same sites'], [fmt(closed), `closed (permit revoked), ${fmt(closed5)} since 2021`]
+      [f1(mt), 'Mt CO₂ 2025'], [base ? signed(100 * (now - base) / base) + ' %' : '—', 'vs 2021-23 baseline, same sites'],
+      [alloc ? f1(alloc) : '—', `Mt free allocation 2025${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} % of those sites' emissions` : ''}`], [fmt(closed), `closed (permit revoked), ${fmt(closed5)} since 2021`]
     ].map(([v, l]) => `<div class="kpi"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join('');
+    trajChart(data);
+    const byH = d3.rollups(data, v => ({v: d3.sum(v, d => d.mt_2025 || 0), n: v.length}), d => d.holder).map(([k, o]) => ({k: k || '(no operator)', v: o.v, share: 100 * o.v / (mt || 1), n: o.n})).sort((a, b) => b.v - a.v).slice(0, 8);
+    hbars('bar-holder', byH, () => AMBER);
     const bySec = d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d.sector).map(([k, v]) => ({k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v);
     hbars('bar-sector', bySec, d => state.colour === 'sector' ? SECTOR_COLOR[d.k] : AMBER);
     const byC = d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).map(([k, v]) => ({k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v).slice(0, 8);
@@ -258,7 +290,7 @@
   function showDetail(d) {
     const el = document.getElementById('detail'), ys = d.years, yrs = d3.range(2013, 2026);
     el.innerHTML = `<span class="x" id="dx">✕</span><h3>${d.name}</h3><p>${d.holder}<br>${d.city}, ${d.country} · ${d.activity}</p>
-      <p><b class="num">${d.mt_2025 != null ? f1(d.mt_2025) + ' Mt' : '—'}</b> in 2025${d.mt_base ? ` · baseline 2021-23 <span class="num">${f1(d.mt_base)}</span> · <span class="num">${signed(d.chg)} %</span>` : ''}<br>${statusLabel(d)}${d.rank ? ` · rank ${d.rank} of ${fmt(T.emitting_2025)}` : ''} · <span class="num">${d.id}</span></p><svg></svg>`;
+      <p><b class="num">${d.mt_2025 != null ? f1(d.mt_2025) + ' Mt' : '—'}</b> in 2025${d.mt_base ? ` · baseline 2021-23 <span class="num">${f1(d.mt_base)}</span> · <span class="num">${signed(d.chg)} %</span>` : ''}<br>${d.alloc ? `free allocation 2025 <span class="num">${d.alloc >= 0.1 ? f1(d.alloc) + ' Mt' : Math.round(d.alloc * 1000) + ' kt'}</span>${d.mt_2025 ? ` · covers <span class="num">${f1(100 * d.alloc / d.mt_2025)} %</span>` : ''}<br>` : ''}${statusLabel(d)}${d.rank ? ` · rank ${d.rank} of ${fmt(T.emitting_2025)}` : ''} · <span class="num">${d.id}</span></p><svg></svg>`;
     el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
     if (ys.some(v => v != null)) { const W = 316, H = 70, m = {t: 8, r: 34, b: 14, l: 4}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select(el).select('svg').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const pts = yrs.map((y, i) => ({y, v: ys[i]})).filter(p => p.v != null), x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), yS = d3.scaleLinear().domain([0, d3.max(pts, p => p.v)]).range([h, 0]);
@@ -269,12 +301,21 @@
     document.querySelector('.tab[data-tab="explore"]').classList.contains('on') || document.querySelector('.tab[data-tab="explore"]').click();
     document.querySelector('.body').scrollTop = 0;
   }
-  document.getElementById('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'country', 'city', 'activity', 'sector', 'status', 'last_year', 'revoked_year', 'mt_last', 'mt_2025', 'mt_base', 'chg', 'lat', 'lon'];
+  // draw an area on the map: clicks add corners, double-click closes; the polygon is drawn as a GeoJSON layer
+  let drawing = false, pts = [];
+  const areaGeo = () => ({type: 'FeatureCollection', features: pts.length ? [{type: 'Feature', geometry: {type: pts.length > 2 ? 'Polygon' : 'LineString', coordinates: pts.length > 2 ? [[...pts, pts[0]]] : pts}}] : []});
+  function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()}); map.addLayer({id: 'area-fill', type: 'fill', source: 'area', paint: {'fill-color': AMBER, 'fill-opacity': .08}}); map.addLayer({id: 'area-line', type: 'line', source: 'area', paint: {'line-color': AMBER, 'line-width': 1.5, 'line-dasharray': [2, 2]}}); } }
+  document.getElementById('btn-draw').onclick = () => { drawing = true; pts = []; state.area = null; paintArea(); document.getElementById('map').classList.add('drawing'); map.doubleClickZoom.disable(); document.getElementById('btn-draw').textContent = 'Drawing… double-click to close'; };
+  map.on('click', e => { if (!drawing) return; pts.push([e.lngLat.lng, e.lngLat.lat]); paintArea(); });
+  map.on('dblclick', e => { if (!drawing) return; e.preventDefault(); drawing = false; document.getElementById('map').classList.remove('drawing'); map.doubleClickZoom.enable(); document.getElementById('btn-draw').textContent = 'Draw area';
+    if (pts.length > 2) { state.area = pts.slice(); document.getElementById('btn-area-clear').style.display = ''; sync(); } else { pts = []; paintArea(); } });
+  document.getElementById('btn-area-clear').onclick = () => { state.area = null; pts = []; paintArea(); document.getElementById('btn-area-clear').style.display = 'none'; sync(); };
+  document.getElementById('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'country', 'city', 'activity', 'sector', 'status', 'last_year', 'revoked_year', 'mt_last', 'mt_2025', 'mt_base', 'chg', 'alloc', 'lat', 'lon'];
     const esc = v => v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v;
     const csv = [cols.concat(d3.range(2013, 2026).map(y => 'mt_' + y)).join(','), ...lastData.map(d => cols.map(c => esc(d[c])).concat(d.years.map(esc)).join(','))].join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'})); a.download = `ets_installations_selection_${lastData.length}.csv`; a.click(); };
   document.getElementById('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
-  document.getElementById('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: ''}); state.sel.clear(); document.getElementById('f-colour').value = 'mono'; document.getElementById('f-status').value = 'all'; document.getElementById('f-country').value = 'all'; document.getElementById('f-min').value = 0; document.getElementById('f-min-v').textContent = '0 Mt'; document.getElementById('f-q').value = ''; document.getElementById('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  document.getElementById('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: '', area: null}); state.sel.clear(); pts = []; paintArea(); document.getElementById('btn-area-clear').style.display = 'none'; document.getElementById('f-colour').value = 'mono'; document.getElementById('f-status').value = 'all'; document.getElementById('f-country').value = 'all'; document.getElementById('f-min').value = 0; document.getElementById('f-min-v').textContent = '0 Mt'; document.getElementById('f-q').value = ''; document.getElementById('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   document.getElementById('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   document.getElementById('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   document.getElementById('f-country').addEventListener('change', e => { state.country = e.target.value; sync(); });
