@@ -15,7 +15,7 @@
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
   a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
   .num{font-family:var(--mono);font-variant-numeric:tabular-nums} .small{font-size:12.5px;color:var(--ink3);line-height:1.45}
-  button{font:inherit} .btn{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font-size:12.5px;cursor:pointer} .btn:hover{border-color:var(--ink2);color:var(--ink)} .btn:disabled{opacity:.3;cursor:default} .btn.primary{border-color:var(--amber);color:var(--amber)}
+  button{font:inherit} .btn{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font-size:12.5px;cursor:pointer} .btn:hover{border-color:var(--ink2);color:var(--ink)} .btn:disabled{opacity:.3;cursor:default}
   #app{display:grid;grid-template-columns:400px 1fr;height:100%}
   /* panel */
   #panel{background:var(--panel);border-right:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
@@ -45,7 +45,6 @@
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none}
   .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
-  details.more{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8px 0;margin-top:6px} details.more summary{cursor:pointer;font-size:12.5px;color:var(--ink3)} details.more[open] summary{margin-bottom:10px}
   .stat{font:600 15px var(--sans);color:var(--ink);margin:0 0 4px} .stat .small{font-weight:400}
   .actions{display:flex;gap:6px;margin:10px 0 12px}
   .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px} .kpi{border:1px solid var(--rule);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
@@ -53,6 +52,9 @@
   .bk{display:none} .bk.on{display:block} .bk svg{width:100%;height:auto;display:block;overflow:visible} .bk .hint{margin-top:6px}
   svg .bar-row{cursor:pointer} svg .bar-row:hover rect{fill:var(--ink)!important}
   #map.drawing{cursor:crosshair}
+  .draw-ctl{background:rgba(13,16,21,.92);border:1px solid var(--rule);padding:6px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;min-width:150px}
+  .draw-ctl button{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 8px;font:inherit;font-size:12.5px;cursor:pointer;text-align:left} .draw-ctl button:hover{border-color:var(--ink2);color:var(--ink)} .draw-ctl button.on{border-color:var(--amber);color:var(--amber)}
+  .draw-ctl .hint{color:var(--ink3);font-size:11.5px;line-height:1.35;padding:2px 2px 0}
   /* installation card */
   #detail:empty{display:none} #detail{border:1px solid var(--amber);padding:12px 14px;margin-bottom:18px;position:relative}
   #detail .x{position:absolute;right:10px;top:8px;cursor:pointer;color:var(--ink3);font-size:14px}
@@ -92,14 +94,12 @@
             <div class="fld"><label>Plant or operator</label><input type="text" id="f-q" placeholder="e.g. ArcelorMittal"></div>
           </div>
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
-          <details class="more"><summary>More filters · status, size, colour, draw an area</summary>
-            <div class="row2">
-              <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
-              <div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div>
-            </div>
-            <div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div>
-            <div class="fld"><label>Area on the map · click corners, double-click to close</label><div class="actions" style="margin:0"><button class="btn" id="btn-draw">Draw area</button><button class="btn" id="btn-area-clear" style="display:none">Clear area</button></div></div>
-          </details>
+          <div class="row2">
+            <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
+            <div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div>
+          </div>
+          <div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div>
+          <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
         </div>
         <div class="sec">
           <div class="lab"><span>Answer</span></div>
@@ -192,7 +192,7 @@
   map.on('style.load', () => map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); }));
   const tipEl = document.getElementById('tip');
   const overlay = new MapboxOverlay({interleaved: false, layers: [], onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; },
-    onClick: info => { if (info.object) showDetail(info.object); }});
+    onClick: info => { if (info.object && !drawing) showDetail(info.object); }});
   map.addControl(overlay); window.__map = map;
   let cur = {mode: null, data: null};
   function show(mode, data = rows) { if (mode === cur.mode && data === cur.data) return; cur = {mode, data}; const M = MODES[mode];
@@ -369,21 +369,35 @@
     if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click();
     document.querySelector('.body').scrollTop = 0;
   }
-  // draw an area on the map: clicks add corners, double-click closes
+  // ---------- draw an area on the map (control at top right): click corners, Finish / Enter / double-click closes ----------
   let drawing = false, pts = [];
-  const areaGeo = () => ({type: 'FeatureCollection', features: pts.length ? [{type: 'Feature', geometry: {type: pts.length > 2 ? 'Polygon' : 'LineString', coordinates: pts.length > 2 ? [[...pts, pts[0]]] : pts}}] : []});
-  function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()}); map.addLayer({id: 'area-fill', type: 'fill', source: 'area', paint: {'fill-color': AMBER, 'fill-opacity': .08}}); map.addLayer({id: 'area-line', type: 'line', source: 'area', paint: {'line-color': AMBER, 'line-width': 1.5, 'line-dasharray': [2, 2]}}); } }
-  $('btn-draw').onclick = () => { drawing = true; pts = []; state.area = null; paintArea(); $('map').classList.add('drawing'); map.doubleClickZoom.disable(); $('btn-draw').textContent = 'Drawing… double-click to close'; };
-  map.on('click', e => { if (!drawing) return; pts.push([e.lngLat.lng, e.lngLat.lat]); paintArea(); });
-  map.on('dblclick', e => { if (!drawing) return; e.preventDefault(); drawing = false; $('map').classList.remove('drawing'); map.doubleClickZoom.enable(); $('btn-draw').textContent = 'Draw area';
-    if (pts.length > 2) { state.area = pts.slice(); $('btn-area-clear').style.display = ''; sync(); } else { pts = []; paintArea(); } });
-  $('btn-area-clear').onclick = () => { state.area = null; pts = []; paintArea(); $('btn-area-clear').style.display = 'none'; sync(); };
-  $('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'lei', 'country', 'city', 'postal', 'activity', 'nace', 'permit', 'sector', 'status', 'first_year', 'last_year', 'revoked_year', 'mt_last', 'mt_2025', 'mt_2024', 'mt_base', 'chg', 'alloc', 'lat', 'lon'];
+  const areaGeo = () => ({type: 'FeatureCollection', features: [
+    ...(pts.length > 2 ? [{type: 'Feature', geometry: {type: 'Polygon', coordinates: [[...pts, pts[0]]]}}] : pts.length > 1 ? [{type: 'Feature', geometry: {type: 'LineString', coordinates: pts}}] : []),
+    ...pts.map(p => ({type: 'Feature', geometry: {type: 'Point', coordinates: p}}))]});
+  function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()});
+    map.addLayer({id: 'area-fill', type: 'fill', source: 'area', filter: ['==', '$type', 'Polygon'], paint: {'fill-color': AMBER, 'fill-opacity': .08}});
+    map.addLayer({id: 'area-line', type: 'line', source: 'area', filter: ['!=', '$type', 'Point'], paint: {'line-color': AMBER, 'line-width': 1.5, 'line-dasharray': [2, 2]}});
+    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': AMBER, 'circle-stroke-color': '#0d1015', 'circle-stroke-width': 1.5}}); } }
+  const ctl = document.createElement('div'); ctl.className = 'maplibregl-ctrl draw-ctl';
+  ctl.innerHTML = `<button id="dc-draw">✎ Draw area</button><button id="dc-finish" style="display:none">✓ Finish (or Enter)</button><button id="dc-clear" style="display:none">✕ Clear area</button><div class="hint" id="dc-hint">Keep only the installations inside a shape you draw.</div>`;
+  map.addControl({onAdd: () => ctl, onRemove: () => ctl.remove()}, 'top-right');
+  const dcDraw = ctl.querySelector('#dc-draw'), dcFinish = ctl.querySelector('#dc-finish'), dcClear = ctl.querySelector('#dc-clear'), dcHint = ctl.querySelector('#dc-hint');
+  function setAreaNote() { const n = $('area-note'); if (!n) return; n.innerHTML = state.area ? `Area: <b>drawn shape</b> (${state.area.length} corners) · <a href="#" id="an-clear">clear</a>` : 'Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.'; const a = n.querySelector('#an-clear'); if (a) a.onclick = e => { e.preventDefault(); clearArea(); }; }
+  function startDraw() { drawing = true; pts = []; state.area = null; paintArea(); $('map').classList.add('drawing'); map.doubleClickZoom.disable(); dcDraw.classList.add('on'); dcDraw.textContent = '✎ Drawing…'; dcFinish.style.display = ''; dcClear.style.display = 'none'; dcHint.textContent = 'Click the map to add corners (3 or more). Finish, Enter or double-click to close; Escape to cancel.'; if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click(); }
+  function endDraw(apply) { drawing = false; $('map').classList.remove('drawing'); map.doubleClickZoom.enable(); dcDraw.classList.remove('on'); dcDraw.textContent = '✎ Draw area'; dcFinish.style.display = 'none';
+    if (apply && pts.length > 2) { state.area = pts.slice(); dcClear.style.display = ''; dcHint.textContent = `Area applied: ${pts.length} corners. Filters combine with it.`; } else { pts = []; state.area = null; dcClear.style.display = 'none'; dcHint.textContent = 'Keep only the installations inside a shape you draw.'; }
+    paintArea(); setAreaNote(); sync(); }
+  function clearArea() { pts = []; state.area = null; paintArea(); dcClear.style.display = 'none'; dcHint.textContent = 'Keep only the installations inside a shape you draw.'; setAreaNote(); sync(); }
+  dcDraw.onclick = () => drawing ? endDraw(false) : startDraw(); dcFinish.onclick = () => endDraw(true); dcClear.onclick = clearArea;
+  map.on('click', e => { if (!drawing) return; const p = [e.lngLat.lng, e.lngLat.lat], last = pts[pts.length - 1]; if (last && Math.abs(last[0] - p[0]) < 1e-6 && Math.abs(last[1] - p[1]) < 1e-6) return; pts.push(p); paintArea(); dcHint.textContent = `${pts.length} corner${pts.length > 1 ? 's' : ''} · Finish, Enter or double-click to close.`; });
+  map.on('dblclick', e => { if (!drawing) return; e.preventDefault(); endDraw(true); });
+  document.addEventListener('keydown', e => { if (!drawing || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return; if (e.key === 'Enter') endDraw(true); if (e.key === 'Escape') endDraw(false); });
+  $('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'lei', 'country', 'city', 'postal', 'activity', 'nace', 'permit', 'sector', 'status', 'rank', 'first_year', 'last_year', 'revoked_year', 'n_years', 'excluded', 'mt_last', 'mt_2025', 'mt_2024', 'mt_base', 'chg', 'alloc', 'lat', 'lon'];
     const esc = v => v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v;
-    const csv = [cols.concat(d3.range(2013, 2026).map(y => 'mt_' + y)).join(','), ...lastData.map(d => cols.map(c => esc(d[c])).concat(d.years.map(esc)).join(','))].join('\n');
+    const csv = [cols.concat(d3.range(2013, 2026).map(y => 'mt_' + y), d3.range(2021, 2026).map(y => 'alloc_' + y)).join(','), ...lastData.map(d => cols.map(c => esc(d[c])).concat(d.years.map(esc), d.allocs.map(esc)).join(','))].join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'})); a.download = `ets_installations_selection_${lastData.length}.csv`; a.click(); };
   $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
-  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: '', area: null}); state.sel.clear(); pts = []; paintArea(); $('btn-area-clear').style.display = 'none'; $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-q').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: '', area: null}); state.sel.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-q').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   $('f-country').addEventListener('change', e => { state.country = e.target.value; sync(); });
