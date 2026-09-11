@@ -104,8 +104,9 @@
           <div class="lab"><span>Question</span><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px">Reset</button></div>
           <div class="row2">
             <div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div>
-            <div class="fld"><label>Plant or operator</label><input type="text" id="f-q" placeholder="e.g. ArcelorMittal"></div>
+            <div class="fld"><label>Plants or operators · Enter adds, several allowed</label><input type="text" id="f-q" placeholder="e.g. ArcelorMittal ⏎"></div>
           </div>
+          <div class="fld" id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
           <div class="row2">
             <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
@@ -287,7 +288,12 @@
   }
 
   // ---------- explore ----------
-  const state = {colour: 'mono', sel: new Set(), status: 'all', country: 'all', min: 0, q: '', area: null, bk: 'sector'};
+  const state = {colour: 'mono', sel: new Set(), status: 'all', country: 'all', min: 0, q: '', terms: new Set(), area: null, bk: 'sector'};
+  const matches = (d, q) => d.name.toLowerCase().includes(q) || (d.holder || '').toLowerCase().includes(q);
+  const addTerm = term => { const v = (term || '').trim(); if (v) { state.terms.add(v); state.q = ''; $('f-q').value = ''; sync(); } };
+  const renderTerms = () => { const el = $('terms'); $('terms-wrap').style.display = state.terms.size ? '' : 'none';
+    el.innerHTML = [...state.terms].map(v => `<span class="chip on" data-v="${v.replace(/"/g, '&quot;')}">${v} <span style="opacity:.6">✕</span></span>`).join('') + (state.terms.size > 1 ? `<span class="chip clear" id="terms-clear">× clear all</span>` : '');
+    el.querySelectorAll('.chip.on').forEach(c => c.onclick = () => { state.terms.delete(c.dataset.v); sync(); }); const ca = el.querySelector('#terms-clear'); if (ca) ca.onclick = () => { state.terms.clear(); sync(); }; };
   const $ = id => document.getElementById(id);
   const chipsEl = d3.select('#chips');
   const chips = chipsEl.selectAll('span.chip.sec').data(Object.keys(SECTOR_COLOR)).join('span').attr('class', 'chip sec').html(k => `${sw(SECTOR_COLOR[k])}${k}`).on('click', (e, k) => { state.sel.has(k) ? state.sel.delete(k) : state.sel.add(k); sync(); });
@@ -295,7 +301,7 @@
   const countries = d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).sort((a, b) => b[1] - a[1]);
   d3.select('#f-country').selectAll('option.c').data(countries).join('option').attr('class', 'c').attr('value', d => d[0]).text(d => `${d[0]} · ${fmt(Math.round(d[1]))} Mt`);
   const inPoly = (d, poly) => { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > d.lat) !== (yj > d.lat) && d.lon < (xj - xi) * (d.lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
-  const filtered = () => { const q = state.q.toLowerCase(); return rows.filter(d => (state.sel.size === 0 || state.sel.has(d.sector)) && (state.status === 'all' || d.status === state.status) && (state.country === 'all' || d.country === state.country) && (d.mt_2025 || 0) >= state.min && (!q || d.name.toLowerCase().includes(q) || (d.holder || '').toLowerCase().includes(q)) && (!state.area || inPoly(d, state.area))); };
+  const filtered = () => { const q = state.q.toLowerCase(), terms = [...state.terms].map(v => v.toLowerCase()); return rows.filter(d => (state.sel.size === 0 || state.sel.has(d.sector)) && (state.status === 'all' || d.status === state.status) && (state.country === 'all' || d.country === state.country) && (d.mt_2025 || 0) >= state.min && (!q || matches(d, q)) && (terms.length === 0 || terms.some(v => matches(d, v))) && (!state.area || inPoly(d, state.area))); };
   // trajectory of the selection: sum of yearly Mt (years with no data skipped)
   function trajChart(data) {
     const W = 360, H = 150, m = {t: 12, r: 44, b: 20, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#traj').attr('viewBox', `0 0 ${W} ${H}`); svg.selectAll('*').remove();
@@ -318,7 +324,7 @@
   }
   let lastData = rows;
   function sync(pushHash = true) {
-    chips.classed('on', d => state.sel.has(d)); clear.style('display', state.sel.size ? null : 'none');
+    chips.classed('on', d => state.sel.has(d)); clear.style('display', state.sel.size ? null : 'none'); renderTerms();
     const data = filtered(); lastData = data; show(state.colour, data);
     const mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
     const closed = data.filter(d => d.status === 'closed').length, closed5 = data.filter(d => d.status === 'closed' && d.revoked_year >= 2021).length;
@@ -333,12 +339,12 @@
     const agg = key => d3.rollups(data, v => ({v: d3.sum(v, d => d.mt_2025 || 0), n: v.length}), d => d[key]).map(([k, o]) => ({k: k || '(none)', v: o.v, n: o.n, share: 100 * o.v / (mt || 1)})).sort((a, b) => b.v - a.v);
     hbars('bar-sector', agg('sector').map(d => ({...d, on: state.sel.has(d.k)})), d => state.colour === 'sector' ? SECTOR_COLOR[d.k] : (state.sel.size && !state.sel.has(d.k) ? GREY : AMBER), d => { state.sel.clear(); state.sel.add(d.k); sync(); });
     hbars('bar-country', agg('country').slice(0, 10), () => AMBER, d => { state.country = d.k; $('f-country').value = d.k; sync(); });
-    hbars('bar-holder', agg('holder').slice(0, 10), () => AMBER, d => { state.q = d.k === '(none)' ? '' : d.k; $('f-q').value = state.q; sync(); });
+    hbars('bar-holder', agg('holder').slice(0, 10).map(d => ({...d, on: state.terms.has(d.k)})), d => state.terms.size && !state.terms.has(d.k) ? GREY : AMBER, d => { if (d.k === '(none)') return; state.terms.has(d.k) ? state.terms.delete(d.k) : state.terms.add(d.k); sync(); });
     trajChart(data);
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
     d3.select('#toplist').html(top.map((d, i) => `<tr data-id="${d.id}"><td class="n num">${i + 1}</td><td>${d.name} <span class="h">· ${d.holder} · ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td></tr>`).join(''));
     document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); showDetail(d); });
-    if (pushHash) { const p = new URLSearchParams(); if (state.colour !== 'mono') p.set('c', state.colour); if (state.sel.size) p.set('s', [...state.sel].join('|')); if (state.status !== 'all') p.set('st', state.status); if (state.country !== 'all') p.set('co', state.country); if (state.min) p.set('min', state.min); if (state.q) p.set('q', state.q); history.replaceState(null, '', p.toString() ? '#' + p.toString() : location.pathname); }
+    if (pushHash) { const p = new URLSearchParams(); if (state.colour !== 'mono') p.set('c', state.colour); if (state.sel.size) p.set('s', [...state.sel].join('|')); if (state.status !== 'all') p.set('st', state.status); if (state.country !== 'all') p.set('co', state.country); if (state.min) p.set('min', state.min); if (state.q) p.set('q', state.q); if (state.terms.size) p.set('t', [...state.terms].join('|')); history.replaceState(null, '', p.toString() ? '#' + p.toString() : location.pathname); }
   }
   document.querySelectorAll('#subtabs span').forEach(s => s.onclick = () => { state.bk = s.dataset.bk; document.querySelectorAll('#subtabs span').forEach(x => x.classList.toggle('on', x === s)); document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.bk === state.bk)); });
 
@@ -362,10 +368,11 @@
       <div class="blk"><div class="lab">Trajectory 2013–2025 · Mt CO₂${d.mt_base ? ' · dashed = 2021-23 mean' : ''}</div><svg id="d-traj"></svg></div>
       ${d.allocs.some(v => v) ? `<div class="blk"><div class="lab">Free allocation vs emissions 2021–2025 · Mt</div><svg id="d-alloc"></svg></div>` : ''}
       <div class="blk"><div class="lab">Where it stands</div><p>${d.rank ? `<b>#${d.rank}</b> of ${fmt(T.emitting_2025)} emitters in the ETS` : 'no 2025 emissions'}${rc ? ` · <b>#${rc[0]}</b> of ${fmt(rc[1])} in ${d.country} (${f1(100 * d.mt_2025 / rc[2])} % of the country's ETS CO₂)` : ''}${rs ? ` · <b>#${rs[0]}</b> in ${d.sector.toLowerCase()}` : ''}${near.length ? `<br>Within 25 km: ${fmt(near.length)} other emitting installations, ${f1(d3.sum(near, r => r.mt_2025))} Mt${near.slice(0, 2).map(r => ` · ${r.name} (${f1(r.mt_2025)})`).join('')}` : '<br>No other emitting installation within 25 km.'}</p></div>
-      <div class="acts"><button class="btn" id="d-op">Operator's other sites</button><button class="btn" id="d-zoom">Zoom to site</button></div>`;
+      <div class="acts"><button class="btn" id="d-add">+ Add plant to selection</button><button class="btn" id="d-op">+ Add operator</button><button class="btn" id="d-zoom">Zoom</button></div>`;
     el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
     el.querySelector('#d-zoom').onclick = () => map.flyTo({center: [d.lon, d.lat], zoom: 11, duration: 1400});
-    el.querySelector('#d-op').onclick = () => { state.q = d.holder || ''; $('f-q').value = state.q; sync(); };
+    el.querySelector('#d-add').onclick = () => addTerm(d.name);
+    el.querySelector('#d-op').onclick = () => addTerm(d.holder);
     // trajectory
     const pts = yrs.map((y, i) => ({y, v: d.years[i]})).filter(p => p.v != null);
     if (pts.length) { const W = 340, H = 92, m = {t: 8, r: 40, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-traj').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
@@ -416,7 +423,7 @@
   function buildReport() {
     const data = lastData, mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
     const closed = data.filter(d => d.status === 'closed').length, alloc = d3.sum(data, d => d.alloc || 0), emAlloc = d3.sum(data.filter(d => d.alloc), d => d.mt_2025 || 0);
-    const q = [state.country !== 'all' ? `country: ${state.country}` : null, state.sel.size ? `sectors: ${[...state.sel].join(', ')}` : null, state.status !== 'all' ? `status: ${$('f-status').selectedOptions[0].textContent}` : null, state.min ? `minimum ${f1(state.min)} Mt in 2025` : null, state.q ? `search: "${state.q}"` : null, state.area ? `drawn area (${state.area.length} corners)` : null].filter(Boolean);
+    const q = [state.country !== 'all' ? `country: ${state.country}` : null, state.sel.size ? `sectors: ${[...state.sel].join(', ')}` : null, state.status !== 'all' ? `status: ${$('f-status').selectedOptions[0].textContent}` : null, state.min ? `minimum ${f1(state.min)} Mt in 2025` : null, state.q ? `search: "${state.q}"` : null, state.terms.size ? `plants/operators: ${[...state.terms].join(', ')}` : null, state.area ? `drawn area (${state.area.length} corners)` : null].filter(Boolean);
     const agg = key => d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d[key]).map(([k, v]) => ({k: k || '(none)', v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v);
     const tbl = (items, label) => `<table><tr><th>${label}</th><th class="r">Mt CO₂ 2025</th><th class="r">share</th></tr>${items.map(d => `<tr><td>${d.k}</td><td class="r num">${f1(d.v)}</td><td class="r num">${f1(d.share)} %</td></tr>`).join('')}</table>`;
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
@@ -431,14 +438,15 @@
   }
   $('btn-report').onclick = () => { buildReport(); setTimeout(() => window.print(), 150); };
   $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
-  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: '', area: null}); state.sel.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-q').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', min: 0, q: '', area: null}); state.sel.clear(); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-q').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   $('f-country').addEventListener('change', e => { state.country = e.target.value; sync(); });
   $('f-min').addEventListener('input', e => { state.min = +e.target.value; $('f-min-v').textContent = f1(state.min) + ' Mt'; sync(); });
   $('f-q').addEventListener('input', e => { state.q = e.target.value.trim(); sync(); });
+  $('f-q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTerm(e.target.value); } });
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
-  if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.min = +(H0.get('min') || 0); state.q = H0.get('q') || '';
+  if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.min = +(H0.get('min') || 0); state.q = H0.get('q') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-q').value = state.q; }
 
   // ---------- tabs ----------
