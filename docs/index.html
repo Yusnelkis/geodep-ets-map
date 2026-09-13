@@ -6,11 +6,11 @@
 <title>EU ETS Installations Atlas</title>
 <meta name="description" content="EU ETS Installations Atlas: Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025. A guided reading and an explorer, on one map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <style>
-  :root{--bg:#1c1e22;--panel:#151719;--ink:#ecebe6;--ink2:#b5b3ac;--ink3:#7f7d77;--rule:#2e3136;--amber:#dfe3e8;--blue:#5b9bff;--grey:#5a5d63;
-    --serif:"Archivo","IBM Plex Sans",system-ui,sans-serif;--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+  :root{--bg:#101318;--panel:#0d1015;--ink:#f2f0ea;--ink2:#aeaba3;--ink3:#6f6c65;--rule:#242930;--amber:#c98500;--blue:#3987e5;--grey:#4a4f58;--sea:#9ec5f4;
+    --serif:"Fraunces",Georgia,serif;--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
   a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
@@ -20,7 +20,7 @@
   /* panel */
   #panel{background:var(--panel);border-right:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
   .head{padding:18px 20px 14px;border-bottom:1px solid var(--rule)}
-  .head h1{font:600 26px/1.1 var(--serif);margin:0;letter-spacing:-.02em} .head h1 em{font-style:normal;font-weight:600;color:var(--ink)}
+  .head h1{font:300 30px/1.05 var(--serif);margin:0;letter-spacing:-.01em} .head h1 em{font-style:italic;font-weight:600;color:var(--sea)}
   .head .sub{margin-top:8px;font-size:13px;color:var(--ink2)} .head .meta{margin-top:4px}
   .tabs{display:flex;border-bottom:1px solid var(--rule)}
   .tab{flex:1;padding:10px;text-align:center;font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
@@ -28,7 +28,7 @@
   .body{flex:1;overflow:auto;min-height:0} .view{display:none;padding:18px 20px 24px} .view.on{display:block}
   /* story */
   .kicker{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
-  .story h2{font:600 20px/1.25 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .story h2{font:600 22px/1.2 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
   .story p{margin:0 0 10px;color:var(--ink2)} .story p b{color:var(--ink);font-weight:600}
   .story .fig{margin:14px 0 4px} .story .fig svg{width:100%;height:auto;display:block;overflow:visible} .story .fig .cap{margin-top:6px}
   .axis text{fill:var(--ink3);font-family:var(--mono);font-size:10px} .axis line{stroke:var(--rule)} .axis path{display:none}
@@ -39,6 +39,7 @@
   table.t td.r{text-align:right;white-space:nowrap} table.t td.n{color:var(--ink3);width:22px} table.t td .h{color:var(--ink3);font-size:11.5px}
   /* explore */
   .sec{margin-bottom:18px} .sec>.lab{font:11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+  .grp-lab{font:600 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:12px 0 6px;padding-top:8px;border-top:1px solid var(--rule)} .grp-lab:first-of-type{border-top:0;padding-top:0;margin-top:4px}
   .fld{margin-bottom:10px} .fld label{display:block;font-size:12px;color:var(--ink3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fld input::placeholder{color:var(--ink3)}
   .sugg{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--panel);border:1px solid var(--ink3);max-height:300px;overflow:auto;display:none;font-size:12.5px}
@@ -84,8 +85,8 @@
   .foot{padding:0 20px;border-top:1px solid var(--rule)}
   /* map */
   #mapwrap{position:relative;min-width:0} #map{position:absolute;inset:0}
-  .legend{position:absolute;left:14px;bottom:14px;font-size:12.5px;color:var(--ink2);background:rgba(21,23,25,.94);border:1px solid var(--rule);padding:6px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 28px)}
-  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#2d4f7a,#5b9bff,#d6e6ff)}
+  .legend{position:absolute;left:14px;bottom:14px;font-size:12.5px;color:var(--ink2);background:rgba(13,16,21,.88);padding:6px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 28px)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#184f95,#3987e5,#9ec5f4)}
   .tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);padding:8px 10px;font-size:12.5px;line-height:1.4;max-width:280px;z-index:5;display:none}
   .tip b{display:block;font-family:var(--serif);font-size:14px} .tip span{color:var(--ink2)}
   .maplibregl-ctrl-group{background:var(--panel)!important;border:1px solid var(--rule)} .maplibregl-ctrl-group button{filter:invert(1)}
@@ -98,7 +99,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.6</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.7</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -107,20 +108,15 @@
         <div id="detail"></div>
         <div class="sec">
           <div class="lab"><span>Question</span><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px">Reset</button></div>
-          <div class="row2">
-            <div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div>
-            <div class="fld" style="position:relative"><label>Operator · all its plants</label><input type="text" id="f-op" placeholder="e.g. RWE Power" autocomplete="off"><div class="sugg" id="sugg-op"></div></div>
-          </div>
+          <div class="grp-lab">Who and where</div>
+          <div class="row2"><div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div><div class="fld" style="position:relative"><label>Operator · all its plants</label><input type="text" id="f-op" placeholder="e.g. RWE Power" autocomplete="off"><div class="sugg" id="sugg-op"></div></div></div>
+          <div class="fld" style="position:relative"><label>Plant</label><input type="text" id="f-pl" placeholder="e.g. Bełchatów" autocomplete="off"><div class="sugg" id="sugg-pl"></div></div>
           <div class="fld" id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
+          <div class="grp-lab">What</div>
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
-          <div class="row2">
-            <div class="fld" style="position:relative"><label>Plant</label><input type="text" id="f-pl" placeholder="e.g. Bełchatów" autocomplete="off"><div class="sugg" id="sugg-pl"></div></div>
-            <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
-          </div>
-          <div class="row2">
-            <div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div>
-            <div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div>
-          </div>
+          <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
+          <div class="grp-lab">How to show it</div>
+          <div class="row2"><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
           <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
         </div>
         <div class="sec">
@@ -165,11 +161,11 @@
 (async function () {
   const SECTOR_COLOR = {'Iron, steel & metals': '#3987e5', 'Cement & lime': '#d95926', 'Pulp & paper': '#199e70', 'Power & heat': '#c98500', 'Glass, ceramics & minerals': '#d55181', 'Other': '#008300', 'Chemicals': '#9085e9', 'Refineries & coke': '#e66767'};
   const CORE = new Set(['Cement & lime', 'Iron, steel & metals', 'Refineries & coke']);
-  const AMBER = '#dfe3e8', BLUE = '#5b9bff', RED = '#ff7a6e', GREY = '#5a5d63', DIM = '#2a2d32', INK = '#ecebe6', INK2 = '#b5b3ac', INK3 = '#7f7d77';
+  const AMBER = '#c98500', BLUE = '#3987e5', RED = '#e66767', GREY = '#4a4f58', DIM = '#20252e', INK = '#f2f0ea', INK2 = '#aeaba3', INK3 = '#6f6c65';
   const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
   const fmt = d3.format(','), f1 = d3.format('.1f'), pct = v => f1(v) + ' %', signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + f1(Math.abs(v));
   const mtOrKt = v => v == null ? '—' : v >= 0.1 ? f1(v) + ' Mt' : Math.round(v * 1000) + ' kt';
-  const STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json', SEA = null;
+  const STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json', SEA = '#0f2a47';
   const num = v => v === '' || v == null ? null : +v;
 
   const [rows, S] = await Promise.all([
@@ -194,16 +190,16 @@
   const { MapboxOverlay, ScatterplotLayer } = deck;
   const VIEWS = {eu: {center: [10, 51], zoom: 3.7}, rhine: {center: [6.62, 51.0], zoom: 8.4}, bel: {center: [19.33, 51.27], zoom: 8.4}};
   const maxMt = d3.max(rows, d => d.mt_2025 || 0), rScale = d3.scaleSqrt().domain([0, maxMt]).range([1.6, 26]);
-  const seqYear = d3.scaleSequential(d3.interpolateRgb('#2d4f7a', '#d6e6ff')).domain([2005, 2026]);
+  const seqYear = d3.scaleSequential(d3.interpolateRgb('#184f95', '#9ec5f4')).domain([2005, 2026]);
   const sw = c => `<span class="sw" style="background:${c}"></span>`;
   const rMt = d => d.mt_2025 ? rScale(d.mt_2025) : 1.3;
   const MODES = {
-    all:    {color: d => hex(d.mt_last > 0 ? '#8d8a83' : '#3a3d43'), radius: () => 1.6, opacity: .7, legend: `${sw('#8d8a83')}reported emissions at some point &nbsp; ${sw('#3a3d43')}never reported`},
-    mono:   {color: d => hex(d.mt_2025 ? AMBER : '#3a3d43'), radius: rMt, opacity: .8, legend: `${sw(AMBER)}size = Mt CO₂ 2025 &nbsp; ${sw('#3a3d43')}no 2025 emissions`},
+    all:    {color: d => hex(d.mt_last > 0 ? '#8a877e' : '#353a43'), radius: () => 1.6, opacity: .7, legend: `${sw('#8a877e')}reported emissions at some point &nbsp; ${sw('#353a43')}never reported`},
+    mono:   {color: d => hex(d.mt_2025 ? AMBER : '#353a43'), radius: rMt, opacity: .8, legend: `${sw(AMBER)}size = Mt CO₂ 2025 &nbsp; ${sw('#353a43')}no 2025 emissions`},
     top:    {color: d => hex(d.rank && d.rank <= 500 ? AMBER : DIM), radius: d => d.rank && d.rank <= 500 ? rScale(d.mt_2025) : 1.2, opacity: .85, legend: `${sw(AMBER)}top 500 · size = Mt CO₂ 2025 &nbsp; ${sw(DIM)}all others`},
     sector: {color: d => hex(d.mt_last > 0 ? SECTOR_COLOR[d.sector] : GREY), radius: rMt, opacity: .85, legend: Object.entries(SECTOR_COLOR).map(([k, c]) => `<span>${sw(c)}${k}</span>`).join('')},
     change: {color: d => hex(d.chg == null ? DIM : d.chg <= -10 ? BLUE : d.chg >= 10 ? RED : GREY), radius: d => d.chg == null ? 1 : Math.max(2, rScale(d.mt_2025)), opacity: .85, legend: `${sw(BLUE)}down &gt;10 % &nbsp; ${sw(GREY)}within ±10 % &nbsp; ${sw(RED)}up &gt;10 % &nbsp; size = Mt 2025`},
-    closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#26292e'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
+    closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#1a1e26'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
     alloc:  {color: d => { if (!d.mt_2025) return hex(DIM); if (!d.alloc) return hex(GREY); const c = d.alloc / d.mt_2025; return hex(c >= 1 ? BLUE : c >= .5 ? AMBER : RED); }, radius: rMt, opacity: .85,
              legend: `${sw(BLUE)}allocation ≥ emissions &nbsp; ${sw(AMBER)}covers 50–100 % &nbsp; ${sw(RED)}covers &lt;50 % &nbsp; ${sw(GREY)}no free allocation &nbsp; size = Mt 2025`},
     status: {color: d => hex(d.status === 'closed' ? BLUE : d.status === 'reporting' ? AMBER : GREY), radius: d => d.status === 'closed' ? Math.max(2, rScale(d.mt_last) * .8) : rMt(d), opacity: .85, legend: `${sw(AMBER)}reporting in 2025 &nbsp; ${sw(BLUE)}closed (permit revoked) &nbsp; ${sw(GREY)}stopped / never`},
@@ -233,7 +229,7 @@
       g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => d + '%').tickSize(-h)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(4).tickFormat(d => d + '%').tickSize(-w));
       g.append('line').attr('x1', 0).attr('y1', h).attr('x2', w).attr('y2', 0).attr('stroke', INK3).attr('stroke-dasharray', '3 4');
       g.append('path').datum([{pct_installations: 0, pct_co2: 0}, ...S.lorenz]).attr('fill', 'none').attr('stroke', AMBER).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.pct_installations)).y(d => y(d.pct_co2)).curve(d3.curveMonotoneX));
-      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', AMBER).attr('stroke', '#151719').attr('stroke-width', 2);
+      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', AMBER).attr('stroke', '#0d1015').attr('stroke-width', 2);
       mono(g.append('text').attr('x', px + 8).attr('y', py + 4).attr('fill', INK)).text(`top 500 · ${f1(C[500])} %`); mono(g.append('text').attr('x', w).attr('y', h + 22).attr('text-anchor', 'end').attr('fill', INK3)).text('share of emitting sites, largest first'); },
     series(svg) { const W = 340, H = 190, m = {t: 18, r: 46, b: 22, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.series; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleLinear().domain(d3.extent(data, d => d.year)).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(data, d => d.mt)]).nice().range([h, 0]);
@@ -259,7 +255,7 @@
       const x = d3.scaleBand().domain(data.map(d => d.year)).range([0, w]).padding(.3), y = d3.scaleLinear().domain([0, d3.max(data, d => d.n)]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues(data.map(d => d.year).filter(v => v % 2 === 0)).tickSize(0));
       g.selectAll('rect.b').data(data.filter(d => d.year !== 2020)).join('rect').attr('x', d => x(d.year)).attr('y', d => y(d.n)).attr('width', x.bandwidth()).attr('height', d => h - y(d.n)).attr('fill', GREY).attr('rx', 2);
-      const parts = [{k: 'revoked', v: sp.revoked, c: BLUE}, {k: 'excluded', v: sp.excluded_from_2021, c: '#8d8a83'}, {k: 'no reason', v: sp.unexplained, c: GREY}]; let acc = 0;
+      const parts = [{k: 'revoked', v: sp.revoked, c: BLUE}, {k: 'excluded', v: sp.excluded_from_2021, c: '#8a877e'}, {k: 'no reason', v: sp.unexplained, c: GREY}]; let acc = 0;
       parts.forEach(p => { g.append('rect').attr('x', x(2020)).attr('y', y(acc + p.v)).attr('width', x.bandwidth()).attr('height', Math.max(0, y(acc) - y(acc + p.v) - 1.5)).attr('fill', p.c).attr('rx', 1.5); acc += p.v; });
       let ly = y(sp.total) + 3; const lx = x(2020) + x.bandwidth() + 6; parts.slice().reverse().forEach(p => { mono(g.append('text').attr('x', lx).attr('y', ly).attr('fill', p.c === GREY ? INK2 : p.c)).text(`${fmt(p.v)} ${p.k}`); ly += 14; }); }
   };
@@ -428,7 +424,7 @@
   function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()});
     map.addLayer({id: 'area-fill', type: 'fill', source: 'area', filter: ['==', '$type', 'Polygon'], paint: {'fill-color': AMBER, 'fill-opacity': .08}});
     map.addLayer({id: 'area-line', type: 'line', source: 'area', filter: ['!=', '$type', 'Point'], paint: {'line-color': AMBER, 'line-width': 1.5, 'line-dasharray': [2, 2]}});
-    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': AMBER, 'circle-stroke-color': '#151719', 'circle-stroke-width': 1.5}}); } }
+    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': AMBER, 'circle-stroke-color': '#0d1015', 'circle-stroke-width': 1.5}}); } }
   const ctl = document.createElement('div'); ctl.className = 'maplibregl-ctrl draw-ctl';
   ctl.innerHTML = `<button id="dc-draw">✎ Draw area</button><button id="dc-finish" style="display:none">✓ Finish (or Enter)</button><button id="dc-clear" style="display:none">✕ Clear area</button><div class="hint" id="dc-hint">Keep only the installations inside a shape you draw.</div>`;
   map.addControl({onAdd: () => ctl, onRemove: () => ctl.remove()}, 'top-right');
@@ -452,7 +448,7 @@
   function mapImage() { return new Promise(resolve => {
     const mc = map.getCanvas(), W = mc.width, H = mc.height, copy = () => { const k = document.createElement('canvas'); k.width = W; k.height = H; return k; };
     const base = copy(), pts = copy(); let gotBase = false, gotPts = false, resolved = false;
-    const finish = () => { if (resolved) return; resolved = true; const c = copy(), ctx = c.getContext('2d'); ctx.fillStyle = '#1c1e22'; ctx.fillRect(0, 0, W, H); if (gotBase) ctx.drawImage(base, 0, 0); if (gotPts) ctx.drawImage(pts, 0, 0); try { resolve(c.toDataURL('image/jpeg', .85)); } catch (e) { resolve(null); } };
+    const finish = () => { if (resolved) return; resolved = true; const c = copy(), ctx = c.getContext('2d'); ctx.fillStyle = '#101318'; ctx.fillRect(0, 0, W, H); if (gotBase) ctx.drawImage(base, 0, 0); if (gotPts) ctx.drawImage(pts, 0, 0); try { resolve(c.toDataURL('image/jpeg', .85)); } catch (e) { resolve(null); } };
     const dc = document.querySelector('#map canvas:not(.maplibregl-canvas)'), deckInst = overlay._deck, needPts = !!(dc && deckInst);
     const check = () => { if (gotBase && (gotPts || !needPts)) finish(); };
     map.once('render', () => { try { base.getContext('2d').drawImage(map.getCanvas(), 0, 0); gotBase = true; } catch (e) {} check(); }); map.triggerRepaint();
