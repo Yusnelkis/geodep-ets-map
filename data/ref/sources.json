@@ -1,0 +1,36 @@
+{
+  "_note": "External context sources for the Atlas. Public EU data. Read by code/build_context.py; downloaded files live next to this file.",
+  "nuts2": {
+    "name": "NUTS 2024 regions, level 2, 1:10M, EPSG:4326 (GISCO, Eurostat)",
+    "url": "https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_10M_2024_4326_LEVL_2.geojson",
+    "file": "NUTS_RG_10M_2024_4326_LEVL_2.geojson",
+    "licence": "© EuroGeographics for the administrative boundaries; GISCO terms of use",
+    "downloaded": "2026-09-13"
+  },
+  "gdp_nuts2": {
+    "name": "Eurostat nama_10r_2gdp — GDP at current market prices by NUTS 2 region, million euro, 2023",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10r_2gdp?unit=MIO_EUR&time=2023&format=JSON",
+    "file": "eurostat_nama_10r_2gdp_2023.json",
+    "licence": "Eurostat, CC BY 4.0",
+    "downloaded": "2026-09-13"
+  },
+  "pop_nuts2": {
+    "name": "Eurostat demo_r_pjanaggr3 — population on 1 January by NUTS 3 region (aggregates include NUTS 2 and 0), total, 2024",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_r_pjanaggr3?sex=T&age=TOTAL&time=2024&format=JSON",
+    "file": "eurostat_demo_r_pjanaggr3_2024.json",
+    "licence": "Eurostat, CC BY 4.0",
+    "downloaded": "2026-09-13"
+  },
+  "ghg_national": {
+    "name": "Eurostat env_air_gge — national greenhouse gas inventory, total excluding LULUCF and memo items (TOTX4_MEMO), million tonnes CO2e, 2023",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_air_gge?airpol=GHG&src_crf=TOTX4_MEMO&unit=MIO_T&time=2023&format=JSON",
+    "file": "eurostat_env_air_gge_2023.json",
+    "licence": "Eurostat, CC BY 4.0",
+    "downloaded": "2026-09-13"
+  },
+  "cbam_phaseout": {
+    "name": "Free allocation phase-out factors for CBAM sectors, ETS Directive Art. 10a(1a) as amended by Directive (EU) 2023/959",
+    "factors": {"2026": 0.975, "2027": 0.95, "2028": 0.90, "2029": 0.775, "2030": 0.515, "2031": 0.39, "2032": 0.265, "2033": 0.14, "2034": 0.0},
+    "note": "Under current law; a 2026 Commission proposal to slow the phase-out is not reflected."
+  }
+}
