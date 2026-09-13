@@ -51,7 +51,7 @@ def main():
     allocs = ", ".join(f"ROUND(MAX(CASE WHEN yr = {y} AND alloc > 0 THEN alloc END) / 1e6, 3) AS a{y}" for y in range(2021, 2026))
     con.sql(f"""CREATE TABLE ah AS SELECT rc || '_' || iid AS id, {allocs}, BOOL_OR(ex) FILTER (WHERE yr = 2025) AS excluded_2025 FROM e GROUP BY 1""")
     con.sql(f"""COPY (SELECT s.installation_id AS id, installation_name AS name, account_holder AS holder, holder_lei AS lei, country, city, postal_code,
-              activity, nace AS nace, permit_id, sector, status, rank_2025 AS rank,
+              activity, activity_code, nace AS nace, permit_id, sector, status, rank_2025 AS rank,
               TRY_CAST(year_first_emissions AS INTEGER) AS first_year, em_last_year AS last_year, revoked_year, CAST(n_years_with_emissions AS INTEGER) AS n_years,
               ROUND(em_last_value_t / 1e6, 3) AS mt_last, ROUND(em_2025_t / 1e6, 3) AS mt_2025, ROUND(em_2024_t / 1e6, 3) AS mt_2024, ROUND(em_base_2021_23_t / 1e6, 3) AS mt_base,
               ROUND(change_vs_2021_23_pct, 1) AS chg, a25.alloc_2025, ah.a2021, ah.a2022, ah.a2023, ah.a2024, ah.excluded_2025, ROUND(lat, 5) AS lat, ROUND(lon, 5) AS lon,
