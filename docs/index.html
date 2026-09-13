@@ -62,7 +62,7 @@
     #report .two{display:grid;grid-template-columns:1fr 1fr;gap:14pt} #report svg{width:100%;height:auto} #report svg text{fill:#333!important} #report svg .axis line{stroke:#ddd!important}
     #report table{width:100%;border-collapse:collapse;font-size:9.5pt} #report td,#report th{padding:3pt 4pt;border-bottom:1px solid #ddd;text-align:left;vertical-align:top} #report td.r,#report th.r{text-align:right}
     #report img{width:100%;border:1px solid #ccc} #report .small{font-size:8.5pt;color:#555} #report .num{font-family:var(--mono)}
-    #report .brk{break-before:page}
+    #report
   }
   .stat{font:600 15px var(--sans);color:var(--ink);margin:0 0 4px} .stat .small{font-weight:400}
   .actions{display:flex;gap:6px;margin:10px 0 12px}
@@ -71,9 +71,6 @@
   .bk{display:none} .bk.on{display:block} .bk svg{width:100%;height:auto;display:block;overflow:visible} .bk .hint{margin-top:6px}
   svg .bar-row{cursor:pointer} svg .bar-row:hover rect{fill:var(--ink)!important}
   #map.drawing{cursor:crosshair}
-  .draw-ctl{background:rgba(13,16,21,.92);border:1px solid var(--rule);padding:6px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;min-width:150px}
-  .draw-ctl button{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 8px;font:inherit;font-size:12.5px;cursor:pointer;text-align:left} .draw-ctl button:hover{border-color:var(--ink2);color:var(--ink)} .draw-ctl button.on{border-color:var(--amber);color:var(--amber)}
-  .draw-ctl .hint{color:var(--ink3);font-size:11.5px;line-height:1.35;padding:2px 2px 0}
   /* installation card */
   #detail:empty{display:none} #detail{border:1px solid var(--ink3);background:var(--panel);padding:12px 14px;margin-bottom:18px;position:relative}
   #detail .x{position:absolute;right:10px;top:8px;cursor:pointer;color:var(--ink3);font-size:14px}
@@ -100,7 +97,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.12</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.13</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -207,7 +204,7 @@
     core:   {color: d => hex(CORE.has(d.sector) && d.mt_2025 ? POINT : DIM), radius: d => CORE.has(d.sector) && d.mt_2025 ? Math.max(2.2, rScale(d.mt_2025)) : 1, opacity: .9, legend: `${sw(POINT)}cement &amp; lime · iron &amp; steel · refineries &nbsp; ${sw(DIM)}everything else`}
   };
   const statusLabel = d => ({reporting: 'reporting in 2025', closed: `closed · permit revoked ${d.revoked_year || ''}`, stopped: 'stopped reporting, not revoked', never: 'never reported'})[d.status];
-  const tipHtml = d => { const em = d.mt_2025 != null ? `${f1(d.mt_2025)} Mt CO₂ in 2025${d.chg == null ? '' : ` · ${signed(d.chg)} % vs 2021-23`}` : d.mt_last > 0 ? `last reported ${d.last_year}: ${f1(d.mt_last)} Mt` : 'no reported emissions';
+  const tipHtml = d => { const em = d.mt_2025 != null ? `${mtOrKt(d.mt_2025)} CO₂ in 2025${d.chg == null ? '' : ` · ${signed(d.chg)} % vs 2021-23`}` : d.mt_last > 0 ? `last reported ${d.last_year}: ${f1(d.mt_last)} Mt` : 'no reported emissions';
     return `<b>${d.name}</b><span>${d.holder}<br>${d.city}, ${d.country} · ${d.sector}<br>${em}<br>${statusLabel(d)}<br><i style="color:#6f6c65">click for the full card</i></span>`; };
   const map = new maplibregl.Map({container: 'map', style: STYLE, center: VIEWS.eu.center, zoom: VIEWS.eu.zoom, attributionControl: false, preserveDrawingBuffer: true, canvasContextAttributes: {preserveDrawingBuffer: true}});
   map.addControl(new maplibregl.AttributionControl({compact: true})); map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'top-right');
@@ -386,7 +383,7 @@
       <div class="who" style="margin-top:4px"><span class="small">ETS activity</span> ${d.activity}${d.activity_code ? ` <span class="small num">(code ${d.activity_code})</span>` : ''}<br><span class="small">NACE</span> <span class="num">${d.nace || '—'}</span> <span class="small">· sector group: ${d.sector}</span></div>
       <div class="ids small num">ETS ${d.id}${d.permit ? ` · permit ${d.permit}` : ''}</div>
       <div class="grid3">
-        <div><div class="v num">${d.mt_2025 != null ? f1(d.mt_2025) : '—'}</div><div class="l">Mt CO₂ 2025${yoy}</div></div>
+        <div><div class="v num">${mtOrKt(d.mt_2025)}</div><div class="l">CO₂ 2025${yoy}</div></div>
         <div><div class="v num">${d.chg != null ? signed(d.chg) + ' %' : '—'}</div><div class="l">vs own 2021-23 mean${d.mt_base ? ` (${f1(d.mt_base)} Mt)` : ''}</div></div>
         <div><div class="v num">${cov != null ? f1(cov) + ' %' : d.alloc ? mtOrKt(d.alloc) : '—'}</div><div class="l">${cov != null ? `free allocation covers · ${gap >= 0 ? 'surplus' : 'shortfall'} ${mtOrKt(Math.abs(gap))}` : d.alloc ? 'free allocation 2025' : 'no free allocation 2025'}</div></div>
       </div>
