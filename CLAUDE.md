@@ -37,4 +37,6 @@ workspace and never writes there.
   Kepler auto-creates layers for every dataset without one, so `map_config.json` carries hidden layers
   for the source and scratch datasets.
 - Never commit `docker/dekart-data/`, `.env`, or anything from `geodep_setup/internal/`.
-- No README until the map is running and checked.
+- `README.md` (2026-09-13) is the public face: every figure in it is re-derived from `docs/data/*.json`, never typed. Keep it in
+  sync when the data or the page change; `docs/assets/screenshot.png` is captured from a real Chrome window (headless Chrome does
+  not render the CARTO basemap).

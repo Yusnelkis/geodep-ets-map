@@ -29,6 +29,10 @@ One screen, no server. A guided reading of eight short chapters moves the map; a
 
 Colour has one meaning each: yellow is installations and their CO₂, blue is *down* or *closed*, red is *up*, sector colours appear only when asked.
 
+![Four states of the Explore tab: top 500 emitters; Poland by sector; iron and steel vs its 2021-23 baseline; Germany by free-allocation position](docs/assets/walkthrough.gif)
+
+*Top 500 emitters · Poland by sector · iron and steel against its own baseline · Germany by free-allocation position. Each state is a URL.*
+
 ## Data and method
 
 | Source | What is used | Version |
