@@ -20,7 +20,7 @@
   /* panel */
   #panel{background:var(--panel);border-right:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
   .head{padding:18px 20px 14px;border-bottom:1px solid var(--rule)}
-  .head h1{font:300 30px/1.05 var(--serif);margin:0;letter-spacing:-.01em} .head h1 em{font-style:italic;font-weight:600;color:#edc948}
+  .head h1{font:300 30px/1.05 var(--serif);margin:0;letter-spacing:-.01em} .head h1 em{font-style:italic;font-weight:600;color:var(--sea)}
   .head .sub{margin-top:8px;font-size:13px;color:var(--ink2)} .head .meta{margin-top:4px}
   .tabs{display:flex;border-bottom:1px solid var(--rule)}
   .tab{flex:1;padding:10px;text-align:center;font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
@@ -97,7 +97,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.13</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.14</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -226,15 +226,15 @@
       const x = d3.scaleLinear().domain([0, 100]).range([0, w]), y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
       g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => d + '%').tickSize(-h)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(4).tickFormat(d => d + '%').tickSize(-w));
       g.append('line').attr('x1', 0).attr('y1', h).attr('x2', w).attr('y2', 0).attr('stroke', INK3).attr('stroke-dasharray', '3 4');
-      g.append('path').datum([{pct_installations: 0, pct_co2: 0}, ...S.lorenz]).attr('fill', 'none').attr('stroke', CHALK).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.pct_installations)).y(d => y(d.pct_co2)).curve(d3.curveMonotoneX));
-      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', CHALK).attr('stroke', '#0d1015').attr('stroke-width', 2);
+      g.append('path').datum([{pct_installations: 0, pct_co2: 0}, ...S.lorenz]).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.pct_installations)).y(d => y(d.pct_co2)).curve(d3.curveMonotoneX));
+      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', POINT).attr('stroke', '#0d1015').attr('stroke-width', 2);
       mono(g.append('text').attr('x', px + 8).attr('y', py + 4).attr('fill', INK)).text(`top 500 · ${f1(C[500])} %`); mono(g.append('text').attr('x', w).attr('y', h + 22).attr('text-anchor', 'end').attr('fill', INK3)).text('share of emitting sites, largest first'); },
     series(svg) { const W = 340, H = 190, m = {t: 18, r: 46, b: 22, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.series; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleLinear().domain(d3.extent(data, d => d.year)).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(data, d => d.mt)]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d3.format('d')).tickSize(0));
       [[2021, 'phase 4'], [2023, 'crisis']].forEach(([yr, lab]) => { g.append('line').attr('x1', x(yr)).attr('x2', x(yr)).attr('y1', 0).attr('y2', h).attr('stroke', INK3).attr('stroke-dasharray', '2 3'); mono(g.append('text').attr('x', x(yr) + 4).attr('y', 9).attr('fill', INK3)).text(lab); });
-      g.append('path').datum(data).attr('fill', 'none').attr('stroke', CHALK).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.year)).y(d => y(d.mt)));
-      const f = data[0], l = data[data.length - 1]; [f, l].forEach(d => g.append('circle').attr('cx', x(d.year)).attr('cy', y(d.mt)).attr('r', 3).attr('fill', CHALK));
+      g.append('path').datum(data).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.year)).y(d => y(d.mt)));
+      const f = data[0], l = data[data.length - 1]; [f, l].forEach(d => g.append('circle').attr('cx', x(d.year)).attr('cy', y(d.mt)).attr('r', 3).attr('fill', POINT));
       mono(g.append('text').attr('x', x(f.year)).attr('y', y(f.mt) - 8).attr('fill', INK)).text(`${fmt(f.mt)} Mt`); mono(g.append('text').attr('x', x(l.year) + 7).attr('y', y(l.mt) + 4).attr('fill', INK)).text(`${fmt(l.mt)}`); },
     change(svg) { const data = ch.by_sector, W = 340, m = {t: 4, r: 96, b: 4, l: 132}, rowH = 22, w = W - m.l - m.r, h = data.length * rowH; svg.attr('viewBox', `0 0 ${W} ${h + m.t + m.b}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleLinear().domain([-d3.max(data, d => Math.abs(d.delta_mt)), 0]).range([0, w]);
@@ -246,7 +246,7 @@
       const x = d3.scaleLinear().domain([0, Math.max(100, d3.max(data, d => d.cov))]).range([0, w]);
       const r = g.selectAll('g').data(data).join('g').attr('transform', (d, i) => `translate(0,${i * rowH})`);
       r.append('text').attr('x', -8).attr('y', 14).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11.5).text(d => d.k);
-      r.append('rect').attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, x(d.cov))).attr('fill', d => d.cov >= 100 ? BLUE : CHALK).attr('rx', 2);
+      r.append('rect').attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, x(d.cov))).attr('fill', d => d.cov >= 100 ? BLUE : POINT).attr('rx', 2);
       mono(r.append('text').attr('x', d => x(d.cov) + 6).attr('y', 14).attr('fill', INK2)).text(d => `${f1(d.cov)} % · ${f1(d.a)}/${f1(d.e)} Mt`);
       g.append('line').attr('x1', x(100)).attr('x2', x(100)).attr('y1', 0).attr('y2', h).attr('stroke', INK3).attr('stroke-dasharray', '2 3'); },
     closures(svg) { const W = 340, H = 200, m = {t: 8, r: 14, b: 24, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.last_year_hist; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
@@ -327,7 +327,7 @@
     const pts = d3.range(2013, 2026).map((y, i) => ({y, v: d3.sum(data, d => d.years[i] || 0)})).filter(p => p.v > 0); if (pts.length < 2) return;
     const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`), x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(pts, p => p.v)]).nice().range([h, 0]);
     g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2017, 2021, 2025]).tickFormat(d3.format('d')).tickSize(0));
-    g.append('path').datum(pts).attr('fill', 'none').attr('stroke', CHALK).attr('stroke-width', 2).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
+    g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
     const f = pts[0], l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 6).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v));
     mono(g.append('text').attr('x', x(f.y)).attr('y', y(f.v) - 6).attr('fill', INK3)).text(`${f1(f.v)} · ${signed(100 * (l.v - f.v) / f.v)} % since ${f.y}`);
   }
@@ -359,9 +359,9 @@
       [alloc ? f1(alloc) : '—', `Mt free allocation 2025${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} % of those sites` : ''}`], [fmt(closed), `closed (permit revoked), ${fmt(closed5)} since 2021`]
     ].map(([v, l]) => `<div class="kpi"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join('');
     const agg = key => d3.rollups(data, v => ({v: d3.sum(v, d => d.mt_2025 || 0), n: v.length}), d => d[key]).map(([k, o]) => ({k: k || '(none)', v: o.v, n: o.n, share: 100 * o.v / (mt || 1)})).sort((a, b) => b.v - a.v);
-    hbars('bar-sector', agg('sector').map(d => ({...d, on: state.sel.has(d.k)})), d => mode === 'sector' ? SECTOR_COLOR[d.k] : BAR, d => { state.sel.has(d.k) ? state.sel.delete(d.k) : state.sel.add(d.k); sync(); });
-    hbars('bar-country', agg('country').slice(0, 10), () => BAR, d => { state.country = d.k; $('f-country').value = d.k; sync(); });
-    hbars('bar-holder', agg('holder').slice(0, 10).map(d => ({...d, on: state.terms.has('op:' + d.k)})), d => state.terms.size && !state.terms.has('op:' + d.k) ? GREY : BAR, d => { if (d.k === '(none)') return; const t = 'op:' + d.k; state.terms.has(t) ? state.terms.delete(t) : state.terms.add(t); sync(); });
+    hbars('bar-sector', agg('sector').map(d => ({...d, on: state.sel.has(d.k)})), d => mode === 'sector' ? SECTOR_COLOR[d.k] : POINT, d => { state.sel.has(d.k) ? state.sel.delete(d.k) : state.sel.add(d.k); sync(); });
+    hbars('bar-country', agg('country').slice(0, 10), () => POINT, d => { state.country = d.k; $('f-country').value = d.k; sync(); });
+    hbars('bar-holder', agg('holder').slice(0, 10).map(d => ({...d, on: state.terms.has('op:' + d.k)})), d => state.terms.size && !state.terms.has('op:' + d.k) ? GREY : POINT, d => { if (d.k === '(none)') return; const t = 'op:' + d.k; state.terms.has(t) ? state.terms.delete(t) : state.terms.add(t); sync(); });
     trajChart(data);
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
     d3.select('#toplist').html(top.map((d, i) => `<tr data-id="${d.id}"><td class="n num">${i + 1}</td><td>${d.name} <span class="h">· ${d.holder} · ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td></tr>`).join(''));
@@ -402,14 +402,14 @@
       const x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(pts, p => Math.max(p.v, d.mt_base || 0))]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2019, 2025]).tickFormat(d3.format('d')).tickSize(0));
       if (d.mt_base) g.append('line').attr('x1', x(2021)).attr('x2', x(2025)).attr('y1', y(d.mt_base)).attr('y2', y(d.mt_base)).attr('stroke', INK3).attr('stroke-dasharray', '3 3');
-      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', CHALK).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
-      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', CHALK);
+      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
+      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', POINT);
       const l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 5).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v)); }
     // allocation vs emissions 2021-2025
     if (d.allocs.some(v => v)) { const ys = [2021, 2022, 2023, 2024, 2025], em = ys.map(y => d.years[y - 2013] || 0), W = 340, H = 70, m = {t: 4, r: 8, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-alloc').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleBand().domain(ys).range([0, w]).padding(.35), y = d3.scaleLinear().domain([0, d3.max([...em, ...d.allocs.map(v => v || 0)])]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w));
-      ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv)).attr('y', y(em[i])).attr('width', x.bandwidth() / 2).attr('height', h - y(em[i])).attr('fill', CHALK).attr('rx', 1); g.append('rect').attr('x', x(yv) + x.bandwidth() / 2).attr('y', y(d.allocs[i] || 0)).attr('width', x.bandwidth() / 2).attr('height', h - y(d.allocs[i] || 0)).attr('fill', BLUE).attr('rx', 1); });
+      ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv)).attr('y', y(em[i])).attr('width', x.bandwidth() / 2).attr('height', h - y(em[i])).attr('fill', POINT).attr('rx', 1); g.append('rect').attr('x', x(yv) + x.bandwidth() / 2).attr('y', y(d.allocs[i] || 0)).attr('width', x.bandwidth() / 2).attr('height', h - y(d.allocs[i] || 0)).attr('fill', BLUE).attr('rx', 1); });
       mono(g.append('text').attr('x', w).attr('y', -0).attr('text-anchor', 'end').attr('fill', INK3)).text('■ emitted  ■ allocated').selectAll(); }
     if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click();
     document.querySelector('.body').scrollTop = 0;
