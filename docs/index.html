@@ -98,7 +98,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Verified emissions, free allocation and closures of Europe's industrial installations, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.2</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.3</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -381,7 +381,7 @@
     const timeline = [d.first_year ? `first reported ${d.first_year}` : null, d.n_years ? `${d.n_years} years with emissions` : null, d.last_year ? `last ${d.last_year}` : null, d.revoked_year ? `permit revoked ${d.revoked_year}` : null, d.excluded ? 'flagged excluded in 2025 (small-emitter opt-out)' : null].filter(Boolean).join(' · ');
     const yoy = d.mt_2025 != null && d.mt_2024 ? ` · ${signed(100 * (d.mt_2025 - d.mt_2024) / d.mt_2024)} % vs 2024` : '';
     el.innerHTML = `<span class="x" id="dx" title="close">✕</span><h3>${d.name}</h3>
-      <div class="who">${d.holder}${d.lei ? ` <span class="small num">LEI ${d.lei}</span>` : ''}<br>${d.city}${d.postal ? ' ' + d.postal : ''}, ${d.country}</div>
+      <div class="who"><span class="small">Operator of record</span> ${d.holder}<br>${d.city}${d.postal ? ' ' + d.postal : ''}, ${d.country}</div>
       <div class="who" style="margin-top:4px"><span class="small">ETS activity</span> ${d.activity}${d.activity_code ? ` <span class="small num">(code ${d.activity_code})</span>` : ''}<br><span class="small">NACE</span> <span class="num">${d.nace || '—'}</span> <span class="small">· sector group: ${d.sector}</span></div>
       <div class="ids small num">ETS ${d.id}${d.permit ? ` · permit ${d.permit}` : ''}</div>
       <div class="grid3">
