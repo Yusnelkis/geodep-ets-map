@@ -54,7 +54,8 @@
   .chip.op .sw,.chip.pl .sw,.chip.tx .sw{display:inline-block;opacity:1;border-radius:2px;width:8px;height:8px;background:var(--ink3)} .chip.pl .sw{border-radius:50%} .chip.tx .sw{background:transparent;border:1px dashed var(--ink3)}
   .fld select,.fld input[type=text]{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:7px 9px;font:inherit;font-size:13.5px}
   .fld input[type=range]{width:100%;accent-color:var(--amber)}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .row3{display:grid;grid-template-columns:.75fr 1.35fr 1fr;gap:10px}
+  #detail .fb{margin-top:8px;font-size:12.5px;color:var(--ink2)} #detail .fb b{color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none}
   .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4;display:none} #chips.coloured .chip .sw{display:inline-block} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
   /* printable report */
@@ -109,7 +110,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.21</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.22</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -128,7 +129,7 @@
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
           <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
           <div class="grp-lab">How to show it</div>
-          <div class="row2"><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
+          <div class="row3"><div class="fld"><label>Year</label><select id="f-year"></select></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
           <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
         </div>
         <div class="sec">
@@ -190,7 +191,7 @@
       rank: num(d.rank), first_year: num(d.first_year), last_year: num(d.last_year), revoked_year: num(d.revoked_year), n_years: num(d.n_years) || 0,
       mt_last: +d.mt_last || 0, mt_2025: num(d.mt_2025), mt_2024: num(d.mt_2024), mt_base: num(d.mt_base), chg: num(d.chg), alloc: num(d.alloc_2025),
       allocs: [num(d.a2021), num(d.a2022), num(d.a2023), num(d.a2024), num(d.alloc_2025)], excluded: d.excluded_2025 === 'true', lat: +d.lat, lon: +d.lon,
-      years: d3.range(2013, 2026).map(y => num(d['y' + y]))})),
+      years: d3.range(2013, 2026).map(y => num(d['y' + y])), chg0: num(d.chg)})),
     d3.json('data/summary.json'), d3.json('data/context.json')
   ]);
   const T = S.totals, C = Object.fromEntries(S.concentration.map(c => [c.top_n, c.share_pct])), ch = S.change_vs_baseline, core = S.hard_to_abate_core, tr = S.trend, sp = S.spike_2020;
@@ -201,7 +202,18 @@
   document.getElementById('k-n').textContent = fmt(T.installations); document.getElementById('k-mt').textContent = fmt(Math.round(T.mt_2025));
   // rank within country and within sector (2025), for the card
   const rankWithin = key => { const m = new Map(); d3.groups(rows.filter(d => d.mt_2025 > 0), d => d[key]).forEach(([k, v]) => v.sort((a, b) => b.mt_2025 - a.mt_2025).forEach((d, i) => m.set(d.id, [i + 1, v.length, d3.sum(v, x => x.mt_2025)]))); return m; };
-  const rkCountry = rankWithin('country'), rkSector = rankWithin('sector');
+  let rkCountry = rankWithin('country'), rkSector = rankWithin('sector');
+  // ---------- year filter: the "current year" fields of every row (mt_2025 = value of the chosen year, mt_2024 = the year before, chg, alloc, rank) follow the selected year ----------
+  // mt_2025 keeps its name for brevity: read it as "Mt in the selected year". Change vs the 2021-23 baseline is only defined for 2024 and 2025.
+  const YT = {year: 2025, mt: 0, n: 0};
+  function applyYear(y) { const i = y - 2013; YT.year = y;
+    rows.forEach(d => { d.mt_2025 = d.years[i]; d.mt_2024 = i > 0 ? d.years[i - 1] : null; d.alloc = y >= 2021 ? d.allocs[y - 2021] : null;
+      d.chg = y === 2025 ? d.chg0 : y === 2024 && d.mt_base && d.mt_2025 != null ? 100 * (d.mt_2025 - d.mt_base) / d.mt_base : null; });
+    const em = rows.filter(d => d.mt_2025 > 0).sort((a, b) => b.mt_2025 - a.mt_2025); rows.forEach(d => d.rank = null); em.forEach((d, k) => d.rank = k + 1);
+    YT.mt = d3.sum(em, d => d.mt_2025); YT.n = em.length; rkCountry = rankWithin('country'); rkSector = rankWithin('sector');
+    const ct = new Map(d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country)); document.querySelectorAll('#f-country option.c').forEach(o => o.textContent = `${o.value} · ${fmt(Math.round(ct.get(o.value) || 0))} Mt`);
+    document.querySelectorAll('.bk .hint').forEach(h => { if (!h.dataset.t) h.dataset.t = h.innerHTML; h.innerHTML = h.dataset.t.replace(/2025/g, y); }); }
+  d3.select('#f-year').selectAll('option').data(d3.range(2025, 2012, -1)).join('option').attr('value', d => d).text(d => d); document.getElementById('f-year').value = 2025; applyYear(2025);
 
   // ---------- map ----------
   const { MapboxOverlay, ScatterplotLayer } = deck;
@@ -239,9 +251,9 @@
   function show(mode, data = rows, legendOverride) { const P = state.pin; if (mode === cur.mode && data === cur.data && P === cur.pin) return; cur = {mode, data, pin: P}; const M = MODES[mode];
     const layers = [new ScatterplotLayer({id: 'pts-' + mode, data, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 1, radiusMaxPixels: 30, stroked: false, opacity: M.opacity, getPosition: d => [d.lon, d.lat], getRadius: M.radius, getFillColor: M.color, updateTriggers: {getRadius: mode, getFillColor: mode}})];
     // the pinned selection A stays on the map as hollow rings, so A and B can be read together
-    if (P) layers.push(new ScatterplotLayer({id: 'pin-a', data: P.data, pickable: false, radiusUnits: 'pixels', radiusMinPixels: 2.5, radiusMaxPixels: 32, filled: false, stroked: true, lineWidthUnits: 'pixels', getLineWidth: 1.2, opacity: .9, getPosition: d => [d.lon, d.lat], getRadius: d => Math.max(2.5, rMt(d) + 1.5), getLineColor: hex(SEAC)}));
+    if (P) layers.push(new ScatterplotLayer({id: 'pin-a', data: P.data, pickable: false, radiusUnits: 'pixels', radiusMinPixels: 2.5, radiusMaxPixels: 32, filled: false, stroked: true, lineWidthUnits: 'pixels', getLineWidth: 1.2, opacity: .9, getPosition: d => [d.lon, d.lat], getRadius: d => { const v = P.vals.get(d.id); return Math.max(2.5, (v ? rScale(v) : 1.3) + 1.5); }, getLineColor: hex(SEAC)}));
     overlay.setProps({layers});
-    document.getElementById('legend').innerHTML = (legendOverride || M.legend) + (P ? ` <span style="border-left:1px solid var(--rule);padding-left:12px"><span class="sw" style="background:transparent;border:1.5px solid ${SEAC};box-sizing:border-box"></span>A · ${P.short} &nbsp; ${sw(POINT)}B · ${shortLabel(state)}</span>` : ''); }
+    document.getElementById('legend').innerHTML = (legendOverride || M.legend).replace(/2025/g, YT.year) + (P ?` <span style="border-left:1px solid var(--rule);padding-left:12px"><span class="sw" style="background:transparent;border:1.5px solid ${SEAC};box-sizing:border-box"></span>A · ${P.short} &nbsp; ${sw(POINT)}B · ${shortLabel(state)}</span>` : ''); }
   const fly = (v, dur = 1400) => map.flyTo({center: v.center, zoom: v.zoom, duration: dur, essential: true});
   // frame the current selection (2nd-98th percentile of the coordinates, so one overseas site does not zoom the map out to the Atlantic)
   function flyToData(data) { const p = data.filter(d => d.lat && d.lon); if (!p.length) return; if (p.length === 1) return map.flyTo({center: [p[0].lon, p[0].lat], zoom: 8, duration: 1200});
@@ -309,7 +321,7 @@
   ];
   const storyEl = document.getElementById('story'); let ci = 0, thenTimer = null;
   function renderChapter(i) {
-    ci = i; const c = chapters[i]; clearTimeout(thenTimer);
+    ci = i; const c = chapters[i]; clearTimeout(thenTimer); if (state.year !== 2025) { setYear(2025); cur.mode = null; }
     storyEl.innerHTML = `<div class="kicker">${c.k}</div><h2>${c.h}</h2>${c.p.map(p => `<p>${p}</p>`).join('')}${c.chart ? `<div class="fig"><svg></svg><div class="cap small">${c.cap}</div></div>` : ''}${c.jump ? `<div class="jump">${c.jump.map(([l, v]) => `<button class="btn" data-view="${v}">${l}</button>`).join('')}</div>` : ''}
       <div class="nav"><button class="btn" id="prev" ${i === 0 ? 'disabled' : ''}>← Previous</button><div class="dots">${chapters.map((_, j) => `<i class="${j === i ? 'on' : ''}" data-i="${j}"></i>`).join('')}</div><button class="btn" id="next" ${i === chapters.length - 1 ? 'disabled' : ''}>Next →</button></div>`;
     if (c.chart) charts[c.chart](d3.select(storyEl).select('svg'));
@@ -322,7 +334,8 @@
   }
 
   // ---------- explore ----------
-  const state = {colour: 'mono', sel: new Set(), status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', terms: new Set(), area: null, bk: 'sector', pin: null};
+  const state = {colour: 'mono', sel: new Set(), status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', terms: new Set(), area: null, bk: 'sector', pin: null, year: 2025};
+  const setYear = y => { state.year = y; applyYear(y); $('f-year').value = y; };
   // terms are typed: "op:<holder>" (exact operator -> all its plants), "pl:<id>" (one plant), "tx:<text>" (contains, name or operator)
   const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').replace(/ø/g, 'o').replace(/ß/g, 'ss').toLowerCase();
   rows.forEach(d => { d._n = norm(d.name); d._h = norm(d.holder); });
@@ -356,11 +369,11 @@
   const inPoly = (d, poly) => { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > d.lat) !== (yj > d.lat) && d.lon < (xj - xi) * (d.lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
   const filtered = (st = state) => { const qo = norm(st.qo), qp = norm(st.qp), terms = [...st.terms]; return rows.filter(d => (st.sel.size === 0 || st.sel.has(d.sector)) && (st.status === 'all' || d.status === st.status) && (st.country === 'all' || d.country === st.country) && (st.region === 'all' || d.nuts2 === st.region) && (d.mt_2025 || 0) >= st.min && (!qo || d._h.includes(qo)) && (!qp || d._n.includes(qp)) && (terms.length === 0 || terms.some(t => termHit(d, t))) && (!st.area || inPoly(d, st.area))); };
   // ---------- A/B comparison: a frozen copy of the filters (A) and the rows it selected; B is always the live selection ----------
-  const snapshot = () => ({colour: state.colour, sel: new Set(state.sel), status: state.status, country: state.country, region: state.region, min: state.min, qo: state.qo, qp: state.qp, terms: new Set(state.terms), area: state.area ? state.area.slice() : null});
-  const hashOf = st => { const p = new URLSearchParams(); if (st.colour !== 'mono') p.set('c', st.colour); if (st.sel.size) p.set('s', [...st.sel].join('|')); if (st.status !== 'all') p.set('st', st.status); if (st.country !== 'all') p.set('co', st.country); if (st.region !== 'all') p.set('r', st.region); if (st.min) p.set('min', st.min); if (st.qo) p.set('qo', st.qo); if (st.qp) p.set('qp', st.qp); if (st.terms.size) p.set('t', [...st.terms].join('|')); return p.toString(); };
-  const stateFromHash = str => { const H = new URLSearchParams(str); return {colour: H.get('c') || 'mono', sel: new Set((H.get('s') || '').split('|').filter(Boolean)), status: H.get('st') || 'all', country: H.get('co') || 'all', region: H.get('r') || 'all', min: +(H.get('min') || 0), qo: H.get('qo') || H.get('q') || '', qp: H.get('qp') || '', terms: new Set((H.get('t') || '').split('|').filter(Boolean)), area: null}; };
+  const snapshot = () => ({colour: state.colour, sel: new Set(state.sel), status: state.status, country: state.country, region: state.region, min: state.min, qo: state.qo, qp: state.qp, terms: new Set(state.terms), area: state.area ? state.area.slice() : null, year: state.year});
+  const hashOf = st => { const p = new URLSearchParams(); if (st.year !== 2025) p.set('y', st.year); if (st.colour !== 'mono') p.set('c', st.colour); if (st.sel.size) p.set('s', [...st.sel].join('|')); if (st.status !== 'all') p.set('st', st.status); if (st.country !== 'all') p.set('co', st.country); if (st.region !== 'all') p.set('r', st.region); if (st.min) p.set('min', st.min); if (st.qo) p.set('qo', st.qo); if (st.qp) p.set('qp', st.qp); if (st.terms.size) p.set('t', [...st.terms].join('|')); return p.toString(); };
+  const stateFromHash = str => { const H = new URLSearchParams(str); return {colour: H.get('c') || 'mono', sel: new Set((H.get('s') || '').split('|').filter(Boolean)), status: H.get('st') || 'all', country: H.get('co') || 'all', region: H.get('r') || 'all', min: +(H.get('min') || 0), qo: H.get('qo') || H.get('q') || '', qp: H.get('qp') || '', terms: new Set((H.get('t') || '').split('|').filter(Boolean)), area: null, year: +(H.get('y') || 2025)}; };
   const statusText = v => ([...$('f-status').options].find(o => o.value === v) || {}).textContent || v;
-  const describe = st => [st.country !== 'all' ? `country: ${st.country}` : null, st.region !== 'all' ? `region: ${regionLabel(st.region)}` : null, st.sel.size ? `sectors: ${[...st.sel].join(', ')}` : null, st.status !== 'all' ? `status: ${statusText(st.status)}` : null, st.min ? `minimum ${f1(st.min)} Mt in 2025` : null, st.qo ? `operator contains "${st.qo}"` : null, st.qp ? `plant contains "${st.qp}"` : null, st.terms.size ? `plants/operators: ${[...st.terms].map(termLabel).join(', ')}` : null, st.area ? `drawn area (${st.area.length} corners)` : null].filter(Boolean).join(' · ') || 'all installations, no filters';
+  const describe = st => [st.year !== 2025 ? `year ${st.year}` : null, st.country !== 'all' ? `country: ${st.country}` : null, st.region !== 'all' ? `region: ${regionLabel(st.region)}` : null, st.sel.size ? `sectors: ${[...st.sel].join(', ')}` : null, st.status !== 'all' ? `status: ${statusText(st.status)}` : null, st.min ? `minimum ${f1(st.min)} Mt in 2025` : null, st.qo ? `operator contains "${st.qo}"` : null, st.qp ? `plant contains "${st.qp}"` : null, st.terms.size ? `plants/operators: ${[...st.terms].map(termLabel).join(', ')}` : null, st.area ? `drawn area (${st.area.length} corners)` : null].filter(Boolean).join(' · ') || 'all installations, no filters';
   // the figures of a selection, as a list of [label, value, formatter, unit] so A and B can be laid side by side
   function metrics(data, st) {
     const mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
@@ -368,23 +381,24 @@
     const alloc = d3.sum(data, d => d.alloc || 0), emAlloc = d3.sum(data.filter(d => d.alloc), d => d.mt_2025 || 0), mt23 = d3.sum(data, d => d.years[10] || 0);
     const R = st.region !== 'all' && REG[st.region], G = st.country !== 'all' && GHG[st.country];
     return {n: data.length, mt, base, now, closed, closed5, alloc, emAlloc, mt23, R, G, rows: [
-      ['installations', data.length, fmt], ['Mt CO₂ 2025', mt, f1], ['% of the ETS', 100 * mt / T.mt_2025, f1, 'pp'], ['vs 2021-23 baseline, same sites (%)', base ? 100 * (now - base) / base : null, signed, 'pp'],
-      ['Mt free allocation 2025', alloc || null, f1], ['allocation covers (% of those sites)', alloc ? 100 * alloc / (emAlloc || 1) : null, f1, 'pp'], ['closed (permit revoked)', closed, fmt], ['closed since 2021', closed5, fmt],
+      ['installations', data.length, fmt], ['emitting that year', data.filter(d => d.mt_2025 > 0).length, fmt], ['Mt CO₂ that year', mt, f1], ['% of the ETS that year', 100 * mt / (YT.mt || 1), f1, 'pp'], ['vs 2021-23 baseline, same sites (%)', base && st.year >= 2024 ? 100 * (now - base) / base : null, signed, 'pp'],
+      ['Mt free allocation that year', alloc || null, f1], ['allocation covers (% of those sites)', alloc ? 100 * alloc / (emAlloc || 1) : null, f1, 'pp'], ['closed (permit revoked)', closed, fmt], ['closed since 2021', closed5, fmt],
       ...(R ? [['t CO₂ per inhabitant of the region', R.pop_2024 ? mt * 1e6 / R.pop_2024 : null, f1], ['t CO₂ per M€ of regional GDP', R.gdp_meur_2023 ? mt * 1e6 / R.gdp_meur_2023 : null, v => fmt(Math.round(v))]] : []),
       ...(!R && G && mt23 ? [['% of the national GHG inventory 2023', 100 * mt23 / G, f1, 'pp']] : [])]};
   }
   // short name of a selection for table headers, chart legends and the map legend ("PL", "PL71 Łódzkie · Cement & lime", "RWE Power AG")
-  const shortLabel = st => { const p = []; if (st.region !== 'all') p.push(`${st.region} ${(REG[st.region] || {}).name || ''}`.trim()); else if (st.country !== 'all') p.push(st.country);
+  const shortLabel = st => { const p = []; if (st.year !== 2025) p.push(String(st.year)); if (st.region !== 'all') p.push(`${st.region} ${(REG[st.region] || {}).name || ''}`.trim()); else if (st.country !== 'all') p.push(st.country);
     if (st.terms.size) p.push([...st.terms].slice(0, 2).map(termLabel).join(', ') + (st.terms.size > 2 ? ` +${st.terms.size - 2}` : '')); else if (st.qo || st.qp) p.push(`"${st.qo || st.qp}"`);
     if (st.sel.size) p.push([...st.sel].slice(0, 2).join(', ') + (st.sel.size > 2 ? ` +${st.sel.size - 2}` : '')); if (st.status !== 'all') p.push(statusText(st.status).toLowerCase()); if (st.min) p.push(`≥ ${f1(st.min)} Mt`); if (st.area) p.push('drawn area');
     const s = p.join(' · ') || 'all installations'; return s.length > 36 ? s.slice(0, 35) + '…' : s; };
-  const makePin = (st, data) => ({st, data, m: metrics(data, st), label: describe(st), short: shortLabel(st), hash: hashOf(st)});
+  // vals freezes each row's Mt at pin time, so A keeps its year when B moves to another one
+  const makePin = (st, data) => ({st, data, vals: new Map(data.map(d => [d.id, d.mt_2025 || 0])), m: metrics(data, st), label: describe(st), short: shortLabel(st), hash: hashOf(st)});
   const dfmt = (d, f, unit) => (d > 0 ? '+' : d < 0 ? '−' : '±') + f(Math.abs(d)) + (unit === 'pp' ? ' pp' : '');
   function cmpRows(A, B, la, lb) { const keys = [...new Set([...A.rows, ...B.rows].map(r => r[0]))], get = (M, k) => M.rows.find(r => r[0] === k);
     return `<tr><th></th><th class="a">A · ${la}</th><th>B · ${lb}</th><th>B − A</th></tr>` + keys.map(k => { const a = get(A, k), b = get(B, k), r = a || b, f = r[2], u = r[3], av = a ? a[1] : null, bv = b ? b[1] : null;
       return `<tr><td>${k}</td><td class="a num">${av == null ? '—' : f(av)}</td><td class="num">${bv == null ? '—' : f(bv)}</td><td class="d num">${av != null && bv != null ? dfmt(bv - av, f === signed ? f1 : f, u) : '—'}</td></tr>`; }).join(''); }
   // trajectory of the selection: sum of yearly Mt (years with no data skipped)
-  function trajChart(data, pinData) {
+  function trajChart(data, pinData, ya, yb) {
     const W = 360, H = 150, m = {t: 12, r: 44, b: 20, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#traj').attr('viewBox', `0 0 ${W} ${H}`); svg.selectAll('*').remove();
     const series = arr => d3.range(2013, 2026).map((y, i) => ({y, v: d3.sum(arr, d => d.years[i] || 0)})).filter(p => p.v > 0);
     const pts = series(data), pa = pinData ? series(pinData) : []; if (pts.length < 2 && pa.length < 2) return;
@@ -395,6 +409,9 @@
     if (pts.length > 1) { g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', line);
       const f = pts[0], l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 6).attr('y', y(l.v) + (pa.length > 1 && Math.abs(y(l.v) - y(pa[pa.length - 1].v)) < 12 ? 16 : 4)).attr('fill', INK)).text((pa.length > 1 ? 'B ' : '') + f1(l.v));
       mono(g.append('text').attr('x', x(f.y)).attr('y', y(f.v) - 6).attr('fill', INK3)).text(`${f1(f.v)} · ${signed(100 * (l.v - f.v) / f.v)} % since ${f.y}`); }
+    // a dot marks the year each selection is read at (A and B can sit on different years of the same line)
+    const mark = (arr, yr, col) => { const p = arr.find(q => q.y === yr); if (p) g.append('circle').attr('cx', x(p.y)).attr('cy', y(p.v)).attr('r', 4).attr('fill', col).attr('stroke', '#0d1015').attr('stroke-width', 1.5); };
+    if (pa.length > 1 && ya) mark(pa, ya, SEAC); if (pts.length > 1 && yb) mark(pts, yb, POINT);
   }
   // allocation position 2021-2025 for the selection (emitted vs freely allocated) and the legal phase-out of the CBAM sectors' allocation
   function allocChart(data) {
@@ -431,9 +448,9 @@
     // colour follows the sector filter: with sectors selected and no explicit colour mode, colour by (the selected) sectors
     const autoSector = state.colour === 'mono' && state.sel.size > 0, mode = autoSector ? 'sector' : state.colour;
     const data = filtered(); lastData = data; const P = state.pin;
-    show(mode, data, autoSector ? [...state.sel].map(k => `<span>${sw(SECTOR_COLOR[k])}${k}</span>`).join('') + `<span>${sw(NOEM)}no 2025 emissions</span><span>size = Mt CO₂ 2025</span>` : null);
+    show(mode, data, autoSector ? [...state.sel].map(k => `<span>${sw(SECTOR_COLOR[k])}${k}</span>`).join('') + `<span>${sw(NOEM)}no ${state.year} emissions</span><span>size = Mt CO₂ ${state.year}</span>` : null);
     const m = metrics(data, state), mt = m.mt;
-    $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in 2025 <span class="small">· ${f1(100 * mt / T.mt_2025)} % of the ETS</span>`;
+    $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in ${state.year} <span class="small">· ${f1(100 * mt / (YT.mt || 1))} % of the ETS that year</span>`;
     $('btn-export').textContent = `Download CSV · ${fmt(data.length)} rows`;
     $('chips').classList.toggle('coloured', mode === 'sector');
     // answer: one set of KPIs, or the A | B | difference table when a selection is pinned
@@ -445,15 +462,15 @@
     else { const ctxK = []; if (m.R) { const R = m.R; ctxK.push([R.pop_2024 ? f1(mt * 1e6 / R.pop_2024) : '—', `t CO₂ per inhabitant · ${R.name} (population ${R.pop_2024 ? fmt(R.pop_2024) : '—'}, 2024)`]); ctxK.push([R.gdp_meur_2023 ? fmt(Math.round(mt * 1e6 / R.gdp_meur_2023)) : '—', `t CO₂ per million € of regional GDP (2023)`]); }
       else if (m.G && m.mt23) ctxK.push([f1(100 * m.mt23 / m.G) + ' %', `of ${state.country}'s national GHG in 2023 (${f1(m.mt23)} of ${f1(m.G)} Mt CO₂e, Eurostat)`]);
       $('kpis').innerHTML = [
-        [f1(mt), 'Mt CO₂ 2025'], [m.base ? signed(100 * (m.now - m.base) / m.base) + ' %' : '—', 'vs 2021-23 baseline, same sites'],
-        [m.alloc ? f1(m.alloc) : '—', `Mt free allocation 2025${m.alloc ? ` · covers ${f1(100 * m.alloc / (m.emAlloc || 1))} % of those sites` : ''}`], [fmt(m.closed), `closed (permit revoked), ${fmt(m.closed5)} since 2021`], ...ctxK
+        [f1(mt), `Mt CO₂ ${state.year}`], [m.base && state.year >= 2024 ? signed(100 * (m.now - m.base) / m.base) + ' %' : '—', state.year >= 2024 ? 'vs 2021-23 baseline, same sites' : 'vs 2021-23 baseline (only for 2024 and 2025)'],
+        [m.alloc ? f1(m.alloc) : '—', `Mt free allocation ${state.year}${state.year < 2021 ? ' (allocation data from 2021)' : ''}${m.alloc ? ` · covers ${f1(100 * m.alloc / (m.emAlloc || 1))} % of those sites` : ''}`], [fmt(m.closed), `closed (permit revoked), ${fmt(m.closed5)} since 2021`], ...ctxK
       ].map(([v, l]) => `<div class="kpi"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join(''); }
     const agg = key => d3.rollups(data, v => ({v: d3.sum(v, d => d.mt_2025 || 0), n: v.length}), d => d[key]).map(([k, o]) => ({k: k || '(none)', v: o.v, n: o.n, share: 100 * o.v / (mt || 1)})).sort((a, b) => b.v - a.v);
-    const pinAgg = key => P ? new Map(d3.rollups(P.data, v => d3.sum(v, d => d.mt_2025 || 0), d => d[key]).map(([k, v]) => [k || '(none)', {v, share: 100 * v / (P.m.mt || 1)}])) : null;
+    const pinAgg = key => P ? new Map(d3.rollups(P.data, v => d3.sum(v, d => P.vals.get(d.id) || 0), d => d[key]).map(([k, v]) => [k || '(none)', {v, share: 100 * v / (P.m.mt || 1)}])) : null;
     hbars('bar-sector', agg('sector').map(d => ({...d, on: state.sel.has(d.k)})), d => mode === 'sector' ? SECTOR_COLOR[d.k] : POINT, d => { state.sel.has(d.k) ? state.sel.delete(d.k) : state.sel.add(d.k); sync(); }, pinAgg('sector'));
     hbars('bar-country', agg('country').slice(0, 10), () => POINT, d => { state.country = d.k; $('f-country').value = d.k; fillRegions(); sync(); focusMap(); }, pinAgg('country'));
     hbars('bar-holder', agg('holder').slice(0, 10).map(d => ({...d, on: state.terms.has('op:' + d.k)})), d => state.terms.size && !state.terms.has('op:' + d.k) ? GREY : POINT, d => { if (d.k === '(none)') return; const t = 'op:' + d.k; state.terms.has(t) ? state.terms.delete(t) : state.terms.add(t); sync(); focusMap(); }, pinAgg('holder'));
-    trajChart(data, P && P.data);
+    trajChart(data, P && P.data, P && P.st.year, state.year);
     hbars('bar-region', d3.rollups(data.filter(d => d.nuts2), v => d3.sum(v, d => d.mt_2025 || 0), d => d.nuts2).map(([k, v]) => ({k: regionLabel(k), code: k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v).slice(0, 10), () => POINT, d => { state.region = d.code; $('f-region').value = d.code; sync(); focusMap(); }, pinAgg('nuts2'));
     allocChart(data);
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
@@ -470,27 +487,30 @@
     const cov = d.alloc && d.mt_2025 ? 100 * d.alloc / d.mt_2025 : null, gap = d.alloc != null && d.mt_2025 != null ? d.alloc - d.mt_2025 : null;
     const near = rows.filter(r => r !== d && Math.abs(r.lat - d.lat) < .3 && Math.abs(r.lon - d.lon) < .45 && km(r, d) <= 25 && r.mt_2025 >= 0.01).sort((a, b) => b.mt_2025 - a.mt_2025);
     const timeline = [d.first_year ? `first reported ${d.first_year}` : null, d.n_years ? `${d.n_years} years with emissions` : null, d.last_year ? `last ${d.last_year}` : null, d.revoked_year ? `permit revoked ${d.revoked_year}` : null, d.excluded ? 'flagged excluded in 2025 (small-emitter opt-out)' : null].filter(Boolean).join(' · ');
-    const yoy = d.mt_2025 != null && d.mt_2024 ? ` · ${signed(100 * (d.mt_2025 - d.mt_2024) / d.mt_2024)} % vs 2024` : '';
+    const yoy = d.mt_2025 != null && d.mt_2024 ? ` · ${signed(100 * (d.mt_2025 - d.mt_2024) / d.mt_2024)} % vs ${state.year - 1}` : '', Y = state.year;
     // the allocation chart earns its place only when allocation and emissions diverge; a balanced position is already the third number
     const showAlloc = d.allocs.some(v => v) && (cov == null || cov < 100 || cov > 120);
     el.innerHTML = `<span class="x" id="dx" title="close">✕</span><h3>${d.name}</h3>
       <div class="who"><span class="small">Operator</span> ${d.holder} · ${d.city}${d.postal ? ' ' + d.postal : ''}, ${d.country}</div>
       <div class="ids small">${d.activity}${d.activity_code ? ` <span class="num">(${d.activity_code})</span>` : ''} · NACE <span class="num">${d.nace || '—'}</span> · ${d.sector} · <span class="num">ETS ${d.id}${d.permit ? ` · permit ${d.permit}` : ''}</span></div>
       <div class="grid3">
-        <div><div class="v num">${mtOrKt(d.mt_2025)}</div><div class="l">CO₂ 2025${yoy}</div></div>
-        <div><div class="v num">${d.chg != null ? signed(d.chg) + ' %' : '—'}</div><div class="l">vs own 2021-23 mean${d.mt_base ? ` (${f1(d.mt_base)} Mt)` : ''}</div></div>
-        <div><div class="v num">${cov != null ? f1(cov) + ' %' : d.alloc ? mtOrKt(d.alloc) : '—'}</div><div class="l">${cov != null ? `free allocation covers · ${gap >= 0 ? 'surplus' : 'shortfall'} ${mtOrKt(Math.abs(gap))}` : d.alloc ? 'free allocation 2025' : 'no free allocation 2025'}</div></div>
+        <div><div class="v num">${mtOrKt(d.mt_2025)}</div><div class="l">CO₂ ${Y}${yoy}</div></div>
+        <div><div class="v num">${d.chg != null ? signed(d.chg) + ' %' : '—'}</div><div class="l">${Y >= 2024 ? `vs own 2021-23 mean${d.mt_base ? ` (${f1(d.mt_base)} Mt)` : ''}` : 'vs 2021-23 mean · only for 2024-25'}</div></div>
+        <div><div class="v num">${cov != null ? f1(cov) + ' %' : d.alloc ? mtOrKt(d.alloc) : '—'}</div><div class="l">${cov != null ? `free allocation covers · ${gap >= 0 ? 'surplus' : 'shortfall'} ${mtOrKt(Math.abs(gap))}` : d.alloc ? `free allocation ${Y}` : Y < 2021 ? 'allocation data from 2021' : `no free allocation ${Y}`}</div></div>
       </div>
-      <div class="blk"><div class="lab">Position</div><p>${d.rank ? `<b>#${d.rank}</b> of ${fmt(T.emitting_2025)} in the ETS` : 'no 2025 emissions'}${rc ? ` · <b>#${rc[0]}</b> of ${fmt(rc[1])} in ${d.country} (${f1(100 * d.mt_2025 / rc[2])} % of its ETS CO₂)` : ''}${rs ? ` · <b>#${rs[0]}</b> in ${d.sector.toLowerCase()}` : ''}<br>${statusLabel(d)}${timeline ? ` · ${timeline}` : ''}</p></div>
+      <div class="blk"><div class="lab">Position in ${Y}</div><p>${d.rank ? `<b>#${d.rank}</b> of ${fmt(YT.n)} in the ETS` : `no ${Y} emissions`}${rc ? ` · <b>#${rc[0]}</b> of ${fmt(rc[1])} in ${d.country} (${f1(100 * d.mt_2025 / rc[2])} % of its ETS CO₂)` : ''}${rs ? ` · <b>#${rs[0]}</b> in ${d.sector.toLowerCase()}` : ''}<br>${statusLabel(d)}${timeline ? ` · ${timeline}` : ''}</p></div>
       <div class="blk"><div class="lab">Trajectory 2013–2025 · Mt CO₂${d.mt_base ? ' · dashed = 2021-23 mean' : ''}</div><svg id="d-traj"></svg></div>
       ${showAlloc ? `<div class="blk"><div class="lab">Free allocation vs emissions 2021–2025 · Mt</div><svg id="d-alloc"></svg></div>` : ''}
       <div class="blk"><div class="lab">Around it</div><p>${near.length ? `<a href="#" id="d-near">${fmt(near.length)} other emitting installation${near.length > 1 ? 's' : ''} within 25 km · ${f1(d3.sum(near, r => r.mt_2025))} Mt</a> <span class="small">· click to keep only this 25 km circle</span>` : 'No other emitting installation within 25 km.'}</p></div>
-      <div class="acts"><button class="btn" id="d-add">+ Add plant to selection</button><button class="btn" id="d-op">+ Add operator</button><button class="btn" id="d-zoom">Zoom</button></div>`;
+      <div class="acts"><button class="btn" id="d-add">+ Add plant to the list</button><button class="btn" id="d-op">+ Add its operator</button><button class="btn" id="d-zoom">Zoom</button></div><div class="fb" id="d-fb"></div>`;
     el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
+    // the list of plants/operators is a filter: what you add here is what the answer below is about (other filters still apply)
+    const fb = () => { const a = el.querySelector('#d-add'), o = el.querySelector('#d-op'); a.disabled = state.terms.has('pl:' + d.id); o.disabled = state.terms.has('op:' + d.holder);
+      el.querySelector('#d-fb').innerHTML = state.terms.size ? `List: <b>${[...state.terms].map(termLabel).join(', ')}</b> → ${fmt(lastData.length)} installations · ${f1(d3.sum(lastData, r => r.mt_2025 || 0))} Mt. The answer below is about this list.` : ''; }; fb();
     const nearA = el.querySelector('#d-near'); if (nearA) nearA.onclick = e => { e.preventDefault(); applyCircleArea(d); };
     el.querySelector('#d-zoom').onclick = () => map.flyTo({center: [d.lon, d.lat], zoom: 11, duration: 1400});
-    el.querySelector('#d-add').onclick = () => addTerm(d.id, 'pl');
-    el.querySelector('#d-op').onclick = () => addTerm(d.holder, 'op');
+    el.querySelector('#d-add').onclick = () => { addTerm(d.id, 'pl'); fb(); };
+    el.querySelector('#d-op').onclick = () => { addTerm(d.holder, 'op'); fb(); };
     // trajectory
     const pts = yrs.map((y, i) => ({y, v: d.years[i]})).filter(p => p.v != null);
     if (pts.length) { const W = 340, H = 92, m = {t: 8, r: 40, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-traj').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
@@ -499,6 +519,7 @@
       if (d.mt_base) g.append('line').attr('x1', x(2021)).attr('x2', x(2025)).attr('y1', y(d.mt_base)).attr('y2', y(d.mt_base)).attr('stroke', INK3).attr('stroke-dasharray', '3 3');
       g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
       g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', POINT);
+      const selp = pts.find(p => p.y === Y); if (selp && Y !== 2025) g.append('circle').attr('cx', x(selp.y)).attr('cy', y(selp.v)).attr('r', 4.5).attr('fill', 'none').attr('stroke', INK).attr('stroke-width', 1.2);
       const l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 5).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v)); }
     // allocation vs emissions 2021-2025
     if (showAlloc) { const ys = [2021, 2022, 2023, 2024, 2025], em = ys.map(y => d.years[y - 2013] || 0), W = 340, H = 70, m = {t: 4, r: 8, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-alloc').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
@@ -554,23 +575,24 @@
   async function buildReport() {
     const data = lastData, P = state.pin, m = metrics(data, state), mt = m.mt, base = m.base, now = m.now, closed = m.closed, alloc = m.alloc, emAlloc = m.emAlloc;
     const agg = key => d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d[key]).map(([k, v]) => ({k: k || '(none)', v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v);
-    const tbl = (items, label) => `<table><tr><th>${label}</th><th class="r">Mt CO₂ 2025</th><th class="r">share</th></tr>${items.map(d => `<tr><td>${d.k}</td><td class="r num">${f1(d.v)}</td><td class="r num">${f1(d.share)} %</td></tr>`).join('')}</table>`;
+    const tbl = (items, label) => `<table><tr><th>${label}</th><th class="r">Mt CO₂ ${state.year}</th><th class="r">share</th></tr>${items.map(d => `<tr><td>${d.k}</td><td class="r num">${f1(d.v)}</td><td class="r num">${f1(d.share)} %</td></tr>`).join('')}</table>`;
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
     const card = (() => { const el = $('detail'); if (!el.innerHTML.trim()) return ''; const c = el.cloneNode(true); c.querySelectorAll('.x, .acts').forEach(n => n.remove()); return '<h2>Installation</h2><div class="card">' + c.innerHTML + '</div>'; })();
     const img = await mapImage();
     $('report').innerHTML = `<h1>EU ETS Installations Atlas · selection report</h1>
       <div class="sub">${P ? `A (pinned): ${P.label} · B: ${describe(state)}` : 'Filters: ' + describe(state)} · generated ${new Date().toISOString().slice(0, 10)} · source: EU Transaction Log public data, extract ${S.source.extract_as_of}</div>
-      ${P ? `<table class="cmp">${cmpRows(P.m, m, P.short, shortLabel(state))}</table>` : `<div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ 2025 · ${f1(100 * mt / T.mt_2025)} % of the ETS</div></div><div><div class="v num">${base ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation 2025${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>`}
+      ${P ? `<table class="cmp">${cmpRows(P.m, m, P.short, shortLabel(state))}</table>` : `<div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ ${state.year} · ${f1(100 * mt / (YT.mt || 1))} % of the ETS that year</div></div><div><div class="v num">${base && state.year >= 2024 ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation ${state.year}${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>`}
       ${card}
       ${img ? `<h2>Map of the selection${P ? ` · A (${P.short}) as hollow rings, B (${shortLabel(state)}) as filled dots` : ''}</h2><img src="${img}" alt="map">` : ''}
       <h2>Breakdown</h2><div class="two"><div>${tbl(agg('sector'), 'Sector')}</div><div>${tbl(agg('country').slice(0, 10), 'Country (top 10)')}</div></div>
-      <div class="two" style="margin-top:10pt"><div>${tbl(agg('holder').slice(0, 10), 'Operator of record (top 10)')}</div><div><table><tr><th>Largest installations</th><th class="r">Mt 2025</th><th class="r">vs 21-23</th></tr>${top.map((d, i) => `<tr><td>${i + 1}. ${d.name}<br><span class="small">${d.holder} · ${d.city}, ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td><td class="r num">${d.chg == null ? '—' : signed(d.chg) + ' %'}</td></tr>`).join('')}</table></div></div>
-      <p class="small">Closures in the selection: ${fmt(closed)} installations with the ETS permit revoked. Change is 2025 against each installation's mean of 2021-2023 (years with emissions above zero), for installations reporting in both periods. Free allocation coverage is computed over the installations that received allowances. Operator is the ETS account holder, usually a subsidiary, not the group parent. Coordinates as verified in the GEODEP pipeline; one known error (GB_918) is kept on purpose. Basemap © CARTO © OpenStreetMap. Tool: yusnelkis.github.io/geodep-ets-map · code: github.com/Yusnelkis/geodep-ets-map</p>`;
+      <div class="two" style="margin-top:10pt"><div>${tbl(agg('holder').slice(0, 10), 'Operator of record (top 10)')}</div><div><table><tr><th>Largest installations</th><th class="r">Mt ${state.year}</th><th class="r">vs 21-23</th></tr>${top.map((d, i) => `<tr><td>${i + 1}. ${d.name}<br><span class="small">${d.holder} · ${d.city}, ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td><td class="r num">${d.chg == null ? '—' : signed(d.chg) + ' %'}</td></tr>`).join('')}</table></div></div>
+      <p class="small">Figures are for ${state.year}. Closures in the selection: ${fmt(closed)} installations with the ETS permit revoked. Change is ${state.year} against each installation's mean of 2021-2023 (years with emissions above zero), for installations reporting in both periods. Free allocation coverage is computed over the installations that received allowances. Operator is the ETS account holder, usually a subsidiary, not the group parent. Coordinates as verified in the GEODEP pipeline; one known error (GB_918) is kept on purpose. Basemap © CARTO © OpenStreetMap. Tool: yusnelkis.github.io/geodep-ets-map · code: github.com/Yusnelkis/geodep-ets-map</p>`;
   }
   $('btn-report').onclick = async () => { $('btn-report').textContent = 'Composing…'; await buildReport(); $('btn-report').textContent = 'Report (PDF)'; setTimeout(() => window.print(), 150); };
   $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
   $('btn-pin').onclick = () => { state.pin = state.pin ? null : makePin(snapshot(), lastData); cur.mode = null; sync(); };
-  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('f-year').addEventListener('change', e => { setYear(+e.target.value); cur.mode = null; sync(); });
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   $('f-country').addEventListener('change', e => { state.country = e.target.value; fillRegions(); sync(); focusMap(); });
@@ -585,7 +607,8 @@
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
   if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
-    if (H0.get('a')) { const ast = stateFromHash(H0.get('a')); state.pin = makePin(ast, filtered(ast)); } }
+    if (H0.get('y')) setYear(+H0.get('y'));
+    if (H0.get('a')) { const ast = stateFromHash(H0.get('a')); const keep = state.year; applyYear(ast.year); state.pin = makePin(ast, filtered(ast)); applyYear(keep); } }
 
   // ---------- tabs ----------
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
