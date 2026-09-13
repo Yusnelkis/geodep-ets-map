@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EU ETS Installations Atlas</title>
-<meta name="description" content="Verified emissions, free allocation and closures of Europe's industrial installations, 2013–2025. A guided reading and an explorer, on one map.">
+<title>Carbon Cadastre — Europe's industrial CO2 emitters, site by site</title>
+<meta name="description" content="Carbon Cadastre: a register-based map of Europe's industrial CO2 emitters. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025. A guided reading and an explorer, on one map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
@@ -96,9 +96,9 @@
 <div id="app">
   <aside id="panel">
     <div class="head">
-      <h1>EU ETS <em>Installations Atlas</em></h1>
-      <div class="sub">Verified emissions, free allocation and closures of Europe's industrial installations, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.3</span></div>
+      <h1>Carbon <em>Cadastre</em></h1>
+      <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.4</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -109,7 +109,7 @@
           <div class="lab"><span>Question</span><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px">Reset</button></div>
           <div class="row2">
             <div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div>
-            <div class="fld" style="position:relative"><label>Plant or operator</label><input type="text" id="f-q" placeholder="type to see suggestions" autocomplete="off"><div class="sugg" id="sugg"></div></div>
+            <div class="fld" style="position:relative"><label>Plant or operator</label><input type="text" id="f-q" placeholder="e.g. Bełchatów · RWE Power" autocomplete="off"><div class="sugg" id="sugg"></div></div>
           </div>
           <div class="fld" id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
@@ -147,6 +147,7 @@
         <p><b>One error, kept.</b> <span class="num">GB_918</span> (INEOS CHP, Cleveland UK) is geocoded to Cleveland, Ohio: the kind of mistake a map catches. Code, SQL and data: <a href="https://github.com/Yusnelkis/geodep-ets-map">github.com/Yusnelkis/geodep-ets-map</a>. Basemap © CARTO © OpenStreetMap.</p>
         <p><b>References for the context statements.</b> Every figure on this page is computed from the EUTL extract by <span class="num">code/build_site_data.py</span>. Statements about rules come from: fourth trading period and the Article 27 / 27a small-emitter opt-outs (<a href="https://www.epa.ie/publications/monitoring--assessment/climate-change/eu-emissions-trading-scheme/Free-Allocation-Rules-for-EU-ETS-Phase-IV-Introduction-ETS-Revision.pdf">EPA Ireland, Phase IV free allocation rules</a>; <a href="https://assets.publishing.service.gov.uk/media/5ccb1cf2ed915d50b4fbcf83/Impact_Assessment_-_EU_ETS_Article_27_and_Article_27a_Schemes_for_Phase_IV.pdf">UK impact assessment on Art. 27/27a</a>); the 2023 drop of 16.5 % in ETS stationary emissions, led by power (<a href="https://climate.ec.europa.eu/news-other-reads/news/climate-action-progress-report-2023-shows-largest-annual-drop-emissions-decades-2024-10-31_en">European Commission, Climate Action Progress Report 2023</a>); CBAM phase-in and the free-allocation phase-out 2026–2034 (<a href="https://icapcarbonaction.com/en/news/eu-adopts-simplifications-cbam-rules-ahead-compliance-phase-starting-2026">ICAP</a>; <a href="https://www.dehst.de/EN/Topics/EU-ETS-1/EU-ETS-1-Information/Reform-Prospects/Carbon-Leakage-Protection/carbon-leakage-protection_artikel.html">DEHSt, carbon leakage protection</a>); Bełchatów as the largest single emitter in the EU ETS (<a href="https://ember-energy.org/latest-updates/repeat-offenders-coal-power-plants-top-the-eu-emitters-list/">Ember</a>).</p>
       </details>
+      <div class="small" style="padding:8px 0 12px;border-top:1px solid var(--rule)"><b style="color:var(--ink2);font-weight:600">Yusnelkis Milanés Guisado</b> · Data scientist / AI consultant · <a href="https://github.com/Yusnelkis/geodep-ets-map">source</a></div>
     </div>
   </aside>
   <div id="mapwrap"><div id="map"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
@@ -463,7 +464,7 @@
     const tbl = (items, label) => `<table><tr><th>${label}</th><th class="r">Mt CO₂ 2025</th><th class="r">share</th></tr>${items.map(d => `<tr><td>${d.k}</td><td class="r num">${f1(d.v)}</td><td class="r num">${f1(d.share)} %</td></tr>`).join('')}</table>`;
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
     const img = await mapImage();
-    $('report').innerHTML = `<h1>EU ETS Installations Atlas · selection report</h1>
+    $('report').innerHTML = `<h1>Carbon Cadastre · selection report</h1>
       <div class="sub">${q.length ? 'Filters: ' + q.join(' · ') : 'All installations, no filters'} · generated ${new Date().toISOString().slice(0, 10)} · source: EU Transaction Log public data, extract ${S.source.extract_as_of}</div>
       <div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ 2025 · ${f1(100 * mt / T.mt_2025)} % of the ETS</div></div><div><div class="v num">${base ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation 2025${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>
       ${img ? `<h2>Map of the selection</h2><img src="${img}" alt="map">` : ''}
