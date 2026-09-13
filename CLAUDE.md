@@ -15,6 +15,12 @@ workspace and never writes there.
 ## HOW
 - `code/build_extract.py` → `data/ets_installations_2025.parquet` + `data/sources.json` (provenance).
   Join key `(REGISTRY_CODE, INSTALLATION_IDENTIFIER)`; `-1` emissions → `NULL`, never `0`.
+- `code/build_context.py` → `data/nuts2_assignment.csv` + `docs/data/context.json` (NUTS-2 regions, Eurostat GDP /
+  population / national GHG, CBAM phase-out factors). External sources are registered in `data/ref/sources.json`
+  (url, licence, download date) and downloaded next to it with `curl`; the code never carries a URL.
+- `code/build_site_data.py` → `docs/data/installations.csv` (tonne precision, never rounded before display) +
+  `docs/data/summary.json`; `docs/index.html` is the published page (GitHub Pages, `main:/docs`).
+- Scope rule (2026-09-13): plants and operators of record only. No companies, groups, GUO or GLEIF: that is GEODEP.
 - `docker/compose.yml` → Dekart on `localhost:8080` (state in `docker/dekart-data/`, gitignored).
 - `sql/` → the DuckDB queries that GeoSQL produced for the map. `maps/` → exported map config / screenshots.
 - CLIs live in the venv: `../_venvs/ets_map/Scripts/{dekart,geosql}.exe`. In shell calls prepend that
