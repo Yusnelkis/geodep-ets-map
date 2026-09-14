@@ -110,7 +110,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-13.22</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-14.23</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -129,7 +129,7 @@
           <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
           <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
           <div class="grp-lab">How to show it</div>
-          <div class="row3"><div class="fld"><label>Year</label><select id="f-year"></select></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
+          <div class="row2"><div class="fld" style="display:none"><label>Year</label><select id="f-year"></select></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
           <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
         </div>
         <div class="sec">
@@ -381,8 +381,8 @@
     const alloc = d3.sum(data, d => d.alloc || 0), emAlloc = d3.sum(data.filter(d => d.alloc), d => d.mt_2025 || 0), mt23 = d3.sum(data, d => d.years[10] || 0);
     const R = st.region !== 'all' && REG[st.region], G = st.country !== 'all' && GHG[st.country];
     return {n: data.length, mt, base, now, closed, closed5, alloc, emAlloc, mt23, R, G, rows: [
-      ['installations', data.length, fmt], ['emitting that year', data.filter(d => d.mt_2025 > 0).length, fmt], ['Mt CO₂ that year', mt, f1], ['% of the ETS that year', 100 * mt / (YT.mt || 1), f1, 'pp'], ['vs 2021-23 baseline, same sites (%)', base && st.year >= 2024 ? 100 * (now - base) / base : null, signed, 'pp'],
-      ['Mt free allocation that year', alloc || null, f1], ['allocation covers (% of those sites)', alloc ? 100 * alloc / (emAlloc || 1) : null, f1, 'pp'], ['closed (permit revoked)', closed, fmt], ['closed since 2021', closed5, fmt],
+      ['installations', data.length, fmt], [`emitting in ${st.year}`, data.filter(d => d.mt_2025 > 0).length, fmt], [`Mt CO₂ ${st.year}`, mt, f1], ['% of the ETS', 100 * mt / (YT.mt || 1), f1, 'pp'], ['vs 2021-23 baseline, same sites (%)', base && st.year >= 2024 ? 100 * (now - base) / base : null, signed, 'pp'],
+      [`Mt free allocation ${st.year}`, alloc || null, f1], ['allocation covers (% of those sites)', alloc ? 100 * alloc / (emAlloc || 1) : null, f1, 'pp'], ['closed (permit revoked)', closed, fmt], ['closed since 2021', closed5, fmt],
       ...(R ? [['t CO₂ per inhabitant of the region', R.pop_2024 ? mt * 1e6 / R.pop_2024 : null, f1], ['t CO₂ per M€ of regional GDP', R.gdp_meur_2023 ? mt * 1e6 / R.gdp_meur_2023 : null, v => fmt(Math.round(v))]] : []),
       ...(!R && G && mt23 ? [['% of the national GHG inventory 2023', 100 * mt23 / G, f1, 'pp']] : [])]};
   }
@@ -450,7 +450,7 @@
     const data = filtered(); lastData = data; const P = state.pin;
     show(mode, data, autoSector ? [...state.sel].map(k => `<span>${sw(SECTOR_COLOR[k])}${k}</span>`).join('') + `<span>${sw(NOEM)}no ${state.year} emissions</span><span>size = Mt CO₂ ${state.year}</span>` : null);
     const m = metrics(data, state), mt = m.mt;
-    $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in ${state.year} <span class="small">· ${f1(100 * mt / (YT.mt || 1))} % of the ETS that year</span>`;
+    $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in ${state.year} <span class="small">· ${f1(100 * mt / (YT.mt || 1))} % of the ETS</span>`;
     $('btn-export').textContent = `Download CSV · ${fmt(data.length)} rows`;
     $('chips').classList.toggle('coloured', mode === 'sector');
     // answer: one set of KPIs, or the A | B | difference table when a selection is pinned
@@ -581,7 +581,7 @@
     const img = await mapImage();
     $('report').innerHTML = `<h1>EU ETS Installations Atlas · selection report</h1>
       <div class="sub">${P ? `A (pinned): ${P.label} · B: ${describe(state)}` : 'Filters: ' + describe(state)} · generated ${new Date().toISOString().slice(0, 10)} · source: EU Transaction Log public data, extract ${S.source.extract_as_of}</div>
-      ${P ? `<table class="cmp">${cmpRows(P.m, m, P.short, shortLabel(state))}</table>` : `<div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ ${state.year} · ${f1(100 * mt / (YT.mt || 1))} % of the ETS that year</div></div><div><div class="v num">${base && state.year >= 2024 ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation ${state.year}${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>`}
+      ${P ? `<table class="cmp">${cmpRows(P.m, m, P.short, shortLabel(state))}</table>` : `<div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ ${state.year} · ${f1(100 * mt / (YT.mt || 1))} % of the ETS</div></div><div><div class="v num">${base && state.year >= 2024 ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation ${state.year}${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>`}
       ${card}
       ${img ? `<h2>Map of the selection${P ? ` · A (${P.short}) as hollow rings, B (${shortLabel(state)}) as filled dots` : ''}</h2><img src="${img}" alt="map">` : ''}
       <h2>Breakdown</h2><div class="two"><div>${tbl(agg('sector'), 'Sector')}</div><div>${tbl(agg('country').slice(0, 10), 'Country (top 10)')}</div></div>
@@ -607,8 +607,8 @@
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
   if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
-    if (H0.get('y')) setYear(+H0.get('y'));
-    if (H0.get('a')) { const ast = stateFromHash(H0.get('a')); const keep = state.year; applyYear(ast.year); state.pin = makePin(ast, filtered(ast)); applyYear(keep); } }
+    // year selector parked (2026-09-14, user request): the control is hidden and the year is always 2025; the machinery (applyYear, y= in the hash) stays for when it comes back
+    if (H0.get('a')) { const ast = stateFromHash(H0.get('a')); ast.year = 2025; state.pin = makePin(ast, filtered(ast)); } }
 
   // ---------- tabs ----------
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => {

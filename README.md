@@ -25,7 +25,6 @@ One screen, no server. A guided reading of eight short chapters moves the map; a
 | Answer | installations, Mt CO₂ 2025 and share of the ETS; change vs baseline; free allocation and coverage; closures; regional or national context |
 | Breakdown | sector · country · operators · over time · regions · allocation (emitted vs allocated 2021–25, CBAM phase-out to 2034) — click a bar to filter |
 | Installation card | operator of record, address, ETS activity and code, NACE, permit; 2025 vs 2024; vs own baseline; allocation coverage and surplus or shortfall; timeline (first year, years reporting, revocation, exclusion); trajectory 2013–2025; rank in the ETS, in its country and sector; neighbours within 25 km |
-| Year | Every figure, size and rank follows the selected year (2013–2025); the trajectory marks it. Change vs the 2021-23 baseline exists only for 2024 and 2025, allocation from 2021. |
 | Compare | **Compare** freezes the current selection as A; whatever you filter next is B. The answer becomes a table A · B · B−A (installations, Mt, share of the ETS, change vs baseline, allocation and coverage, closures, per-capita, per-GDP or national share), the sector, country, operator and region bars pair up, the trajectory shows two lines, and A stays on the map as hollow rings. The comparison is part of the link and of the PDF. |
 | Outputs | **Download CSV** of the selection (45 columns, tonne precision) · **Report (PDF)**: one page with filters, KPIs or the A/B table, map, breakdowns, largest sites and the open card · **Copy link**: every filter lives in the URL |
 
@@ -81,7 +80,7 @@ Stack: DuckDB (all transformations, SQL in `sql/`), MapLibre GL + deck.gl (map),
 - The data are a snapshot (EUTL extract of 2026-07-10); an update means re-running the three scripts.
 - Regional context stops at NUTS-2; NUTS-3 and Just Transition Fund territories would be the next level.
 - Free allocation is shown as totals; product benchmarks and the yearly allocation schedule are not modelled.
-- A comparison across years (pin 2019, switch to 2025) compares the same installations; closures and status are always as of the extract, not as of the selected year.
+- Figures are for 2025; a year selector (2013–2025) is built but parked until it is reviewed.
 - Planned: hotspot aggregation (hexagons of ~20 km) to read industrial clusters as systems.
 
 ## Credits and licence
