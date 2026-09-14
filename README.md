@@ -80,7 +80,7 @@ Stack: DuckDB (all transformations, SQL in `sql/`), MapLibre GL + deck.gl (map),
 - The data are a snapshot (EUTL extract of 2026-07-10); an update means re-running the three scripts.
 - Regional context stops at NUTS-2; NUTS-3 and Just Transition Fund territories would be the next level.
 - Free allocation is shown as totals; product benchmarks and the yearly allocation schedule are not modelled.
-- Figures are for 2025; a year selector (2013–2025) is built but parked until it is reviewed.
+- Figures are for 2025. A year selector is built but parked: to ship it, status must be computed per year, the baseline and allocation rows shown only where they exist, and the control designed as a timeline under the answer rather than a dropdown.
 - Planned: hotspot aggregation (hexagons of ~20 km) to read industrial clusters as systems.
 
 ## Credits and licence

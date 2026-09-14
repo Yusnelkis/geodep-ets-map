@@ -21,6 +21,8 @@ workspace and never writes there.
 - `code/build_site_data.py` → `docs/data/installations.csv` (tonne precision, never rounded before display) +
   `docs/data/summary.json`; `docs/index.html` is the published page (GitHub Pages, `main:/docs`).
 - Scope rule (2026-09-13): plants and operators of record only. No companies, groups, GUO or GLEIF: that is GEODEP.
+- v1.0 closed 2026-09-14. Parked, code kept in `docs/index.html`: the year selector (`applyYear`, hidden `#f-year`, `y=` in the hash
+  ignored) — reopen only as a timeline under the answer with per-year status. Next candidates: hex hotspots (~20 km), NUTS-3.
 - `docker/compose.yml` → Dekart on `localhost:8080` (state in `docker/dekart-data/`, gitignored).
 - `sql/` → the DuckDB queries that GeoSQL produced for the map. `maps/` → exported map config / screenshots.
 - CLIs live in the venv: `../_venvs/ets_map/Scripts/{dekart,geosql}.exe`. In shell calls prepend that
