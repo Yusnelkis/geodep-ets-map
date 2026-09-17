@@ -16,7 +16,7 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <style>
   /* v2 palette: taken from the author's bivariate climate map (warm grey ground, white panel, teal · lavender · magenta) */
-  :root{--bg:#eae6de;--panel:#ffffff;--ink:#2a2a2a;--ink2:#5a554c;--ink3:#7a756c;--rule:#ddd8ce;--rule2:#cdc8be;--amber:#5e4f66;--blue:#1b6e62;--grey:#7a756c;--sea:#1b6e62;--data:#5e4f66;
+  :root{--bg:#eae6de;--panel:#ffffff;--ink:#2a2a2a;--ink2:#5a554c;--ink3:#7a756c;--rule:#ddd8ce;--rule2:#cdc8be;--amber:#1a5ce6;--blue:#1b6e62;--grey:#7a756c;--sea:#1b6e62;--data:#1a5ce6;
     --serif:"DM Serif Display",Georgia,serif;--sans:"Inter",system-ui,sans-serif;--mono:"Inter",system-ui,sans-serif}
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -110,7 +110,7 @@
   <aside id="panel">
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
-      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.30</span></div>
+      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.33</span></div>
     </div>
     <div class="tabs"><div class="tab" data-tab="story">Guided reading</div><div class="tab on" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -172,7 +172,7 @@
   const SECTOR_COLOR = {'Iron, steel & metals': '#2f5fa8', 'Cement & lime': '#c8501e', 'Pulp & paper': '#1f8f7a', 'Power & heat': '#9a6d00', 'Glass, ceramics & minerals': '#b5457a', 'Other': '#5b7a1e', 'Chemicals': '#6d5bd0', 'Refineries & coke': '#882058'};
   const CORE = new Set(['Cement & lime', 'Iron, steel & metals', 'Refineries & coke']);
   // v2 palette (from the bivariate climate map): data = deep lavender, down/closed = teal, up = magenta, A = ink ring, no emissions = warm grey
-  const POINT = '#5e4f66', SEAC = '#2a2a2a', NOEM = '#b9b3a8', CHALK = '#4a463e', BAR = '#8a857c', AMBER = '#9a6d00', BLUE = '#1b6e62', RED = '#c24e80', GREY = '#7a756c', DIM = '#cdc8be', INK = '#2a2a2a', INK2 = '#5a554c', INK3 = '#7a756c';
+  const POINT = '#1a5ce6', SEAC = '#2a2a2a', NOEM = '#b9b3a8', CHALK = '#4a463e', BAR = '#8a857c', AMBER = '#9a6d00', BLUE = '#1b6e62', RED = '#c24e80', GREY = '#7a756c', DIM = '#cdc8be', INK = '#2a2a2a', INK2 = '#5a554c', INK3 = '#7a756c';
   const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
   const fmt = d3.format(','), f1 = d3.format('.1f'), pct = v => f1(v) + ' %', signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + f1(Math.abs(v));
   const mtOrKt = v => v == null ? '—' : v >= 0.1 ? f1(v) + ' Mt' : Math.round(v * 1000) + ' kt';
@@ -240,6 +240,17 @@
   const overlay = new MapboxOverlay({interleaved: false, layers: [], glOptions: {preserveDrawingBuffer: true}, deviceProps: {webgl: {preserveDrawingBuffer: true}}, onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; },
     onClick: info => { if (info.object && !drawing) showDetail(info.object); }});
   map.addControl(overlay); window.__map = map;
+  // callout: a leader line from the open card to the installation it describes, redrawn on every map move
+  const lead = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); lead.id = 'lead'; lead.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5;display:none'; document.getElementById('mapwrap').appendChild(lead);
+  let focusD = null;
+  function drawLead() { if (!focusD || !document.getElementById('detail').innerHTML.trim()) { lead.style.display = 'none'; return; }
+    const p = map.project([focusD.lon, focusD.lat]), card = document.getElementById('detail').getBoundingClientRect(), wrap = document.getElementById('mapwrap').getBoundingClientRect();
+    const cx = card.right - wrap.left, cy = Math.min(Math.max(p.y, card.top - wrap.top + 24), card.bottom - wrap.top - 24), r = Math.max(7, rMt(focusD) + 4);
+    if (p.x < cx + 4 && p.y > card.top - wrap.top && p.y < card.bottom - wrap.top) { lead.style.display = 'none'; return; }
+    lead.style.display = ''; lead.setAttribute('width', wrap.width); lead.setAttribute('height', wrap.height);
+    lead.innerHTML = `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="${INK}" stroke-width="1.2"/><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="none" stroke="${INK}" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="3" fill="${INK}"/>`; }
+  function setFocus(d) { focusD = d; drawLead(); if (typeof sync === 'function' && lastData) sync(); }
+  map.on('move', drawLead); map.on('resize', drawLead);
   let cur = {mode: null, data: null};
   // at European scale only the sites of SMALL Mt or more are drawn (1,312 of 16,733); zoom in (>= 6) or "show all" draws every site. Figures always count all.
   const SMALL = 0.1, bigEnough = (d, mode) => mode === 'closed' ? (d.mt_last || 0) >= SMALL : (d.mt_2025 || 0) >= SMALL;
@@ -479,7 +490,7 @@
     const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
     d3.select('#toplist').html(top.map((d, i) => `<tr data-id="${d.id}"><td class="n num">${i + 1}</td><td>${d.name} <span class="h">· ${d.holder} · ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td></tr>`).join(''));
     document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); showDetail(d); });
-    if (pushHash) { let hs = hashOf(state); if (P) hs += (hs ? '&' : '') + 'a=' + encodeURIComponent(P.hash); history.replaceState(null, '', hs ? '#' + hs : location.pathname); }
+    if (pushHash) { let hs = hashOf(state); if (P) hs += (hs ? '&' : '') + 'a=' + encodeURIComponent(P.hash); if (focusD) hs += (hs ? '&' : '') + 'pl=' + focusD.id; history.replaceState(null, '', hs ? '#' + hs : location.pathname); }
   }
   $('f-bk').addEventListener('change', e => { state.bk = e.target.value; document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.bk === state.bk)); });
 
@@ -506,7 +517,7 @@
       ${showAlloc ? `<div class="blk"><div class="lab">Free allocation vs emissions 2021–2025 · Mt</div><svg id="d-alloc"></svg></div>` : ''}
       <div class="blk"><div class="lab">Around it</div><p>${near.length ? `<a href="#" id="d-near">${fmt(near.length)} other emitting installation${near.length > 1 ? 's' : ''} within 25 km · ${f1(d3.sum(near, r => r.mt_2025))} Mt</a> <span class="small">· click to keep only this 25 km circle</span>` : 'No other emitting installation within 25 km.'}</p></div>
       <div class="acts"><button class="btn" id="d-add">+ Add plant to the list</button><button class="btn" id="d-op">+ Add its operator</button><button class="btn" id="d-zoom">Zoom</button></div><div class="fb" id="d-fb"></div>`;
-    el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
+    el.querySelector('#dx').onclick = () => { el.innerHTML = ''; setFocus(null); }; setFocus(d);
     // the list of plants/operators is a filter: what you add here is what the answer below is about (other filters still apply)
     const fb = () => { const a = el.querySelector('#d-add'), o = el.querySelector('#d-op'); a.disabled = state.terms.has('pl:' + d.id); o.disabled = state.terms.has('op:' + d.holder);
       el.querySelector('#d-fb').innerHTML = state.terms.size ? `List: <b>${[...state.terms].map(termLabel).join(', ')}</b> → ${fmt(lastData.length)} installations · ${f1(d3.sum(lastData, r => r.mt_2025 || 0))} Mt. The answer below is about this list.` : ''; }; fb();
@@ -595,7 +606,7 @@
   $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
   $('btn-pin').onclick = () => { state.pin = state.pin ? null : makePin(snapshot(), lastData); cur.mode = null; sync(); };
   $('f-year').addEventListener('change', e => { setYear(+e.target.value); cur.mode = null; sync(); });
-  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('f-q').value = ''; state.showAll = false; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('f-q').value = ''; state.showAll = false; $('detail').innerHTML = ''; setFocus(null); cur.mode = null; sync(); fly(VIEWS.eu); };
   $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   $('f-country').addEventListener('change', e => { state.country = e.target.value; fillRegions(); sync(); focusMap(); });
@@ -638,6 +649,7 @@
   $('lnk-story').onclick = e => { e.preventDefault(); document.querySelector(document.querySelector('.tab[data-tab="story"]').classList.contains('on') ? '.tab[data-tab="explore"]' : '.tab[data-tab="story"]').click(); };
   fillRegions();
   document.querySelector('.tab[data-tab="explore"]').click();
+  if (H0.get('pl') && byId.get(H0.get('pl'))) { const d = byId.get(H0.get('pl')); setTimeout(() => { map.stop(); showDetail(d); map.jumpTo({center: [d.lon, d.lat], zoom: 8}); }, 80); }
 })().catch(err => { console.error(err); document.getElementById('asof').textContent = 'data failed to load: ' + err.message; });
 </script>
 </body>
