@@ -17,22 +17,24 @@
 
 ## How it works
 
-One screen, no server. A guided reading of eight short chapters moves the map; an Explore tab turns it into a tool:
+One screen, no server. One question, one answer, and everything else a click away (v2, redesigned after a pilot with policy users):
 
-| Explore | |
+| | |
 |---|---|
-| Filters | country · NUTS-2 region · operator (all its plants) · plant · sectors (pick to keep) · status · minimum CO₂ · colour mode · **area drawn on the map**, analytics updating as you draw |
-| Answer | installations, Mt CO₂ 2025 and share of the ETS; change vs baseline; free allocation and coverage; closures; regional or national context |
-| Breakdown | sector · country · operators · over time · regions · allocation (emitted vs allocated 2021–25, CBAM phase-out to 2034) — click a bar to filter |
-| Installation card | operator of record, address, ETS activity and code, NACE, permit; 2025 vs 2024; vs own baseline; allocation coverage and surplus or shortfall; timeline (first year, years reporting, revocation, exclusion); trajectory 2013–2025; rank in the ETS, in its country and sector; neighbours within 25 km |
+| Search | one box for country, NUTS-2 region, operator (all its plants) or plant; each pick becomes a chip. The map frames the selection and, at European scale, draws only the sites of 0.1 Mt or more (1,312 of 16,733) until you zoom in or press *show all*; the figures always count every site |
+| Answer | always visible: installations, Mt CO₂ 2025 and share of the ETS; change vs baseline; free allocation and coverage; closures; per inhabitant and per GDP for a region, share of the national inventory for a country |
+| Breakdown | one chart with a selector: sector · country · operators · regions · over time · allocation (emitted vs allocated 2021–25, CBAM phase-out to 2034) · largest sites — click a bar to filter |
+| Refine | folded under the answer: sectors (pick to keep) · status · minimum CO₂ · colour mode · **area drawn on the map**, analytics updating as you draw |
+| Story | eight short chapters on decarbonisation, behind *Read the story* in the header; they move the map and come back to the tool |
+| Installation card | opens over the map: operator of record, address, ETS activity and code, NACE, permit; 2025 vs 2024; vs own baseline; allocation coverage and surplus or shortfall; timeline (first year, years reporting, revocation, exclusion); trajectory 2013–2025; rank in the ETS, in its country and sector; neighbours within 25 km |
 | Compare | **Compare** freezes the current selection as A; whatever you filter next is B. The answer becomes a table A · B · B−A (installations, Mt, share of the ETS, change vs baseline, allocation and coverage, closures, per-capita, per-GDP or national share), the sector, country, operator and region bars pair up, the trajectory shows two lines, and A stays on the map as hollow rings. The comparison is part of the link and of the PDF. |
 | Outputs | **Download CSV** of the selection (45 columns, tonne precision) · **Report (PDF)**: one page with filters, KPIs or the A/B table, map, breakdowns, largest sites and the open card · **Copy link**: every filter lives in the URL |
 
-Colour has one meaning each: yellow is installations and their CO₂, blue is *down* or *closed*, red is *up*, sea blue is the pinned selection A, sector colours appear only when asked. Filtering by country, region or operator frames the map on the selection.
+Colour has one meaning each, on a warm grey ground (the palette of the author's [bivariate climate map](https://yusnelkis.github.io/Portafolio/bivariate-climate-map/)): deep lavender is installations and their CO₂, teal is *down* or *closed*, magenta is *up*, an ink ring is the pinned selection A, sector colours appear only when asked. Every hue was checked with a palette validator for contrast and colour-vision deficiency on that ground.
 
-![Four states of the Explore tab: top 500 emitters; Poland by sector; iron and steel vs its 2021-23 baseline; Germany by free-allocation position](docs/assets/walkthrough.gif)
+![Four states of the tool: Europe; Poland by sector; iron and steel vs its 2021-23 baseline; Germany compared with Poland](docs/assets/walkthrough.gif)
 
-*Top 500 emitters · Poland by sector · iron and steel against its own baseline · Germany by free-allocation position. Each state is a URL.*
+*Europe · Poland by sector · iron and steel against its own baseline · Germany compared with Poland (A/B). Each state is a URL.*
 
 ## Data and method
 

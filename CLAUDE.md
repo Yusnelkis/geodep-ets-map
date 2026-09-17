@@ -21,6 +21,11 @@ workspace and never writes there.
 - `code/build_site_data.py` → `docs/data/installations.csv` (tonne precision, never rounded before display) +
   `docs/data/summary.json`; `docs/index.html` is the published page (GitHub Pages, `main:/docs`).
 - Scope rule (2026-09-13): plants and operators of record only. No companies, groups, GUO or GLEIF: that is GEODEP.
+- v2.0 (2026-09-17), after the pilot's feedback ("overloaded, too dark"): light palette taken from the author's bivariate climate map
+  (bg #eae6de, data #5e4f66, teal down, magenta up), one search box, answer first, one breakdown with a selector, Refine collapsed,
+  story as a secondary view behind the header link, card over the map, sites under 0.1 Mt hidden at European scale (`SMALL`,
+  "show all" in the legend). Built by `scratchpad/v2_assemble.py` (head + body + engine replacements) over the v1 engine; the
+  calculations did not change. Sector and semantic colours validated with the dataviz palette validator on #eae6de.
 - v1.0 closed 2026-09-14. Parked, code kept in `docs/index.html`: the year selector (`applyYear`, hidden `#f-year`, `y=` in the hash
   ignored) — reopen only as a timeline under the answer with per-year status. Next candidates: hex hotspots (~20 km), NUTS-3.
 - `docker/compose.yml` → Dekart on `localhost:8080` (state in `docker/dekart-data/`, gitignored).

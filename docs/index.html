@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EU ETS Installations Atlas</title>
-<meta name="description" content="EU ETS Installations Atlas: Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025. A guided reading and an explorer, on one map.">
+<meta name="description" content="EU ETS Installations Atlas: Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="EU ETS Installations Atlas">
 <meta property="og:description" content="Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.">
@@ -12,96 +12,97 @@
 <meta property="og:image" content="https://yusnelkis.github.io/geodep-ets-map/assets/screenshot.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <style>
-  :root{--bg:#101318;--panel:#0d1015;--ink:#f2f0ea;--ink2:#aeaba3;--ink3:#6f6c65;--rule:#242930;--amber:#dfe3e8;--blue:#3987e5;--grey:#4a4f58;--sea:#9ec5f4;
-    --serif:"Fraunces",Georgia,serif;--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+  /* v2 palette: taken from the author's bivariate climate map (warm grey ground, white panel, teal · lavender · magenta) */
+  :root{--bg:#eae6de;--panel:#ffffff;--ink:#2a2a2a;--ink2:#5a554c;--ink3:#7a756c;--rule:#ddd8ce;--rule2:#cdc8be;--amber:#5e4f66;--blue:#1b6e62;--grey:#7a756c;--sea:#1b6e62;--data:#5e4f66;
+    --serif:"DM Serif Display",Georgia,serif;--sans:"Inter",system-ui,sans-serif;--mono:"Inter",system-ui,sans-serif}
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
-  a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
-  .num{font-family:var(--mono);font-variant-numeric:tabular-nums} .small{font-size:12.5px;color:var(--ink3);line-height:1.45}
-  button{font:inherit} .btn{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font-size:12.5px;cursor:pointer} .btn:hover{border-color:var(--ink2);color:var(--ink)} .btn:disabled{opacity:.3;cursor:default}
-  #app{display:grid;grid-template-columns:460px 1fr;height:100%}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
+  a{color:var(--sea);text-decoration:underline;text-decoration-color:rgba(27,110,98,.4);text-underline-offset:3px}
+  .num{font-variant-numeric:tabular-nums} .small{font-size:12px;color:var(--ink3);line-height:1.45}
+  button{font:inherit} .btn{background:#fff;border:1px solid var(--rule2);color:var(--ink2);padding:5px 10px;font-size:12.5px;cursor:pointer;border-radius:3px} .btn:hover{border-color:var(--ink3);color:var(--ink)} .btn:disabled{opacity:.35;cursor:default} .btn.on{border-color:var(--ink);color:var(--ink);background:var(--bg)}
+  #app{display:grid;grid-template-columns:420px 1fr;height:100%}
   /* panel */
-  #panel{background:var(--panel);border-right:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
-  .head{padding:18px 20px 14px;border-bottom:1px solid var(--rule)}
-  .head h1{font:300 30px/1.05 var(--serif);margin:0;letter-spacing:-.01em} .head h1 em{font-style:italic;font-weight:600;color:var(--sea)}
-  .head .sub{margin-top:8px;font-size:13px;color:var(--ink2)} .head .meta{margin-top:4px}
-  .tabs{display:flex;border-bottom:1px solid var(--rule)}
-  .tab{flex:1;padding:10px;text-align:center;font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
-  .tab.on{color:var(--ink);border-bottom-color:var(--amber)}
-  .body{flex:1;overflow:auto;min-height:0} .view{display:none;padding:18px 20px 24px} .view.on{display:block}
-  /* story */
-  .kicker{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
-  .story h2{font:600 22px/1.2 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  #panel{background:var(--panel);border-right:1px solid var(--rule2);display:flex;flex-direction:column;min-height:0}
+  .head{padding:16px 20px 12px;border-bottom:1px solid var(--rule)}
+  .head h1{font:400 26px/1.05 var(--serif);margin:0;letter-spacing:-.005em} .head h1 em{font-style:italic;color:var(--sea)}
+  .head .meta{margin-top:5px;font-size:12px;color:var(--ink3)}
+  .tabs{display:none}
+  .body{flex:1;overflow:auto;min-height:0} .view{display:none;padding:14px 20px 20px} .view.on{display:block}
+  /* search */
+  .qbox{position:relative;margin-bottom:10px}
+  .qbox input{width:100%;background:#fff;color:var(--ink);border:1px solid var(--rule2);border-radius:4px;padding:9px 11px;font:inherit;font-size:14px} .qbox input::placeholder{color:#9a958c} .qbox input:focus{outline:none;border-color:var(--ink3)}
+  .sugg{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--rule2);box-shadow:0 4px 14px rgba(0,0,0,.08);max-height:320px;overflow:auto;display:none;font-size:13px}
+  .sugg.on{display:block} .sugg .grp{padding:6px 10px 2px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-top:1px solid var(--rule)} .sugg .grp:first-child{border-top:0}
+  .sugg .it{padding:6px 10px;cursor:pointer;color:var(--ink2);display:flex;justify-content:space-between;gap:8px} .sugg .it:hover,.sugg .it.hl{background:var(--bg);color:var(--ink)} .sugg .it .m{color:var(--ink3);font-size:11.5px;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule2);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none;border-radius:3px;background:#fff}
+  .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4;display:none} #chips.coloured .chip .sw{display:inline-block} .chip.on{color:var(--ink);border-color:var(--ink2);background:var(--bg)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
+  .chip.op .sw,.chip.pl .sw,.chip.tx .sw,.chip.co .sw,.chip.r .sw{display:inline-block;opacity:1;border-radius:2px;width:8px;height:8px;background:var(--ink3)} .chip.pl .sw{border-radius:50%} .chip.tx .sw{background:transparent;border:1px dashed var(--ink3)} .chip.co .sw,.chip.r .sw{background:var(--sea)}
+  #terms-wrap{margin:-2px 0 12px}
+  /* answer */
+  .sec{margin-bottom:16px} .sec>.lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .stat{font:600 14.5px/1.4 var(--sans);color:var(--ink);margin:0 0 8px} .stat .small{font-weight:400}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px} .kpi{border:1px solid var(--rule);background:#fff;padding:7px 10px;border-radius:3px} .kpi .v{font:400 19px var(--serif);letter-spacing:-.01em} .kpi .l{font-size:10.5px;color:var(--ink3);margin-top:1px;line-height:1.3}
+  .actions{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+  .pin-note{font-size:12.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45} .pin-note b{color:var(--sea);font-weight:600} .pin-note i{font-style:normal;color:var(--ink3)}
+  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px} table.cmp th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);text-align:right;padding:2px 4px 6px;font-weight:500} table.cmp td{padding:5px 4px;border-top:1px solid var(--rule);text-align:right;vertical-align:baseline;white-space:nowrap}
+  table.cmp td:first-child,table.cmp th:first-child{text-align:left;color:var(--ink2);white-space:normal} table.cmp .a{color:var(--sea)} table.cmp .d{color:var(--ink3)}
+  /* breakdown */
+  .bkhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px} .bkhead select{background:#fff;border:1px solid var(--rule2);border-radius:3px;color:var(--ink);font:inherit;font-size:12.5px;padding:4px 6px}
+  .bk{display:none} .bk.on{display:block} .bk svg{width:100%;height:auto;display:block;overflow:visible} .bk .hint{margin-top:5px}
+  svg .bar-row{cursor:pointer} svg .bar-row:hover rect{fill:var(--ink)!important}
+  .axis text{fill:var(--ink3);font-family:var(--sans);font-size:10px} .axis line{stroke:var(--rule)} .axis path{display:none}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px} table.t td{padding:5px 4px;border-bottom:1px solid var(--rule);vertical-align:baseline;cursor:pointer} table.t tr:hover td{color:var(--ink)}
+  table.t td.r{text-align:right;white-space:nowrap} table.t td.n{color:var(--ink3);width:22px} table.t td .h{color:var(--ink3);font-size:11.5px}
+  /* refine (collapsed) */
+  #refine{display:none;border:1px solid var(--rule);border-radius:4px;padding:10px 12px 4px;margin-top:10px;background:#fbfaf7} #refine.on{display:block}
+  .grp-lab{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:6px 0 6px;font-weight:500}
+  .fld{margin-bottom:10px} .fld label{display:block;font-size:12px;color:var(--ink3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fld select,.fld input[type=text]{width:100%;background:#fff;color:var(--ink);border:1px solid var(--rule2);border-radius:3px;padding:6px 8px;font:inherit;font-size:13px}
+  .fld input[type=range]{width:100%;accent-color:var(--data)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* story (secondary view, reached from the header link) */
+  .kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+  .story h2{font:400 22px/1.2 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
   .story p{margin:0 0 10px;color:var(--ink2)} .story p b{color:var(--ink);font-weight:600}
   .story .fig{margin:14px 0 4px} .story .fig svg{width:100%;height:auto;display:block;overflow:visible} .story .fig .cap{margin-top:6px}
-  .axis text{fill:var(--ink3);font-family:var(--mono);font-size:10px} .axis line{stroke:var(--rule)} .axis path{display:none}
   .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--rule)}
-  .dots{display:flex;gap:6px} .dots i{width:7px;height:7px;border-radius:50%;background:var(--rule);cursor:pointer} .dots i.on{background:var(--amber)}
+  .dots{display:flex;gap:6px} .dots i{width:7px;height:7px;border-radius:50%;background:var(--rule2);cursor:pointer} .dots i.on{background:var(--data)}
   .jump{display:flex;gap:6px;margin-top:10px}
-  table.t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px} table.t td{padding:5px 4px;border-bottom:1px solid var(--rule);vertical-align:baseline;cursor:pointer} table.t tr:hover td{color:var(--ink)}
-  table.t td.r{text-align:right;white-space:nowrap} table.t td.n{color:var(--ink3);width:22px} table.t td .h{color:var(--ink3);font-size:11.5px}
-  /* explore */
-  .sec{margin-bottom:18px} .sec>.lab{font:11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
-  .grp-lab{font:600 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:12px 0 6px;padding-top:8px;border-top:1px solid var(--rule)} .grp-lab:first-of-type{border-top:0;padding-top:0;margin-top:4px}
-  .fld{margin-bottom:10px} .fld label{display:block;font-size:12px;color:var(--ink3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .fld input::placeholder{color:var(--ink3)}
-  .sugg{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--panel);border:1px solid var(--ink3);max-height:300px;overflow:auto;display:none;font-size:12.5px}
-  .sugg.on{display:block} .sugg .grp{padding:5px 9px 2px;font:10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);border-top:1px solid var(--rule)} .sugg .grp:first-child{border-top:0}
-  .sugg .it{padding:5px 9px;cursor:pointer;color:var(--ink2);display:flex;justify-content:space-between;gap:8px} .sugg .it:hover,.sugg .it.hl{background:var(--bg);color:var(--ink)} .sugg .it .m{color:var(--ink3);font-size:11.5px;white-space:nowrap}
-  .chip.op .sw,.chip.pl .sw,.chip.tx .sw{display:inline-block;opacity:1;border-radius:2px;width:8px;height:8px;background:var(--ink3)} .chip.pl .sw{border-radius:50%} .chip.tx .sw{background:transparent;border:1px dashed var(--ink3)}
-  .fld select,.fld input[type=text]{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:7px 9px;font:inherit;font-size:13.5px}
-  .fld input[type=range]{width:100%;accent-color:var(--amber)}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .row3{display:grid;grid-template-columns:.75fr 1.35fr 1fr;gap:10px}
-  #detail .fb{margin-top:8px;font-size:12.5px;color:var(--ink2)} #detail .fb b{color:var(--ink)}
-  .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none}
-  .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4;display:none} #chips.coloured .chip .sw{display:inline-block} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
+  /* installation card: slides over the map */
+  #detail:empty{display:none} #detail{position:absolute;left:12px;top:12px;width:400px;max-width:calc(100% - 24px);max-height:calc(100% - 24px);overflow:auto;z-index:6;border:1px solid var(--rule2);background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12);padding:12px 14px;border-radius:4px}
+  #detail .x{position:absolute;right:10px;top:8px;cursor:pointer;color:var(--ink3);font-size:14px}
+  #detail h3{font:400 18px/1.2 var(--serif);margin:0 0 4px;padding-right:22px} #detail .who{color:var(--ink2);font-size:13px} #detail .ids{margin-top:4px}
+  #detail .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:12px 0 10px} #detail .grid3 div{border:1px solid var(--rule);padding:6px 8px;border-radius:3px} #detail .grid3 .v{font:400 16px var(--serif)} #detail .grid3 .l{font-size:10.5px;color:var(--ink3);line-height:1.3;margin-top:2px}
+  #detail .blk{margin-top:10px} #detail .blk .lab{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px} #detail .blk p{margin:0;color:var(--ink2);font-size:12.5px;line-height:1.45}
+  #detail svg{width:100%;height:auto;display:block;overflow:visible;margin-top:4px} #detail .acts{display:flex;gap:6px;margin-top:12px} #detail .fb{margin-top:8px;font-size:12.5px;color:var(--ink2)} #detail .fb b{color:var(--ink)}
+  details.foot-d{padding:8px 0} details.foot-d summary{cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)} details.foot-d p{margin:8px 0 0;color:var(--ink2);font-size:12.5px}
+  .foot{padding:0 20px;border-top:1px solid var(--rule)}
+  /* map */
+  #mapwrap{position:relative;min-width:0} #map{position:absolute;inset:0}
+  .legend{position:absolute;left:14px;bottom:14px;font-size:12px;color:var(--ink2);background:rgba(255,255,255,.93);border:1px solid var(--rule);border-radius:3px;padding:6px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 28px)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#b9e8df,#3a9e8f,#1b6e62)}
+  .tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--rule2);padding:8px 10px;font-size:12.5px;line-height:1.4;max-width:280px;z-index:5;display:none;border-radius:3px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+  .tip b{display:block;font-family:var(--serif);font-size:14px} .tip span{color:var(--ink2)}
+  .maplibregl-ctrl-group{background:#fff!important;border:1px solid var(--rule2)} .draw-ctl{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin:8px!important} .draw-ctl button{background:#fff;border:1px solid var(--rule2);border-radius:3px;font:12.5px var(--sans);padding:5px 9px;cursor:pointer;color:var(--ink2)} .draw-ctl button.on{border-color:var(--ink);color:var(--ink)} .draw-ctl .hint{display:none}
+  #map.drawing{cursor:crosshair}
+  @media (max-width:820px){ html,body{overflow:auto} #app{grid-template-columns:1fr;grid-template-rows:52vh 1fr;height:auto;min-height:100%} #mapwrap{order:-1;height:52vh} #panel{border-right:0;border-top:1px solid var(--rule2)} .body{overflow:visible} .head h1{font-size:22px} #detail{width:calc(100% - 24px)} }
   /* printable report */
   #report{display:none}
   @media print{
     @page{margin:14mm}
     body{overflow:visible;background:#fff;color:#111} #app{display:none!important} #report{display:block;font:11pt/1.45 var(--sans);color:#111}
-    #report h1{font:600 22pt/1.15 var(--serif);margin:0 0 4pt} #report .sub{color:#555;font-size:10pt;margin-bottom:12pt}
-    #report h2{font:600 13pt var(--serif);margin:14pt 0 6pt;border-top:1px solid #ccc;padding-top:8pt}
-    #report .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8pt} #report .kp div{border:1px solid #ccc;padding:6pt 8pt} #report .kp .v{font:600 16pt var(--serif)} #report .kp .l{font-size:8.5pt;color:#555}
+    #report h1{font:400 22pt/1.15 var(--serif);margin:0 0 4pt} #report .sub{color:#555;font-size:10pt;margin-bottom:12pt}
+    #report h2{font:400 13pt var(--serif);margin:14pt 0 6pt;border-top:1px solid #ccc;padding-top:8pt}
+    #report .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8pt} #report .kp div{border:1px solid #ccc;padding:6pt 8pt} #report .kp .v{font:400 16pt var(--serif)} #report .kp .l{font-size:8.5pt;color:#555}
     #report .two{display:grid;grid-template-columns:1fr 1fr;gap:14pt} #report svg{width:100%;height:auto} #report svg text{fill:#333!important} #report svg .axis line{stroke:#ddd!important}
     #report table{width:100%;border-collapse:collapse;font-size:9.5pt} #report td,#report th{padding:3pt 4pt;border-bottom:1px solid #ddd;text-align:left;vertical-align:top} #report td.r,#report th.r{text-align:right}
-    #report img{width:100%;border:1px solid #ccc} #report .small{font-size:8.5pt;color:#555} #report .num{font-family:var(--mono)}
-    #report table.cmp .a{color:#2a5d9f} #report table.cmp .d{color:#666} #report table.cmp th{color:#555;font-size:8.5pt;text-transform:uppercase;letter-spacing:.06em}
-    #report
+    #report img{width:100%;border:1px solid #ccc} #report .small{font-size:8.5pt;color:#555} #report .num{font-variant-numeric:tabular-nums}
+    #report table.cmp .a{color:#1b6e62} #report table.cmp .d{color:#666} #report table.cmp th{color:#555;font-size:8.5pt;text-transform:uppercase;letter-spacing:.06em}
+    #report .card{border:1px solid #ccc;padding:8pt 10pt;color:#222} #report .card h3{font:400 13pt var(--serif);margin:0 0 3pt} #report .card .who,#report .card .ids,#report .card .blk p{color:#333;font-size:9.5pt} #report .card .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6pt;margin:6pt 0} #report .card .grid3 div{border:1px solid #ccc;padding:4pt 6pt} #report .card .grid3 .v{font:400 12pt var(--serif)} #report .card .grid3 .l{font-size:8pt;color:#555} #report .card .lab{font-size:8pt;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-top:6pt} #report .card svg{max-width:340pt}
   }
-  .stat{font:600 15px var(--sans);color:var(--ink);margin:0 0 4px} .stat .small{font-weight:400}
-  .actions{display:flex;gap:6px;margin:10px 0 12px}
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px} .kpi{border:1px solid var(--rule);background:var(--panel);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
-  /* A/B comparison: A = pinned selection (sea blue), B = current (yellow, as always) */
-  .pin-note{font-size:12.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45} .pin-note b{color:var(--sea);font-weight:600;font-family:var(--mono)} .pin-note i{font-style:normal;color:var(--ink3);font-family:var(--mono)}
-  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px} table.cmp th{font:400 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:right;padding:2px 4px 6px} table.cmp td{padding:5px 4px;border-top:1px solid var(--rule);text-align:right;vertical-align:baseline;white-space:nowrap}
-  table.cmp td:first-child,table.cmp th:first-child{text-align:left;color:var(--ink2);white-space:normal} table.cmp .a{color:var(--sea)} table.cmp .d{color:var(--ink3)}
-  #btn-pin.on{border-color:var(--sea);color:var(--sea)}
-  .subtabs{display:flex;gap:2px;margin-bottom:8px} .subtabs span{flex:1;text-align:center;padding:5px 4px;font-size:12px;color:var(--ink3);border:1px solid var(--rule);cursor:pointer} .subtabs span.on{color:var(--ink);border-color:var(--ink2)}
-  .bk{display:none} .bk.on{display:block} .bk svg{width:100%;height:auto;display:block;overflow:visible} .bk .hint{margin-top:6px}
-  svg .bar-row{cursor:pointer} svg .bar-row:hover rect{fill:var(--ink)!important}
-  #map.drawing{cursor:crosshair}
-  /* installation card */
-  #detail:empty{display:none} #detail{border:1px solid var(--ink3);background:var(--panel);padding:12px 14px;margin-bottom:18px;position:relative}
-  #detail .x{position:absolute;right:10px;top:8px;cursor:pointer;color:var(--ink3);font-size:14px}
-  #detail h3{font:600 17px/1.2 var(--serif);margin:0 0 4px;padding-right:22px} #detail .who{color:var(--ink2);font-size:13px} #detail .ids{margin-top:4px}
-  #detail .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:12px 0 10px} #detail .grid3 div{border:1px solid var(--rule);padding:6px 8px} #detail .grid3 .v{font:600 16px var(--serif)} #detail .grid3 .l{font-size:10.5px;color:var(--ink3);line-height:1.3;margin-top:2px}
-  #detail .blk{margin-top:10px} #detail .blk .lab{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px} #detail .blk p{margin:0;color:var(--ink2);font-size:12.5px;line-height:1.45}
-  #detail svg{width:100%;height:auto;display:block;overflow:visible;margin-top:4px} #detail .acts{display:flex;gap:6px;margin-top:12px}
-  details.foot-d{padding:10px 0} details.foot-d summary{cursor:pointer;font:11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)} details.foot-d p{margin:8px 0 0;color:var(--ink2);font-size:13px}
-  .foot{padding:0 20px;border-top:1px solid var(--rule)}
-  /* map */
-  #mapwrap{position:relative;min-width:0} #map{position:absolute;inset:0}
-  .legend{position:absolute;left:14px;bottom:14px;font-size:12.5px;color:var(--ink2);background:rgba(13,16,21,.88);padding:6px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 28px)}
-  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#184f95,#3987e5,#9ec5f4)}
-  .tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);padding:8px 10px;font-size:12.5px;line-height:1.4;max-width:280px;z-index:5;display:none}
-  .tip b{display:block;font-family:var(--serif);font-size:14px} .tip span{color:var(--ink2)}
-  .maplibregl-ctrl-group{background:var(--panel)!important;border:1px solid var(--rule)} .maplibregl-ctrl-group button{filter:invert(1)}
-  @media (max-width:820px){ html,body{overflow:auto} #app{grid-template-columns:1fr;grid-template-rows:52vh 1fr;height:auto;min-height:100%} #mapwrap{order:-1;height:52vh} #panel{border-right:0;border-top:1px solid var(--rule)} .body{overflow:visible} .head h1{font-size:24px} }
-  #report .card{border:1px solid #ccc;padding:8pt 10pt;color:#222} #report .card h3{font:600 13pt var(--serif);margin:0 0 3pt} #report .card .who,#report .card .ids,#report .card .blk p{color:#333;font-size:9.5pt} #report .card .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6pt;margin:6pt 0} #report .card .grid3 div{border:1px solid #ccc;padding:4pt 6pt} #report .card .grid3 .v{font:600 12pt var(--serif)} #report .card .grid3 .l{font-size:8pt;color:#555} #report .card .lab{font-size:8pt;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-top:6pt} #report .card svg{max-width:340pt}
 </style>
 </head>
 <body>
@@ -109,50 +110,40 @@
   <aside id="panel">
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
-      <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-14.23</span></div>
+      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.30</span></div>
     </div>
-    <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
+    <div class="tabs"><div class="tab" data-tab="story">Guided reading</div><div class="tab on" data-tab="explore">Explore</div></div>
     <div class="body">
-      <div class="view story on" id="story"></div>
-      <div class="view" id="explore">
-        <div id="detail"></div>
+      <div class="view story" id="story"></div>
+      <div class="view on" id="explore">
+        <div class="qbox"><input type="text" id="f-q" placeholder="Search a country, region, operator or plant…" autocomplete="off"><div class="sugg" id="sugg-q"></div></div>
+        <div id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
         <div class="sec">
-          <div class="lab"><span>Question</span><span style="display:flex;gap:6px"><button class="btn" id="btn-pin" style="padding:2px 8px;font-size:11.5px" title="Freeze the current selection as A, then change the filters: the answer and the breakdowns compare A with the new selection (B)">Compare</button><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px">Reset</button></span></div>
-          <div class="small" id="cmp-hint" style="margin:-2px 0 8px">Filter a first selection, press <b>Compare</b> to keep it as A, then filter the second one (B). The answer below shows A, B and the difference.</div>
+          <div class="lab"><span>Answer</span><span style="display:flex;gap:6px"><button class="btn" id="btn-pin" style="padding:2px 8px;font-size:11.5px" title="Keep the current selection as A, then change the search or the filters: the answer compares A with the new selection (B)">Compare</button><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px" title="Clear the search, the filters, the drawn area, the pinned A and the open card">Reset</button></span></div>
+          <div class="small" id="cmp-hint" style="display:none"></div>
           <div class="pin-note" id="pin-note" style="display:none"></div>
-          <div class="grp-lab">Who and where</div>
-          <div class="row2"><div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div><div class="fld"><label>Region (NUTS-2)</label><select id="f-region"><option value="all">All regions</option></select></div></div>
-          <div class="row2"><div class="fld" style="position:relative"><label>Operator · all its plants</label><input type="text" id="f-op" placeholder="e.g. RWE Power" autocomplete="off"><div class="sugg" id="sugg-op"></div></div><div class="fld" style="position:relative"><label>Plant</label><input type="text" id="f-pl" placeholder="e.g. Bełchatów" autocomplete="off"><div class="sugg" id="sugg-pl"></div></div></div>
-          <div class="fld" id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
-          <div class="grp-lab">What</div>
-          <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
-          <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
-          <div class="grp-lab">How to show it</div>
-          <div class="row2"><div class="fld" style="display:none"><label>Year</label><select id="f-year"></select></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
-          <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
-        </div>
-        <div class="sec">
-          <div class="lab"><span>Answer</span></div>
           <div class="stat" id="f-stat"></div>
-          <div class="actions"><button class="btn" id="btn-export">Download CSV</button><button class="btn" id="btn-report" title="Compose a one-page report of this selection and open the print dialog (save as PDF)">Report (PDF)</button><button class="btn" id="btn-share">Copy link</button><button class="btn" id="btn-reset2" title="Clear every filter, the drawn area, the pinned A and the open card">Reset all</button></div>
           <table class="cmp" id="cmp" style="display:none"></table>
           <div class="kpis" id="kpis"></div>
+          <div class="actions"><button class="btn" id="btn-refine">Refine ▾</button><button class="btn" id="btn-export" title="Download the selection as CSV">CSV</button><button class="btn" id="btn-report" title="Compose a one-page report of this selection and open the print dialog (save as PDF)">PDF</button><button class="btn" id="btn-share" title="Copy a link that reproduces this selection">Copy link</button><button class="btn" id="btn-reset2" style="display:none">Reset all</button></div>
+          <div id="refine">
+            <div class="grp-lab">Sectors · pick to keep, none = all</div>
+            <div class="fld"><div class="chips" id="chips"></div></div>
+            <div class="row2"><div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
+            <div class="row2"><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Area</label><div class="small" id="area-note" style="padding-top:6px">none · use <b>Draw area</b> on the map</div></div></div>
+            <div style="display:none"><select id="f-country"><option value="all">All countries</option></select><select id="f-region"><option value="all">All regions</option></select><select id="f-year"></select><input type="text" id="f-op"><div class="sugg" id="sugg-op"></div><input type="text" id="f-pl"><div class="sugg" id="sugg-pl"></div></div>
+          </div>
         </div>
         <div class="sec">
-          <div class="lab"><span>Breakdown</span><span class="small">click a bar to filter</span></div>
-          <div class="small" id="cmp-legend" style="display:none;margin:-4px 0 8px"></div>
-          <div class="subtabs" id="subtabs"><span class="on" data-bk="sector">Sector</span><span data-bk="country">Country</span><span data-bk="holder">Operators</span><span data-bk="traj">Over time</span><span data-bk="region">Regions</span><span data-bk="alloc">Allocation</span></div>
+          <div class="bkhead"><span class="lab" style="margin:0">Breakdown <span class="small">· click a bar to filter</span></span><select id="f-bk"><option value="sector">by sector</option><option value="country">by country</option><option value="holder">by operator</option><option value="region">by region</option><option value="traj">over time</option><option value="alloc">allocation</option><option value="top">largest sites</option></select></div>
+          <div class="small" id="cmp-legend" style="display:none;margin:-2px 0 8px"></div>
           <div class="bk on" data-bk="sector"><svg id="bar-sector"></svg><div class="hint small">Mt CO₂ 2025 and share of the selection.</div></div>
           <div class="bk" data-bk="country"><svg id="bar-country"></svg><div class="hint small">Top 10 countries in the selection, Mt CO₂ 2025.</div></div>
           <div class="bk" data-bk="holder"><svg id="bar-holder"></svg><div class="hint small">Top 10 operators of record (ETS account holders), Mt CO₂ 2025.</div></div>
           <div class="bk" data-bk="traj"><svg id="traj"></svg><div class="hint small">Sum of verified CO₂ per year for the selection, Mt.</div></div>
-          <div class="bk" data-bk="region"><svg id="bar-region"></svg><div class="hint small">Top 10 NUTS-2 regions in the selection, Mt CO₂ 2025 · click to filter. Per-capita and per-GDP figures appear in the KPIs when one region is selected.</div></div>
+          <div class="bk" data-bk="region"><svg id="bar-region"></svg><div class="hint small">Top 10 NUTS-2 regions in the selection, Mt CO₂ 2025 · click to filter. Per-capita and per-GDP figures appear in the answer when one region is selected.</div></div>
           <div class="bk" data-bk="alloc"><svg id="alloc-chart"></svg><div class="hint small" id="alloc-hint"></div></div>
-        </div>
-        <div class="sec">
-          <div class="lab"><span>Largest in selection</span><span class="small">click for the card</span></div>
-          <table class="t" id="toplist"></table>
+          <div class="bk" data-bk="top"><table class="t" id="toplist"></table><div class="hint small">Largest installations of the selection, Mt CO₂ 2025 · click for the card.</div></div>
         </div>
       </div>
     </div>
@@ -160,6 +151,7 @@
       <details class="foot-d"><summary>Method and data</summary>
         <p><b>Source.</b> EU Transaction Log public data download, extract of <span id="m-asof">—</span>, verified emissions 2005-2025. Installations are joined on registry code plus identifier. A value of −1 means "not reported" and is treated as missing, never as zero.</p>
         <p><b>Baseline.</b> Change is 2025 against each installation's mean over 2021-2023. <b>Closure</b> is counted only when the ETS permit is revoked. <b>Operator</b> is the ETS account holder, usually a subsidiary, not the group parent.</p>
+        <p><b>Map.</b> At European scale only installations of 0.1 Mt or more are drawn (1,312 of 16,733); zoom in or press "show all" in the legend to see every site. Figures always count every installation of the selection.</p>
         <p><b>One error, kept.</b> <span class="num">GB_918</span> (INEOS CHP, Cleveland UK) is geocoded to Cleveland, Ohio: the kind of mistake a map catches. Code, SQL and data: <a href="https://github.com/Yusnelkis/geodep-ets-map">github.com/Yusnelkis/geodep-ets-map</a>. Basemap © CARTO © OpenStreetMap.</p>
         <p><b>References for the context statements.</b> Every figure on this page is computed from the EUTL extract by <span class="num">code/build_site_data.py</span>. Statements about rules come from: fourth trading period and the Article 27 / 27a small-emitter opt-outs (<a href="https://www.epa.ie/publications/monitoring--assessment/climate-change/eu-emissions-trading-scheme/Free-Allocation-Rules-for-EU-ETS-Phase-IV-Introduction-ETS-Revision.pdf">EPA Ireland, Phase IV free allocation rules</a>; <a href="https://assets.publishing.service.gov.uk/media/5ccb1cf2ed915d50b4fbcf83/Impact_Assessment_-_EU_ETS_Article_27_and_Article_27a_Schemes_for_Phase_IV.pdf">UK impact assessment on Art. 27/27a</a>); the 2023 drop of 16.5 % in ETS stationary emissions, led by power (<a href="https://climate.ec.europa.eu/news-other-reads/news/climate-action-progress-report-2023-shows-largest-annual-drop-emissions-decades-2024-10-31_en">European Commission, Climate Action Progress Report 2023</a>); CBAM phase-in and the free-allocation phase-out 2026–2034 (<a href="https://icapcarbonaction.com/en/news/eu-adopts-simplifications-cbam-rules-ahead-compliance-phase-starting-2026">ICAP</a>; <a href="https://www.dehst.de/EN/Topics/EU-ETS-1/EU-ETS-1-Information/Reform-Prospects/Carbon-Leakage-Protection/carbon-leakage-protection_artikel.html">DEHSt, carbon leakage protection</a>); Bełchatów as the largest single emitter in the EU ETS (<a href="https://ember-energy.org/latest-updates/repeat-offenders-coal-power-plants-top-the-eu-emitters-list/">Ember</a>).</p>
         <p><b>Regional and national context.</b> Installations are assigned to NUTS-2 regions (2024 version, GISCO/Eurostat polygons at 1:10M) by point in polygon; coastal points left just offshore by the generalised coastline are attached to the nearest region within 5 km and flagged in the data. United Kingdom installations have no region (not in NUTS 2024). Per-capita and per-GDP figures use Eurostat regional population (2024, <span class="num">demo_r_pjanaggr3</span>) and GDP (2023, <span class="num">nama_10r_2gdp</span>); the national share compares ETS CO₂ of 2023 with the national inventory of 2023 excluding LULUCF (<span class="num">env_air_gge</span>). The CBAM phase-out line applies the factors of Article 10a(1a) of the ETS Directive as amended by Directive (EU) 2023/959 (97.5 % in 2026 to 0 in 2034) to the 2025 free allocation of cement, iron and steel, aluminium, fertiliser and hydrogen installations; a 2026 Commission proposal to slow it is not reflected. Nothing is estimated: a region without Eurostat data shows a dash.</p>
@@ -167,7 +159,7 @@
       <div class="small" style="padding:8px 0 12px;border-top:1px solid var(--rule)"><b style="color:var(--ink2);font-weight:600">Yusnelkis Milanés Guisado</b> · Data scientist / AI consultant · <a href="https://github.com/Yusnelkis/geodep-ets-map">source</a></div>
     </div>
   </aside>
-  <div id="mapwrap"><div id="map"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
+  <div id="mapwrap"><div id="map"></div><div id="detail"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
 </div>
 <div id="report"></div>
 
@@ -177,13 +169,14 @@
 <script>if (!window.d3) document.write('<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js"><\/script>');</script>
 <script>
 (async function () {
-  const SECTOR_COLOR = {'Iron, steel & metals': '#3987e5', 'Cement & lime': '#d95926', 'Pulp & paper': '#199e70', 'Power & heat': '#c98500', 'Glass, ceramics & minerals': '#d55181', 'Other': '#008300', 'Chemicals': '#9085e9', 'Refineries & coke': '#e66767'};
+  const SECTOR_COLOR = {'Iron, steel & metals': '#2f5fa8', 'Cement & lime': '#c8501e', 'Pulp & paper': '#1f8f7a', 'Power & heat': '#9a6d00', 'Glass, ceramics & minerals': '#b5457a', 'Other': '#5b7a1e', 'Chemicals': '#6d5bd0', 'Refineries & coke': '#882058'};
   const CORE = new Set(['Cement & lime', 'Iron, steel & metals', 'Refineries & coke']);
-  const POINT = '#edc948', SEAC = '#9ec5f4', NOEM = '#2a2f38', CHALK = '#dfe3e8', BAR = '#8f8c85', AMBER = '#c98500', BLUE = '#3987e5', RED = '#e66767', GREY = '#4a4f58', DIM = '#20252e', INK = '#f2f0ea', INK2 = '#aeaba3', INK3 = '#6f6c65';
+  // v2 palette (from the bivariate climate map): data = deep lavender, down/closed = teal, up = magenta, A = ink ring, no emissions = warm grey
+  const POINT = '#5e4f66', SEAC = '#2a2a2a', NOEM = '#b9b3a8', CHALK = '#4a463e', BAR = '#8a857c', AMBER = '#9a6d00', BLUE = '#1b6e62', RED = '#c24e80', GREY = '#7a756c', DIM = '#cdc8be', INK = '#2a2a2a', INK2 = '#5a554c', INK3 = '#7a756c';
   const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
   const fmt = d3.format(','), f1 = d3.format('.1f'), pct = v => f1(v) + ' %', signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + f1(Math.abs(v));
   const mtOrKt = v => v == null ? '—' : v >= 0.1 ? f1(v) + ' Mt' : Math.round(v * 1000) + ' kt';
-  const STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json', SEA = '#0f2a47';
+  const STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json', SEA = '#dfe6ea';
   const num = v => v === '' || v == null ? null : +v;
 
   const [rows, S, CTX] = await Promise.all([
@@ -219,16 +212,16 @@
   const { MapboxOverlay, ScatterplotLayer } = deck;
   const VIEWS = {eu: {center: [10, 51], zoom: 3.7}, rhine: {center: [6.62, 51.0], zoom: 8.4}, bel: {center: [19.33, 51.27], zoom: 8.4}};
   const maxMt = d3.max(rows, d => d.mt_2025 || 0), rScale = d3.scaleSqrt().domain([0, maxMt]).range([1.6, 26]);
-  const seqYear = d3.scaleSequential(d3.interpolateRgb('#184f95', '#9ec5f4')).domain([2005, 2026]);
+  const seqYear = d3.scaleSequential(d3.interpolateRgb('#b9e8df', '#1b6e62')).domain([2005, 2026]);
   const sw = c => `<span class="sw" style="background:${c}"></span>`;
   const rMt = d => d.mt_2025 ? rScale(d.mt_2025) : 1.3;
   const MODES = {
-    all:    {color: d => hex(d.mt_last > 0 ? '#8a877e' : '#353a43'), radius: () => 1.6, opacity: .7, legend: `${sw('#8a877e')}reported emissions at some point &nbsp; ${sw('#353a43')}never reported`},
+    all:    {color: d => hex(d.mt_last > 0 ? '#6f6a60' : '#cdc8be'), radius: () => 1.6, opacity: .8, legend: `${sw('#6f6a60')}reported emissions at some point &nbsp; ${sw('#cdc8be')}never reported`},
     mono:   {color: d => hex(d.mt_2025 ? POINT : NOEM), radius: rMt, opacity: .8, legend: `${sw(POINT)}size = Mt CO₂ 2025 &nbsp; ${sw(NOEM)}no 2025 emissions`},
     top:    {color: d => hex(d.rank && d.rank <= 500 ? POINT : DIM), radius: d => d.rank && d.rank <= 500 ? rScale(d.mt_2025) : 1.2, opacity: .85, legend: `${sw(POINT)}top 500 · size = Mt CO₂ 2025 &nbsp; ${sw(DIM)}all others`},
     sector: {color: d => hex(d.mt_2025 ? SECTOR_COLOR[d.sector] : NOEM), radius: rMt, opacity: .85, legend: Object.entries(SECTOR_COLOR).map(([k, c]) => `<span>${sw(c)}${k}</span>`).join('')},
     change: {color: d => hex(d.chg == null ? DIM : d.chg <= -10 ? BLUE : d.chg >= 10 ? RED : GREY), radius: d => d.chg == null ? 1 : Math.max(2, rScale(d.mt_2025)), opacity: .85, legend: `${sw(BLUE)}down &gt;10 % &nbsp; ${sw(GREY)}within ±10 % &nbsp; ${sw(RED)}up &gt;10 % &nbsp; size = Mt 2025`},
-    closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#1a1e26'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
+    closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#ddd8ce'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
     alloc:  {color: d => { if (!d.mt_2025) return hex(DIM); if (!d.alloc) return hex(GREY); const c = d.alloc / d.mt_2025; return hex(c >= 1 ? BLUE : c >= .5 ? POINT : RED); }, radius: rMt, opacity: .85,
              legend: `${sw(BLUE)}allocation ≥ emissions &nbsp; ${sw(POINT)}covers 50–100 % &nbsp; ${sw(RED)}covers &lt;50 % &nbsp; ${sw(GREY)}no free allocation &nbsp; size = Mt 2025`},
     status: {color: d => hex(d.status === 'closed' ? BLUE : d.status === 'reporting' ? POINT : GREY), radius: d => d.status === 'closed' ? Math.max(2, rScale(d.mt_last) * .8) : rMt(d), opacity: .85, legend: `${sw(POINT)}reporting in 2025 &nbsp; ${sw(BLUE)}closed (permit revoked) &nbsp; ${sw(GREY)}stopped / never`},
@@ -248,12 +241,17 @@
     onClick: info => { if (info.object && !drawing) showDetail(info.object); }});
   map.addControl(overlay); window.__map = map;
   let cur = {mode: null, data: null};
-  function show(mode, data = rows, legendOverride) { const P = state.pin; if (mode === cur.mode && data === cur.data && P === cur.pin) return; cur = {mode, data, pin: P}; const M = MODES[mode];
-    const layers = [new ScatterplotLayer({id: 'pts-' + mode, data, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 1, radiusMaxPixels: 30, stroked: false, opacity: M.opacity, getPosition: d => [d.lon, d.lat], getRadius: M.radius, getFillColor: M.color, updateTriggers: {getRadius: mode, getFillColor: mode}})];
+  // at European scale only the sites of SMALL Mt or more are drawn (1,312 of 16,733); zoom in (>= 6) or "show all" draws every site. Figures always count all.
+  const SMALL = 0.1, bigEnough = (d, mode) => mode === 'closed' ? (d.mt_last || 0) >= SMALL : (d.mt_2025 || 0) >= SMALL;
+  function show(mode, data = rows, legendOverride) { const P = state.pin, thin = data !== rows && !state.showAll && map.getZoom() < 6; if (mode === cur.mode && data === cur.data && P === cur.pin && thin === cur.thin) return; cur = {mode, data, pin: P, thin, legendOverride}; const M = MODES[mode];
+    const vis = thin ? data.filter(d => bigEnough(d, mode)) : data, hidden = data.length - vis.length;
+    const layers = [new ScatterplotLayer({id: 'pts-' + mode, data: vis, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 1, radiusMaxPixels: 30, stroked: false, opacity: M.opacity, getPosition: d => [d.lon, d.lat], getRadius: M.radius, getFillColor: M.color, updateTriggers: {getRadius: mode, getFillColor: mode}})];
     // the pinned selection A stays on the map as hollow rings, so A and B can be read together
     if (P) layers.push(new ScatterplotLayer({id: 'pin-a', data: P.data, pickable: false, radiusUnits: 'pixels', radiusMinPixels: 2.5, radiusMaxPixels: 32, filled: false, stroked: true, lineWidthUnits: 'pixels', getLineWidth: 1.2, opacity: .9, getPosition: d => [d.lon, d.lat], getRadius: d => { const v = P.vals.get(d.id); return Math.max(2.5, (v ? rScale(v) : 1.3) + 1.5); }, getLineColor: hex(SEAC)}));
     overlay.setProps({layers});
-    document.getElementById('legend').innerHTML = (legendOverride || M.legend).replace(/2025/g, YT.year) + (P ?` <span style="border-left:1px solid var(--rule);padding-left:12px"><span class="sw" style="background:transparent;border:1.5px solid ${SEAC};box-sizing:border-box"></span>A · ${P.short} &nbsp; ${sw(POINT)}B · ${shortLabel(state)}</span>` : ''); }
+    document.getElementById('legend').innerHTML = (legendOverride || M.legend).replace(/2025/g, YT.year) + (P && data !== rows ?` <span style="border-left:1px solid var(--rule);padding-left:12px"><span class="sw" style="background:transparent;border:1.5px solid ${SEAC};box-sizing:border-box"></span>A · ${P.short} &nbsp; ${sw(POINT)}B · ${shortLabel(state)}</span>` : '') + (data !== rows ? ` <span style="border-left:1px solid var(--rule);padding-left:12px;color:var(--ink3)">${thin ? `${fmt(hidden)} sites under ${SMALL} Mt hidden · <a href="#" id="lg-all">show all</a>` : `all ${fmt(data.length)} sites drawn${state.showAll ? ' · <a href="#" id="lg-all">hide small</a>' : ''}`}</span>` : '');
+    const la = document.getElementById('lg-all'); if (la) la.onclick = e => { e.preventDefault(); state.showAll = !state.showAll; cur.mode = null; show(mode, data, legendOverride); }; }
+  map.on('zoomend', () => { if (cur.data && cur.data !== rows) { const c = cur; cur = {mode: null}; show(c.mode, c.data, c.legendOverride); } });
   const fly = (v, dur = 1400) => map.flyTo({center: v.center, zoom: v.zoom, duration: dur, essential: true});
   // frame the current selection (2nd-98th percentile of the coordinates, so one overseas site does not zoom the map out to the Atlantic)
   function flyToData(data) { const p = data.filter(d => d.lat && d.lon); if (!p.length) return; if (p.length === 1) return map.flyTo({center: [p[0].lon, p[0].lat], zoom: 8, duration: 1200});
@@ -262,14 +260,14 @@
   function focusMap() { (state.country !== 'all' || state.region !== 'all' || state.terms.size) ? flyToData(lastData) : fly(VIEWS.eu); }
 
   // ---------- small charts for the story panel ----------
-  const mono = s => s.attr('font-family', 'IBM Plex Mono').attr('font-size', 10.5);
+  const mono = s => s.attr('font-family', 'Inter').attr('font-size', 10.5);
   const charts = {
     lorenz(svg) { const W = 340, H = 200, m = {t: 10, r: 14, b: 26, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleLinear().domain([0, 100]).range([0, w]), y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
       g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => d + '%').tickSize(-h)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(4).tickFormat(d => d + '%').tickSize(-w));
       g.append('line').attr('x1', 0).attr('y1', h).attr('x2', w).attr('y2', 0).attr('stroke', INK3).attr('stroke-dasharray', '3 4');
       g.append('path').datum([{pct_installations: 0, pct_co2: 0}, ...S.lorenz]).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.pct_installations)).y(d => y(d.pct_co2)).curve(d3.curveMonotoneX));
-      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', POINT).attr('stroke', '#0d1015').attr('stroke-width', 2);
+      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', POINT).attr('stroke', '#ffffff').attr('stroke-width', 2);
       mono(g.append('text').attr('x', px + 8).attr('y', py + 4).attr('fill', INK)).text(`top 500 · ${f1(C[500])} %`); mono(g.append('text').attr('x', w).attr('y', h + 22).attr('text-anchor', 'end').attr('fill', INK3)).text('share of emitting sites, largest first'); },
     series(svg) { const W = 340, H = 190, m = {t: 18, r: 46, b: 22, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.series; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleLinear().domain(d3.extent(data, d => d.year)).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(data, d => d.mt)]).nice().range([h, 0]);
@@ -344,9 +342,14 @@
   const addTerm = (term, kind = 'tx') => { const v = (term || '').trim(); if (v) { state.terms.add(`${kind}:${v}`); state.qo = state.qp = ''; $('f-op').value = ''; $('f-pl').value = ''; hideSugg(); sync(); focusMap(); } };
   const byId = new Map(rows.map(d => [d.id, d]));
   const termLabel = t => t.startsWith('op:') ? t.slice(3) : t.startsWith('pl:') ? (byId.get(t.slice(3)) || {name: t.slice(3)}).name : `"${t.startsWith('tx:') ? t.slice(3) : t}"`;
-  const renderTerms = () => { const el = $('terms'); $('terms-wrap').style.display = state.terms.size ? '' : 'none';
-    el.innerHTML = [...state.terms].map(t => `<span class="chip on ${t.slice(0, 2)}" data-v="${t.replace(/"/g, '&quot;')}" title="${t.startsWith('op:') ? 'operator: all its plants' : t.startsWith('pl:') ? 'one plant' : 'text match on plant or operator'}"><span class="sw"></span>${termLabel(t)} <span style="opacity:.6">✕</span></span>`).join('') + (state.terms.size > 1 ? `<span class="chip clear" id="terms-clear">× clear all</span>` : '');
-    el.querySelectorAll('.chip.on').forEach(c => c.onclick = () => { state.terms.delete(c.dataset.v); sync(); }); const ca = el.querySelector('#terms-clear'); if (ca) ca.onclick = () => { state.terms.clear(); sync(); }; };
+  const renderTerms = () => { const el = $('terms'), chips = [];
+    if (state.country !== 'all') chips.push(`<span class="chip on co" data-k="co" title="country"><span class="sw"></span>${state.country} <span style="opacity:.6">✕</span></span>`);
+    if (state.region !== 'all') chips.push(`<span class="chip on r" data-k="r" title="region"><span class="sw"></span>${regionLabel(state.region)} <span style="opacity:.6">✕</span></span>`);
+    [...state.terms].forEach(t => chips.push(`<span class="chip on ${t.slice(0, 2)}" data-k="t" data-v="${t.replace(/"/g, '&quot;')}" title="${t.startsWith('op:') ? 'operator: all its plants' : t.startsWith('pl:') ? 'one plant' : 'text match on plant or operator'}"><span class="sw"></span>${termLabel(t)} <span style="opacity:.6">✕</span></span>`));
+    $('terms-wrap').style.display = chips.length ? '' : 'none';
+    el.innerHTML = chips.join('') + (chips.length > 1 ? `<span class="chip clear" id="terms-clear">× clear all</span>` : '');
+    el.querySelectorAll('.chip.on').forEach(c => c.onclick = () => { if (c.dataset.k === 'co') { state.country = 'all'; state.region = 'all'; $('f-country').value = 'all'; fillRegions(); } else if (c.dataset.k === 'r') { state.region = 'all'; $('f-region').value = 'all'; } else state.terms.delete(c.dataset.v); sync(); focusMap(); });
+    const ca = el.querySelector('#terms-clear'); if (ca) ca.onclick = () => { state.terms.clear(); state.country = 'all'; state.region = 'all'; $('f-country').value = 'all'; fillRegions(); sync(); focusMap(); }; };
   // suggestions: operators (with plant count and Mt) and plants (with operator and country), from the current text
   const holders = d3.rollups(rows, v => ({n: v.length, mt: d3.sum(v, d => d.mt_2025 || 0)}), d => d.holder).filter(([k]) => k).map(([k, o]) => ({k, ...o})).sort((a, b) => b.mt - a.mt);
   const hideSugg = () => ['sugg-op', 'sugg-pl'].forEach(id => { $(id).classList.remove('on'); $(id).innerHTML = ''; });
@@ -410,7 +413,7 @@
       const f = pts[0], l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 6).attr('y', y(l.v) + (pa.length > 1 && Math.abs(y(l.v) - y(pa[pa.length - 1].v)) < 12 ? 16 : 4)).attr('fill', INK)).text((pa.length > 1 ? 'B ' : '') + f1(l.v));
       mono(g.append('text').attr('x', x(f.y)).attr('y', y(f.v) - 6).attr('fill', INK3)).text(`${f1(f.v)} · ${signed(100 * (l.v - f.v) / f.v)} % since ${f.y}`); }
     // a dot marks the year each selection is read at (A and B can sit on different years of the same line)
-    const mark = (arr, yr, col) => { const p = arr.find(q => q.y === yr); if (p) g.append('circle').attr('cx', x(p.y)).attr('cy', y(p.v)).attr('r', 4).attr('fill', col).attr('stroke', '#0d1015').attr('stroke-width', 1.5); };
+    const mark = (arr, yr, col) => { const p = arr.find(q => q.y === yr); if (p) g.append('circle').attr('cx', x(p.y)).attr('cy', y(p.v)).attr('r', 4).attr('fill', col).attr('stroke', '#ffffff').attr('stroke-width', 1.5); };
     if (pa.length > 1 && ya) mark(pa, ya, SEAC); if (pts.length > 1 && yb) mark(pts, yb, POINT);
   }
   // allocation position 2021-2025 for the selection (emitted vs freely allocated) and the legal phase-out of the CBAM sectors' allocation
@@ -451,11 +454,11 @@
     show(mode, data, autoSector ? [...state.sel].map(k => `<span>${sw(SECTOR_COLOR[k])}${k}</span>`).join('') + `<span>${sw(NOEM)}no ${state.year} emissions</span><span>size = Mt CO₂ ${state.year}</span>` : null);
     const m = metrics(data, state), mt = m.mt;
     $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in ${state.year} <span class="small">· ${f1(100 * mt / (YT.mt || 1))} % of the ETS</span>`;
-    $('btn-export').textContent = `Download CSV · ${fmt(data.length)} rows`;
+    $('btn-export').textContent = `CSV · ${fmt(data.length)} rows`;
     $('chips').classList.toggle('coloured', mode === 'sector');
     // answer: one set of KPIs, or the A | B | difference table when a selection is pinned
     $('btn-pin').textContent = P ? 'Comparing · unpin A' : 'Compare'; $('btn-pin').classList.toggle('on', !!P);
-    $('pin-note').style.display = P ? '' : 'none'; $('cmp-hint').style.display = P ? 'none' : ''; $('cmp').style.display = P ? '' : 'none'; $('kpis').style.display = P ? 'none' : '';
+    $('pin-note').style.display = P ? '' : 'none'; $('cmp-hint').style.display = 'none'; $('cmp').style.display = P ? '' : 'none'; $('kpis').style.display = P ? 'none' : '';
     const lb = shortLabel(state); $('cmp-legend').style.display = P ? '' : 'none';
     if (P) { $('pin-note').innerHTML = `<b>A</b> ${P.label}<br><i>B</i> ${describe(state)}${P.hash === hashOf(state) ? ' <span style="color:var(--ink3)">· now change a filter to set B</span>' : ''}`; $('cmp').innerHTML = cmpRows(P.m, m, P.short, lb);
       $('cmp-legend').innerHTML = `${sw(SEAC)}<b style="color:var(--sea);font-weight:600">A</b> · ${P.short} &nbsp;&nbsp; ${sw(POINT)}<b style="color:var(--ink);font-weight:600">B</b> · ${lb}`; }
@@ -478,7 +481,7 @@
     document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); showDetail(d); });
     if (pushHash) { let hs = hashOf(state); if (P) hs += (hs ? '&' : '') + 'a=' + encodeURIComponent(P.hash); history.replaceState(null, '', hs ? '#' + hs : location.pathname); }
   }
-  document.querySelectorAll('#subtabs span').forEach(s => s.onclick = () => { state.bk = s.dataset.bk; document.querySelectorAll('#subtabs span').forEach(x => x.classList.toggle('on', x === s)); document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.bk === state.bk)); });
+  $('f-bk').addEventListener('change', e => { state.bk = e.target.value; document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.bk === state.bk)); });
 
   // ---------- installation card ----------
   const km = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLon = (b.lon - a.lon) * Math.PI / 180, s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(s)); };
@@ -538,12 +541,12 @@
   function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()});
     map.addLayer({id: 'area-fill', type: 'fill', source: 'area', filter: ['==', '$type', 'Polygon'], paint: {'fill-color': CHALK, 'fill-opacity': .08}});
     map.addLayer({id: 'area-line', type: 'line', source: 'area', filter: ['!=', '$type', 'Point'], paint: {'line-color': CHALK, 'line-width': 1.5, 'line-dasharray': [2, 2]}});
-    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': CHALK, 'circle-stroke-color': '#0d1015', 'circle-stroke-width': 1.5}}); } }
+    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': CHALK, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1.5}}); } }
   const ctl = document.createElement('div'); ctl.className = 'maplibregl-ctrl draw-ctl';
   ctl.innerHTML = `<button id="dc-draw">✎ Draw area</button><button id="dc-finish" style="display:none">✓ Finish (or Enter)</button><button id="dc-clear" style="display:none">✕ Clear area</button><div class="hint" id="dc-hint">Keep only the installations inside a shape you draw.</div>`;
   map.addControl({onAdd: () => ctl, onRemove: () => ctl.remove()}, 'top-right');
   const dcDraw = ctl.querySelector('#dc-draw'), dcFinish = ctl.querySelector('#dc-finish'), dcClear = ctl.querySelector('#dc-clear'), dcHint = ctl.querySelector('#dc-hint');
-  function setAreaNote() { const n = $('area-note'); if (!n) return; n.innerHTML = state.area ? `Area: <b>drawn shape</b> (${state.area.length} corners) · <a href="#" id="an-clear">clear</a>` : 'Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.'; const a = n.querySelector('#an-clear'); if (a) a.onclick = e => { e.preventDefault(); clearArea(); }; }
+  function setAreaNote() { const n = $('area-note'); if (!n) return; n.innerHTML = state.area ? `<b>drawn shape</b> (${state.area.length} corners) · <a href="#" id="an-clear">clear</a>` : 'none · use <b>Draw area</b> on the map'; const a = n.querySelector('#an-clear'); if (a) a.onclick = e => { e.preventDefault(); clearArea(); }; }
   function startDraw() { drawing = true; pts = []; state.area = null; paintArea(); $('map').classList.add('drawing'); map.doubleClickZoom.disable(); dcDraw.classList.add('on'); dcDraw.textContent = '✎ Drawing…'; dcFinish.style.display = ''; dcClear.style.display = 'none'; dcHint.textContent = 'Click the map to add corners (3 or more). Finish, Enter or double-click to close; Escape to cancel.'; if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click(); }
   function endDraw(apply) { drawing = false; $('map').classList.remove('drawing'); map.doubleClickZoom.enable(); dcDraw.classList.remove('on'); dcDraw.textContent = '✎ Draw area'; dcFinish.style.display = 'none';
     if (apply && pts.length > 2) { state.area = pts.slice(); dcClear.style.display = ''; dcHint.textContent = `Area applied: ${pts.length} corners. Filters combine with it.`; } else { pts = []; state.area = null; dcClear.style.display = 'none'; dcHint.textContent = 'Keep only the installations inside a shape you draw.'; }
@@ -565,7 +568,7 @@
   function mapImage() { return new Promise(resolve => {
     const mc = map.getCanvas(), W = mc.width, H = mc.height, copy = () => { const k = document.createElement('canvas'); k.width = W; k.height = H; return k; };
     const base = copy(), pts = copy(); let gotBase = false, gotPts = false, resolved = false;
-    const finish = () => { if (resolved) return; resolved = true; const c = copy(), ctx = c.getContext('2d'); ctx.fillStyle = '#101318'; ctx.fillRect(0, 0, W, H); if (gotBase) ctx.drawImage(base, 0, 0); if (gotPts) ctx.drawImage(pts, 0, 0); try { resolve(c.toDataURL('image/jpeg', .85)); } catch (e) { resolve(null); } };
+    const finish = () => { if (resolved) return; resolved = true; const c = copy(), ctx = c.getContext('2d'); ctx.fillStyle = '#eae6de'; ctx.fillRect(0, 0, W, H); if (gotBase) ctx.drawImage(base, 0, 0); if (gotPts) ctx.drawImage(pts, 0, 0); try { resolve(c.toDataURL('image/jpeg', .85)); } catch (e) { resolve(null); } };
     const dc = document.querySelector('#map canvas:not(.maplibregl-canvas)'), deckInst = overlay._deck, needPts = !!(dc && deckInst);
     const check = () => { if (gotBase && (gotPts || !needPts)) finish(); };
     map.once('render', () => { try { base.getContext('2d').drawImage(map.getCanvas(), 0, 0); gotBase = true; } catch (e) {} check(); }); map.triggerRepaint();
@@ -592,7 +595,7 @@
   $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
   $('btn-pin').onclick = () => { state.pin = state.pin ? null : makePin(snapshot(), lastData); cur.mode = null; sync(); };
   $('f-year').addEventListener('change', e => { setYear(+e.target.value); cur.mode = null; sync(); });
-  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('f-q').value = ''; state.showAll = false; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
   $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
   $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
   $('f-country').addEventListener('change', e => { state.country = e.target.value; fillRegions(); sync(); focusMap(); });
@@ -604,6 +607,23 @@
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const hl = box().querySelector('.it.hl') || box().querySelector('.it'); if (hl && box().classList.contains('on')) addTerm(hl.dataset.v, hl.dataset.k); else if (e.target.value.trim()) addTerm(e.target.value, 'tx'); }
       if (e.key === 'Escape') hideSugg(); if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { const its = [...box().querySelectorAll('.it')]; if (!its.length) return; e.preventDefault(); const i = its.findIndex(x => x.classList.contains('hl')); its.forEach(x => x.classList.remove('hl')); its[(i + (e.key === 'ArrowDown' ? 1 : -1) + its.length) % its.length].classList.add('hl'); } });
     $(id).addEventListener('blur', () => setTimeout(hideSugg, 150)); });
+  // ---------- one search box: countries, regions, operators, plants ----------
+  function renderSuggAll(q) { const s = norm(q), box = $('sugg-q'); if (s.length < 2) { box.classList.remove('on'); box.innerHTML = ''; return; }
+    const cos = countries.filter(([c]) => c && norm(c).includes(s)).slice(0, 4), regs = Object.keys(REG).filter(c => norm(regionLabel(c)).includes(s)).slice(0, 6), ops = holders.filter(h => norm(h.k).includes(s)).slice(0, 6), pls = rows.filter(d => d._n.includes(s)).sort((a, b) => (b.mt_2025 || 0) - (a.mt_2025 || 0)).slice(0, 6);
+    if (!cos.length && !regs.length && !ops.length && !pls.length) { box.classList.remove('on'); box.innerHTML = ''; return; }
+    const it = (k, v, main, meta) => `<div class="it" data-k="${k}" data-v="${String(v).replace(/"/g, '&quot;')}"><span>${main}</span><span class="m">${meta}</span></div>`;
+    box.innerHTML = (cos.length ? `<div class="grp">Countries</div>` + cos.map(([c, mt]) => it('co', c, c, `${fmt(Math.round(mt))} Mt`)).join('') : '') + (regs.length ? `<div class="grp">Regions (NUTS-2)</div>` + regs.map(c => it('r', c, regionLabel(c), REG[c].country)).join('') : '')
+      + (ops.length ? `<div class="grp">Operators · all their plants</div>` + ops.map(h => it('op', h.k, h.k, `${h.n} plants · ${f1(h.mt)} Mt`)).join('') : '') + (pls.length ? `<div class="grp">Plants</div>` + pls.map(d => it('pl', d.id, `${d.name}<br><span class="m">${(d.holder || '').slice(0, 40)}</span>`, `${d.country} · ${d.mt_2025 != null ? f1(d.mt_2025) + ' Mt' : statusLabel(d)}`)).join('') : '');
+    box.classList.add('on'); box.querySelectorAll('.it').forEach(x => x.onmousedown = e => { e.preventDefault(); pickSugg(x.dataset.k, x.dataset.v); }); }
+  function pickSugg(k, v) { $('f-q').value = ''; $('sugg-q').classList.remove('on'); $('sugg-q').innerHTML = '';
+    if (k === 'co') { state.country = v; state.region = 'all'; $('f-country').value = v; fillRegions(); sync(); focusMap(); }
+    else if (k === 'r') { const co = REG[v].country === 'EL' ? 'GR' : REG[v].country; state.country = co; $('f-country').value = co; fillRegions(); state.region = v; $('f-region').value = v; sync(); focusMap(); }
+    else addTerm(v, k); }
+  $('f-q').addEventListener('input', e => renderSuggAll(e.target.value));
+  $('f-q').addEventListener('keydown', e => { const box = $('sugg-q'); if (e.key === 'Enter') { e.preventDefault(); const hl = box.querySelector('.it.hl') || box.querySelector('.it'); if (hl && box.classList.contains('on')) pickSugg(hl.dataset.k, hl.dataset.v); else if (e.target.value.trim()) { addTerm(e.target.value, 'tx'); $('f-q').value = ''; } }
+    if (e.key === 'Escape') box.classList.remove('on'); if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { const its = [...box.querySelectorAll('.it')]; if (!its.length) return; e.preventDefault(); const i = its.findIndex(x => x.classList.contains('hl')); its.forEach(x => x.classList.remove('hl')); its[(i + (e.key === 'ArrowDown' ? 1 : -1) + its.length) % its.length].classList.add('hl'); } });
+  $('f-q').addEventListener('blur', () => setTimeout(() => $('sugg-q').classList.remove('on'), 150));
+  $('btn-refine').onclick = () => { const r = $('refine'), on = !r.classList.contains('on'); r.classList.toggle('on', on); $('btn-refine').textContent = on ? 'Refine ▴' : 'Refine ▾'; };
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
   if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
@@ -613,10 +633,11 @@
   // ---------- tabs ----------
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === t.dataset.tab));
-    clearTimeout(thenTimer); if (t.dataset.tab === 'story') renderChapter(ci); else { cur.mode = null; sync(); focusMap(); }
+    clearTimeout(thenTimer); $('lnk-story').textContent = t.dataset.tab === 'story' ? '← Back to explore' : 'Read the story'; if (t.dataset.tab === 'story') renderChapter(ci); else { cur.mode = null; sync(); focusMap(); }
   });
+  $('lnk-story').onclick = e => { e.preventDefault(); document.querySelector(document.querySelector('.tab[data-tab="story"]').classList.contains('on') ? '.tab[data-tab="explore"]' : '.tab[data-tab="story"]').click(); };
   fillRegions();
-  if (hasHash) document.querySelector('.tab[data-tab="explore"]').click(); else renderChapter(0);
+  document.querySelector('.tab[data-tab="explore"]').click();
 })().catch(err => { console.error(err); document.getElementById('asof').textContent = 'data failed to load: ' + err.message; });
 </script>
 </body>
