@@ -31,8 +31,12 @@
   const rows = await d3.csv('data/installations.csv', d => ({name: d.name, holder: d.holder, country: d.country, mt: d.mt_2025 === '' ? null : +d.mt_2025, lat: +d.lat, lon: +d.lon}));
   const em = rows.filter(d => d.mt > 0 && d.lat && d.lon), maxMt = d3.max(em, d => d.mt);
   const geo = {type: 'FeatureCollection', features: em.map(d => ({type: 'Feature', geometry: {type: 'Point', coordinates: [d.lon, d.lat]}, properties: {n: d.name, h: d.holder, c: d.country, mt: d.mt, r: Math.sqrt(d.mt / maxMt)}}))};
-  const map = new maplibregl.Map({container: 'map', style: 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json', center: [12, 48], zoom: 2.6, attributionControl: {compact: true}});
-  map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
+  // intro mode (embedded in the atlas as the opening): no controls, slow rotation until the visitor touches it
+  const INTRO = new URLSearchParams(location.search).has('intro'); if (INTRO) document.querySelectorAll('.hd, .ctl').forEach(e => e.style.display = 'none');
+  const map = new maplibregl.Map({container: 'map', style: 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json', center: INTRO ? [-12, 38] : [12, 48], zoom: INTRO ? 2.05 : 2.6, attributionControl: {compact: true}});
+  if (!INTRO) map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
+  if (INTRO) { let spin = true; const step = () => { if (!spin) return; const c = map.getCenter(); map.setCenter([c.lng + 0.012, c.lat]); requestAnimationFrame(step); };
+    map.once('load', () => requestAnimationFrame(step)); ['mousedown', 'wheel', 'touchstart'].forEach(ev => map.on(ev, () => spin = false)); }
   map.on('style.load', () => {
     map.setProjection({type: 'globe'});
     map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') map.setPaintProperty(l.id, 'line-color', '#a9c4da'); if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
