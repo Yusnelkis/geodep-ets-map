@@ -16,7 +16,7 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <style>
   /* v2 palette: taken from the author's bivariate climate map (warm grey ground, white panel, teal · lavender · magenta) */
-  :root{--bg:#f4f4f2;--panel:#ffffff;--ink:#0f2a4a;--ink2:#3f4d5e;--ink3:#6b7684;--rule:#e4e6e8;--rule2:#cfd5db;--amber:#1a4a8a;--blue:#0f9bc4;--grey:#8a94a0;--sea:#0b7fa3;--data:#1a4a8a;
+  :root{--bg:#f4f4f2;--panel:#f8f6f1;--ink:#0f2a4a;--ink2:#3f4d5e;--ink3:#6b7684;--rule:#e4e6e8;--rule2:#cfd5db;--amber:#1a4a8a;--blue:#0f9bc4;--grey:#8a94a0;--sea:#0b7fa3;--data:#1a4a8a;
     --serif:"DM Serif Display",Georgia,serif;--sans:"Inter",system-ui,sans-serif;--mono:"Inter",system-ui,sans-serif}
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -40,7 +40,9 @@
   .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule2);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none;border-radius:3px;background:#fff}
   .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4;display:none} #chips.coloured .chip .sw{display:inline-block} .chip.on{color:var(--ink);border-color:var(--ink2);background:var(--bg)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
   .chip.op .sw,.chip.pl .sw,.chip.tx .sw,.chip.co .sw,.chip.r .sw{display:inline-block;opacity:1;border-radius:2px;width:8px;height:8px;background:var(--ink3)} .chip.pl .sw{border-radius:50%} .chip.tx .sw{background:transparent;border:1px dashed var(--ink3)} .chip.co .sw,.chip.r .sw{background:var(--sea)}
-  #terms-wrap{margin:-2px 0 12px}
+  #terms-wrap{margin:-2px 0 10px}
+  .try{font-size:12px;color:var(--ink3);margin:0 0 8px;display:flex;flex-wrap:wrap;gap:5px;align-items:center} .try span{border:1px solid var(--rule2);border-radius:14px;padding:2px 9px;cursor:pointer;color:var(--ink2);background:#fff} .try span:hover{border-color:var(--ink3);color:var(--ink)}
+  .sentence{font-size:15px;color:var(--ink3);margin:2px 0 14px;line-height:2.1} .sentence select{appearance:none;-webkit-appearance:none;border:1px dashed var(--rule2);border-radius:3px;background:#fff;color:var(--ink);font:inherit;font-size:13.5px;padding:2px 8px;margin:0 2px;cursor:pointer;max-width:200px;text-overflow:ellipsis} .sentence select:hover{border-color:var(--ink3)} .sentence select.on{border-style:solid;border-color:var(--sea);color:var(--sea)}
   /* answer */
   .sec{margin-bottom:16px} .sec>.lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
   .stat{font:600 14.5px/1.4 var(--sans);color:var(--ink);margin:0 0 8px} .stat .small{font-weight:400}
@@ -57,7 +59,7 @@
   table.t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px} table.t td{padding:5px 4px;border-bottom:1px solid var(--rule);vertical-align:baseline;cursor:pointer} table.t tr:hover td{color:var(--ink)}
   table.t td.r{text-align:right;white-space:nowrap} table.t td.n{color:var(--ink3);width:22px} table.t td .h{color:var(--ink3);font-size:11.5px}
   /* refine (collapsed) */
-  #refine{display:none;border:1px solid var(--rule);border-radius:4px;padding:10px 12px 4px;margin-top:10px;background:#f8f9fa} #refine.on{display:block}
+  #refine{display:none;border:1px solid var(--rule);border-radius:4px;padding:10px 12px 4px;margin-top:10px;background:#fff} #refine.on{display:block}
   .grp-lab{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:6px 0 6px;font-weight:500}
   .fld{margin-bottom:10px} .fld label{display:block;font-size:12px;color:var(--ink3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fld select,.fld input[type=text]{width:100%;background:#fff;color:var(--ink);border:1px solid var(--rule2);border-radius:3px;padding:6px 8px;font:inherit;font-size:13px}
@@ -110,13 +112,15 @@
   <aside id="panel">
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
-      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.34</span></div>
+      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.36</span></div>
     </div>
     <div class="tabs"><div class="tab" data-tab="story">Guided reading</div><div class="tab on" data-tab="explore">Explore</div></div>
     <div class="body">
       <div class="view story" id="story"></div>
       <div class="view on" id="explore">
+        <div class="try" id="try"><span style="border:0;padding:0;background:none;color:var(--ink3);cursor:default">Try:</span></div>
         <div class="qbox"><input type="text" id="f-q" placeholder="Search a country, region, operator or plant…" autocomplete="off"><div class="sugg" id="sugg-q"></div></div>
+        <div class="sentence">See <select id="s-sector"><option value="all">any sector</option><option value="multi" hidden>several sectors</option></select> installations that are <select id="f-status"><option value="all">any status</option><option value="reporting">reporting in 2025</option><option value="closed">closed (permit revoked)</option><option value="stopped">stopped, not revoked</option><option value="never">never reported</option></select> in <select id="f-country"><option value="all">any country</option></select>.</div>
         <div id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
         <div class="sec">
           <div class="lab"><span>Answer</span><span style="display:flex;gap:6px"><button class="btn" id="btn-pin" style="padding:2px 8px;font-size:11.5px" title="Keep the current selection as A, then change the search or the filters: the answer compares A with the new selection (B)">Compare</button><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px" title="Clear the search, the filters, the drawn area, the pinned A and the open card">Reset</button></span></div>
@@ -129,9 +133,9 @@
           <div id="refine">
             <div class="grp-lab">Sectors · pick to keep, none = all</div>
             <div class="fld"><div class="chips" id="chips"></div></div>
-            <div class="row2"><div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
-            <div class="row2"><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Area</label><div class="small" id="area-note" style="padding-top:6px">none · use <b>Draw area</b> on the map</div></div></div>
-            <div style="display:none"><select id="f-country"><option value="all">All countries</option></select><select id="f-region"><option value="all">All regions</option></select><select id="f-year"></select><input type="text" id="f-op"><div class="sugg" id="sugg-op"></div><input type="text" id="f-pl"><div class="sugg" id="sugg-pl"></div></div>
+            <div class="row2"><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div></div>
+            <div class="fld"><label>Area</label><div class="small" id="area-note" style="padding-top:2px">none · use <b>Draw area</b> on the map</div></div>
+            <div style="display:none"><select id="f-region"><option value="all">All regions</option></select><select id="f-year"></select><input type="text" id="f-op"><div class="sugg" id="sugg-op"></div><input type="text" id="f-pl"><div class="sugg" id="sugg-pl"></div></div>
           </div>
         </div>
         <div class="sec">
@@ -233,7 +237,7 @@
   const map = new maplibregl.Map({container: 'map', style: STYLE, center: VIEWS.eu.center, zoom: VIEWS.eu.zoom, attributionControl: false, preserveDrawingBuffer: true, canvasContextAttributes: {preserveDrawingBuffer: true}});
   map.addControl(new maplibregl.AttributionControl({compact: true})); map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'top-right');
   // basemap: sea tinted; country borders kept but faint; regional and county borders off (they competed with the small dots)
-  map.on('style.load', () => { map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') map.setPaintProperty(l.id, 'line-color', '#a9c4da'); if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
+  map.on('style.load', () => { map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') { map.setPaintProperty(l.id, 'line-color', '#b7cfe3'); map.setPaintProperty(l.id, 'line-opacity', .75); } if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
     ['boundary_country_inner', 'boundary_country_outline'].forEach(id => { if (map.getLayer(id)) map.setPaintProperty(id, 'line-opacity', .7); });
     ['boundary_state', 'boundary_county'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); }); });
   const tipEl = document.getElementById('tip');
@@ -354,7 +358,6 @@
   const byId = new Map(rows.map(d => [d.id, d]));
   const termLabel = t => t.startsWith('op:') ? t.slice(3) : t.startsWith('pl:') ? (byId.get(t.slice(3)) || {name: t.slice(3)}).name : `"${t.startsWith('tx:') ? t.slice(3) : t}"`;
   const renderTerms = () => { const el = $('terms'), chips = [];
-    if (state.country !== 'all') chips.push(`<span class="chip on co" data-k="co" title="country"><span class="sw"></span>${state.country} <span style="opacity:.6">✕</span></span>`);
     if (state.region !== 'all') chips.push(`<span class="chip on r" data-k="r" title="region"><span class="sw"></span>${regionLabel(state.region)} <span style="opacity:.6">✕</span></span>`);
     [...state.terms].forEach(t => chips.push(`<span class="chip on ${t.slice(0, 2)}" data-k="t" data-v="${t.replace(/"/g, '&quot;')}" title="${t.startsWith('op:') ? 'operator: all its plants' : t.startsWith('pl:') ? 'one plant' : 'text match on plant or operator'}"><span class="sw"></span>${termLabel(t)} <span style="opacity:.6">✕</span></span>`));
     $('terms-wrap').style.display = chips.length ? '' : 'none';
@@ -459,6 +462,7 @@
   let lastData = rows;
   function sync(pushHash = true) {
     chips.classed('on', d => state.sel.has(d)); clear.style('display', state.sel.size ? null : 'none'); renderTerms();
+    const ss = $('s-sector'); if (ss) { ss.value = state.sel.size === 1 ? [...state.sel][0] : state.sel.size > 1 ? 'multi' : 'all'; ss.classList.toggle('on', state.sel.size > 0); } $('f-status').classList.toggle('on', state.status !== 'all'); $('f-country').classList.toggle('on', state.country !== 'all');
     // colour follows the sector filter: with sectors selected and no explicit colour mode, colour by (the selected) sectors
     const autoSector = state.colour === 'mono' && state.sel.size > 0, mode = autoSector ? 'sector' : state.colour;
     const data = filtered(); lastData = data; const P = state.pin;
@@ -635,6 +639,13 @@
     if (e.key === 'Escape') box.classList.remove('on'); if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { const its = [...box.querySelectorAll('.it')]; if (!its.length) return; e.preventDefault(); const i = its.findIndex(x => x.classList.contains('hl')); its.forEach(x => x.classList.remove('hl')); its[(i + (e.key === 'ArrowDown' ? 1 : -1) + its.length) % its.length].classList.add('hl'); } });
   $('f-q').addEventListener('blur', () => setTimeout(() => $('sugg-q').classList.remove('on'), 150));
   $('btn-refine').onclick = () => { const r = $('refine'), on = !r.classList.contains('on'); r.classList.toggle('on', on); $('btn-refine').textContent = on ? 'Refine ▴' : 'Refine ▾'; };
+  // sentence filter: one sector here (several in Refine), status, country
+  d3.select('#s-sector').selectAll('option.s').data(Object.keys(SECTOR_COLOR)).join('option').attr('class', 's').attr('value', d => d).text(d => d.toLowerCase());
+  $('s-sector').addEventListener('change', e => { state.sel = new Set(e.target.value === 'all' || e.target.value === 'multi' ? [] : [e.target.value]); sync(); });
+  // examples, resolved against the data so they never point to nothing
+  const TRY = [['pl', 'belchatow', 'Bełchatów'], ['op', 'RWE Power Aktiengesellschaft', 'RWE Power'], ['r', 'PL22', 'Śląskie'], ['pl', 'huttenwerk duisburg', 'Duisburg steelworks'], ['co', 'DE', 'Germany']];
+  $('try').innerHTML += TRY.map(([k, v, lab]) => { let val = v; if (k === 'pl') { const d = rows.find(r => r._n.includes(v)); if (!d) return ''; val = d.id; } return `<span data-k="${k}" data-v="${val}" title="${k === 'pl' ? 'plant' : k === 'op' ? 'operator' : k === 'r' ? 'region' : 'country'}">${lab}</span>`; }).join('');
+  $('try').querySelectorAll('span[data-k]').forEach(x => x.onclick = () => { $('btn-reset').click(); pickSugg(x.dataset.k, x.dataset.v); });
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
   if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
