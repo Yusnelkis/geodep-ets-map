@@ -27,7 +27,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 (async function () {
-  const DATA = '#1a4a8a', SEA = '#0d3b66', SPACE = '#061c33';
+  const DATA = '#1a4a8a', SEA = '#0d3b66', SPACE = '#04101d';
   const rows = await d3.csv('data/installations.csv', d => ({name: d.name, holder: d.holder, country: d.country, mt: d.mt_2025 === '' ? null : +d.mt_2025, chg: d.chg === '' ? null : +d.chg, lat: +d.lat, lon: +d.lon}));
   const em = rows.filter(d => d.mt > 0 && d.lat && d.lon), maxMt = d3.max(em, d => d.mt);
   const geo = {type: 'FeatureCollection', features: em.map(d => ({type: 'Feature', geometry: {type: 'Point', coordinates: [d.lon, d.lat]}, properties: {n: d.name, h: d.holder, c: d.country, mt: d.mt, r: Math.sqrt(d.mt / maxMt), chg: d.chg == null ? -999 : Math.max(-50, Math.min(50, d.chg))}}))};
@@ -39,7 +39,7 @@
     map.once('load', () => requestAnimationFrame(step)); ['mousedown', 'wheel', 'touchstart'].forEach(ev => map.on(ev, () => spin = false)); }
   map.on('style.load', () => {
     map.setProjection({type: 'globe'});
-    map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', INTRO ? '#d3d9e0' : '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') map.setPaintProperty(l.id, 'line-color', '#a9c4da'); if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
+    map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', INTRO ? '#eef0f2' : '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') map.setPaintProperty(l.id, 'line-color', '#a9c4da'); if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
     ['boundary_state', 'boundary_county'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
     map.addSource('sites', {type: 'geojson', data: geo});
     map.addLayer({id: 'sites', type: 'circle', source: 'sites', paint: {
