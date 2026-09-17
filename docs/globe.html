@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet">
 <style>
-  html,body{height:100%;margin:0;background:#eae6de;font-family:Inter,system-ui,sans-serif;color:#2a2a2a;overflow:hidden}
+  html,body{height:100%;margin:0;background:#f4f4f2;font-family:Inter,system-ui,sans-serif;color:#2a2a2a;overflow:hidden}
   #map{position:absolute;inset:0}
   .hd{position:absolute;left:16px;top:14px;z-index:5;background:rgba(255,255,255,.92);border:1px solid #cdc8be;border-radius:4px;padding:10px 14px;max-width:360px}
   .hd h1{font:400 20px/1.1 "DM Serif Display",Georgia,serif;margin:0} .hd h1 em{font-style:italic;color:#1b6e62}
@@ -20,14 +20,14 @@
 </head>
 <body>
 <div id="map"></div>
-<div class="hd"><h1>EU ETS <em>Installations Atlas</em> · globe test</h1><p><span class="sw" style="background:#1a5ce6"></span>size = Mt CO₂ 2025, 7,797 emitting sites · drag to rotate, scroll to zoom. A prototype to judge the globe against the flat map, not the tool.</p></div>
+<div class="hd"><h1>EU ETS <em>Installations Atlas</em> · globe test</h1><p><span class="sw" style="background:#1a4a8a"></span>size = Mt CO₂ 2025, 7,797 emitting sites · drag to rotate, scroll to zoom. A prototype to judge the globe against the flat map, not the tool.</p></div>
 <div class="ctl"><button id="b-globe" class="on">Globe</button><button id="b-flat">Flat</button><button id="b-eu">Europe</button></div>
 <div class="tip" id="tip"></div>
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 (async function () {
-  const DATA = '#1a5ce6', SEA = '#dfe6ea';
+  const DATA = '#1a4a8a', SEA = '#0d3b66';
   const rows = await d3.csv('data/installations.csv', d => ({name: d.name, holder: d.holder, country: d.country, mt: d.mt_2025 === '' ? null : +d.mt_2025, lat: +d.lat, lon: +d.lon}));
   const em = rows.filter(d => d.mt > 0 && d.lat && d.lon), maxMt = d3.max(em, d => d.mt);
   const geo = {type: 'FeatureCollection', features: em.map(d => ({type: 'Feature', geometry: {type: 'Point', coordinates: [d.lon, d.lat]}, properties: {n: d.name, h: d.holder, c: d.country, mt: d.mt, r: Math.sqrt(d.mt / maxMt)}}))};
@@ -35,7 +35,7 @@
   map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'bottom-right');
   map.on('style.load', () => {
     map.setProjection({type: 'globe'});
-    map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); });
+    map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', '#ffffff'); if (/landcover|landuse|park|building|wood|grass|hillshade|residential/i.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none'); if (/waterway/i.test(l.id) && l.type === 'line') map.setPaintProperty(l.id, 'line-color', '#a9c4da'); if (/boundary_country/i.test(l.id)) { map.setPaintProperty(l.id, 'line-color', '#9aaabb'); } });
     ['boundary_state', 'boundary_county'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
     map.addSource('sites', {type: 'geojson', data: geo});
     map.addLayer({id: 'sites', type: 'circle', source: 'sites', paint: {
