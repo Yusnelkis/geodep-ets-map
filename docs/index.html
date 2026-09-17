@@ -88,8 +88,14 @@
   .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#bfe9f2,#14aecb,#0f6f8c)} .ramp2,.ramp2r{display:inline-block;width:84px;height:7px;vertical-align:middle;margin:0 6px;border-radius:2px} .ramp2{background:linear-gradient(90deg,#14aecb,#2b3f78,#e0457b)} .ramp2r{background:linear-gradient(90deg,#e0457b,#2b3f78,#14aecb)}
   /* A/B: two cards side by side */
   .cmp2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px} .cmp2 .card{border:1px solid var(--rule);background:#fff;border-radius:4px;padding:8px 10px} .cmp2 .h{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;font-weight:600;color:var(--ink2)} .cmp2 .a .h{color:var(--sea)} .cmp2 .r{margin:0 0 7px} .cmp2 .v{font:400 16px/1.1 var(--serif);color:var(--ink)} .cmp2 .d{font:400 10.5px var(--sans);color:var(--ink3);margin-left:3px} .cmp2 .l{font-size:10px;color:var(--ink3);line-height:1.25}
+  /* comparison card over the map: one row per metric, a thin bar for A (cyan) and B (navy), the difference at the right */
+  #cmpcard{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:560px;max-width:calc(100% - 40px);max-height:calc(100% - 40px);overflow:auto;z-index:6;background:#fff;border:1px solid var(--rule2);border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 18px 10px} #cmpcard:empty{display:none}
+  #cmpcard .ch{display:flex;align-items:baseline;gap:8px;font:400 18px var(--serif);position:relative;padding-right:24px;margin-bottom:4px} #cmpcard .ch .a{color:var(--blue)} #cmpcard .ch .b{color:var(--data)} #cmpcard .ch .vs{font:12px var(--sans);color:var(--ink3)} #cmpcard .ch .x{position:absolute;right:0;top:0;cursor:pointer;color:var(--ink3);font:14px var(--sans)}
+  #cmpcard .mh,#cmpcard .m{display:grid;grid-template-columns:150px 1fr 1fr 64px;gap:10px;align-items:end} #cmpcard .mh{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:6px 0 2px} #cmpcard .mh .a{color:var(--blue)} #cmpcard .mh .b{color:var(--data)}
+  #cmpcard .m{padding:6px 0;border-top:1px solid var(--rule)} #cmpcard .ml{font-size:11.5px;color:var(--ink2);line-height:1.25;align-self:center} #cmpcard .mb{display:flex;flex-direction:column;gap:3px} #cmpcard .mb b{font-weight:600;font-size:12.5px;color:var(--ink);line-height:1} #cmpcard .mb i{display:block;height:5px;border-radius:2px;min-width:2px} #cmpcard .mb i.a{background:var(--blue)} #cmpcard .mb i.b{background:var(--data)} #cmpcard .md{font-size:11px;color:var(--ink3);text-align:right;align-self:center}
+  @media (max-width:820px){ #cmpcard{width:calc(100% - 24px)} #cmpcard .mh,#cmpcard .m{grid-template-columns:110px 1fr 1fr 56px} }
   /* opening: the globe, then the map */
-  #intro{position:fixed;inset:0;z-index:50;background:#0d3b66} #intro.off{display:none} #intro iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  #intro{position:fixed;inset:0;z-index:50;background:#061c33} #intro.off{display:none} #intro iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .intro-card{position:absolute;left:40px;bottom:44px;max-width:470px;background:rgba(255,255,255,.96);padding:22px 26px 20px;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.25)} .intro-card h1{font:400 36px/1.05 var(--serif);margin:0 0 8px;color:var(--ink)} .intro-card h1 em{font-style:italic;color:var(--sea)} .intro-card p{margin:0 0 14px;color:var(--ink2);font-size:14px} .intro-card .btn.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px;padding:8px 14px} .intro-card a{margin-left:10px;font-size:13px}
   @media (max-width:820px){ .intro-card{left:12px;right:12px;bottom:12px;max-width:none} }
   .tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--rule2);padding:8px 10px;font-size:12.5px;line-height:1.4;max-width:280px;z-index:5;display:none;border-radius:3px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
@@ -119,7 +125,7 @@
   <aside id="panel">
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
-      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.37</span></div>
+      <div class="meta"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <a href="#" id="lnk-story">Read the story</a> · <span class="num" title="page build" style="color:#b9b3a8">build 2026-09-17.38</span></div>
     </div>
     <div class="tabs"><div class="tab" data-tab="story">Guided reading</div><div class="tab on" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -170,7 +176,7 @@
       <div class="small" style="padding:8px 0 12px;border-top:1px solid var(--rule)"><b style="color:var(--ink2);font-weight:600">Yusnelkis Milanés Guisado</b> · Data scientist / AI consultant · <a href="https://github.com/Yusnelkis/geodep-ets-map">source</a></div>
     </div>
   </aside>
-  <div id="mapwrap"><div id="map"></div><div id="detail"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
+  <div id="mapwrap"><div id="map"></div><div id="detail"></div><div id="cmpcard"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
 </div>
 <div id="report"></div>
 
@@ -425,6 +431,11 @@
     const card = (M, lab, cls, other) => `<div class="card ${cls}"><div class="h">${lab}</div>` + keys.map(k => { const r = get(M, k); if (!r) return ''; const f = r[2], u = r[3], v = r[1], o = other ? get(other, k) : null;
       return `<div class="r"><div class="v num">${v == null ? '—' : f(v)}${o && o[1] != null && v != null ? ` <span class="d">${dfmt(v - o[1], f === signed ? f1 : f, u)}</span>` : ''}</div><div class="l">${k}</div></div>`; }).join('') + '</div>';
     return `<div class="cmp2">${card(A, 'A · ' + la, 'a', null)}${card(B, 'B · ' + lb, 'b', A)}</div>`; }
+  function cmpCard(A, B, la, lb) { const keys = [...new Set([...A.rows, ...B.rows].map(r => r[0]))], get = (M, k) => M.rows.find(r => r[0] === k);
+    const rows = keys.map(k => { const a = get(A, k), b = get(B, k), r = a || b, f = r[2], u = r[3], av = a ? a[1] : null, bv = b ? b[1] : null, mx = Math.max(Math.abs(av || 0), Math.abs(bv || 0)) || 1;
+      const bar = (v, cls) => `<div class="mb"><b class="num">${v == null ? '—' : f(v)}</b><i class="${cls}" style="width:${v == null ? 0 : Math.max(1, 100 * Math.abs(v) / mx)}%"></i></div>`;
+      return `<div class="m"><div class="ml">${k}</div>${bar(av, 'a')}${bar(bv, 'b')}<div class="md num">${av != null && bv != null ? dfmt(bv - av, f === signed ? f1 : f, u) : ''}</div></div>`; }).join('');
+    return `<div class="ch"><span class="a">A · ${la}</span><span class="vs">vs</span><span class="b">B · ${lb}</span><span class="x" id="cmp-x" title="stop comparing">✕</span></div><div class="mh"><span></span><span class="a">A</span><span class="b">B</span><span>B − A</span></div>${rows}`; }
   function cmpRows(A, B, la, lb) { const keys = [...new Set([...A.rows, ...B.rows].map(r => r[0]))], get = (M, k) => M.rows.find(r => r[0] === k);
     return `<tr><th></th><th class="a">A · ${la}</th><th>B · ${lb}</th><th>B − A</th></tr>` + keys.map(k => { const a = get(A, k), b = get(B, k), r = a || b, f = r[2], u = r[3], av = a ? a[1] : null, bv = b ? b[1] : null;
       return `<tr><td>${k}</td><td class="a num">${av == null ? '—' : f(av)}</td><td class="num">${bv == null ? '—' : f(bv)}</td><td class="d num">${av != null && bv != null ? dfmt(bv - av, f === signed ? f1 : f, u) : '—'}</td></tr>`; }).join(''); }
@@ -487,9 +498,9 @@
     $('chips').classList.toggle('coloured', mode === 'sector');
     // answer: one set of KPIs, or the A | B | difference table when a selection is pinned
     $('btn-pin').textContent = P ? 'Comparing · unpin A' : 'Compare'; $('btn-pin').classList.toggle('on', !!P);
-    $('pin-note').style.display = P ? '' : 'none'; $('cmp-hint').style.display = 'none'; $('cmp').style.display = P ? '' : 'none'; $('kpis').style.display = P ? 'none' : '';
+    $('pin-note').style.display = P ? '' : 'none'; $('cmp-hint').style.display = 'none'; $('cmp').style.display = 'none'; $('kpis').style.display = ''; if (!P) $('cmpcard').innerHTML = '';
     const lb = shortLabel(state); $('cmp-legend').style.display = P ? '' : 'none';
-    if (P) { $('pin-note').innerHTML = `<b>A</b> ${P.label}<br><i>B</i> ${describe(state)}${P.hash === hashOf(state) ? ' <span style="color:var(--ink3)">· now change a filter to set B</span>' : ''}`; $('cmp').innerHTML = cmpCards(P.m, m, P.short, lb);
+    if (P) { $('pin-note').innerHTML = `<b>A</b> ${P.label}<br><i>B</i> ${describe(state)}${P.hash === hashOf(state) ? ' <span style="color:var(--ink3)">· now change a filter to set B</span>' : ''}`; $('cmpcard').innerHTML = cmpCard(P.m, m, P.short, lb); $('cmp-x').onclick = () => $('btn-pin').click();
       $('cmp-legend').innerHTML = `${sw(SEAC)}<b style="color:var(--sea);font-weight:600">A</b> · ${P.short} &nbsp;&nbsp; ${sw(POINT)}<b style="color:var(--ink);font-weight:600">B</b> · ${lb}`; }
     else { const ctxK = []; if (m.R) { const R = m.R; ctxK.push([R.pop_2024 ? f1(mt * 1e6 / R.pop_2024) : '—', `t CO₂ per inhabitant · ${R.name} (population ${R.pop_2024 ? fmt(R.pop_2024) : '—'}, 2024)`]); ctxK.push([R.gdp_meur_2023 ? fmt(Math.round(mt * 1e6 / R.gdp_meur_2023)) : '—', `t CO₂ per million € of regional GDP (2023)`]); }
       else if (m.G && m.mt23) ctxK.push([f1(100 * m.mt23 / m.G) + ' %', `of ${state.country}'s national GHG in 2023 (${f1(m.mt23)} of ${f1(m.G)} Mt CO₂e, Eurostat)`]);
@@ -661,6 +672,8 @@
   $('try').innerHTML += TRY.map(([k, v, lab]) => { let val = v; if (k === 'pl') { const d = rows.find(r => r._n.includes(v)); if (!d) return ''; val = d.id; } return `<span data-k="${k}" data-v="${val}" title="${k === 'pl' ? 'plant' : k === 'op' ? 'operator' : k === 'r' ? 'region' : 'country'}">${lab}</span>`; }).join('');
   $('try').querySelectorAll('span[data-k]').forEach(x => x.onclick = () => { $('btn-reset').click(); pickSugg(x.dataset.k, x.dataset.v); });
   const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
+  // some launches deliver the fragment after the first load (seen in Chrome app windows): if it arrives later, start again with it
+  if (!hasHash) window.addEventListener('hashchange', () => { if (location.hash.length > 1) location.reload(); }, {once: true});
   if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
     $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
     // year selector parked (2026-09-14, user request): the control is hidden and the year is always 2025; the machinery (applyYear, y= in the hash) stays for when it comes back
