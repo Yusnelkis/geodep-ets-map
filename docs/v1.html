@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EU ETS Installations Atlas</title>
+<meta name="description" content="EU ETS Installations Atlas: Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025. A guided reading and an explorer, on one map.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="EU ETS Installations Atlas">
+<meta property="og:description" content="Europe's industrial CO2 emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.">
+<meta property="og:url" content="https://yusnelkis.github.io/geodep-ets-map/">
+<meta property="og:image" content="https://yusnelkis.github.io/geodep-ets-map/assets/screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+  :root{--bg:#101318;--panel:#0d1015;--ink:#f2f0ea;--ink2:#aeaba3;--ink3:#6f6c65;--rule:#242930;--amber:#dfe3e8;--blue:#3987e5;--grey:#4a4f58;--sea:#9ec5f4;
+    --serif:"Fraunces",Georgia,serif;--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
+  a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums} .small{font-size:12.5px;color:var(--ink3);line-height:1.45}
+  button{font:inherit} .btn{background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:5px 10px;font-size:12.5px;cursor:pointer} .btn:hover{border-color:var(--ink2);color:var(--ink)} .btn:disabled{opacity:.3;cursor:default}
+  #app{display:grid;grid-template-columns:460px 1fr;height:100%}
+  /* panel */
+  #panel{background:var(--panel);border-right:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
+  .head{padding:18px 20px 14px;border-bottom:1px solid var(--rule)}
+  .head h1{font:300 30px/1.05 var(--serif);margin:0;letter-spacing:-.01em} .head h1 em{font-style:italic;font-weight:600;color:var(--sea)}
+  .head .sub{margin-top:8px;font-size:13px;color:var(--ink2)} .head .meta{margin-top:4px}
+  .tabs{display:flex;border-bottom:1px solid var(--rule)}
+  .tab{flex:1;padding:10px;text-align:center;font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
+  .tab.on{color:var(--ink);border-bottom-color:var(--amber)}
+  .body{flex:1;overflow:auto;min-height:0} .view{display:none;padding:18px 20px 24px} .view.on{display:block}
+  /* story */
+  .kicker{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+  .story h2{font:600 22px/1.2 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .story p{margin:0 0 10px;color:var(--ink2)} .story p b{color:var(--ink);font-weight:600}
+  .story .fig{margin:14px 0 4px} .story .fig svg{width:100%;height:auto;display:block;overflow:visible} .story .fig .cap{margin-top:6px}
+  .axis text{fill:var(--ink3);font-family:var(--mono);font-size:10px} .axis line{stroke:var(--rule)} .axis path{display:none}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--rule)}
+  .dots{display:flex;gap:6px} .dots i{width:7px;height:7px;border-radius:50%;background:var(--rule);cursor:pointer} .dots i.on{background:var(--amber)}
+  .jump{display:flex;gap:6px;margin-top:10px}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px} table.t td{padding:5px 4px;border-bottom:1px solid var(--rule);vertical-align:baseline;cursor:pointer} table.t tr:hover td{color:var(--ink)}
+  table.t td.r{text-align:right;white-space:nowrap} table.t td.n{color:var(--ink3);width:22px} table.t td .h{color:var(--ink3);font-size:11.5px}
+  /* explore */
+  .sec{margin-bottom:18px} .sec>.lab{font:11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+  .grp-lab{font:600 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:12px 0 6px;padding-top:8px;border-top:1px solid var(--rule)} .grp-lab:first-of-type{border-top:0;padding-top:0;margin-top:4px}
+  .fld{margin-bottom:10px} .fld label{display:block;font-size:12px;color:var(--ink3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fld input::placeholder{color:var(--ink3)}
+  .sugg{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--panel);border:1px solid var(--ink3);max-height:300px;overflow:auto;display:none;font-size:12.5px}
+  .sugg.on{display:block} .sugg .grp{padding:5px 9px 2px;font:10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);border-top:1px solid var(--rule)} .sugg .grp:first-child{border-top:0}
+  .sugg .it{padding:5px 9px;cursor:pointer;color:var(--ink2);display:flex;justify-content:space-between;gap:8px} .sugg .it:hover,.sugg .it.hl{background:var(--bg);color:var(--ink)} .sugg .it .m{color:var(--ink3);font-size:11.5px;white-space:nowrap}
+  .chip.op .sw,.chip.pl .sw,.chip.tx .sw{display:inline-block;opacity:1;border-radius:2px;width:8px;height:8px;background:var(--ink3)} .chip.pl .sw{border-radius:50%} .chip.tx .sw{background:transparent;border:1px dashed var(--ink3)}
+  .fld select,.fld input[type=text]{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:7px 9px;font:inherit;font-size:13.5px}
+  .fld input[type=range]{width:100%;accent-color:var(--amber)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .row3{display:grid;grid-template-columns:.75fr 1.35fr 1fr;gap:10px}
+  #detail .fb{margin-top:8px;font-size:12.5px;color:var(--ink2)} #detail .fb b{color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px} .chip{border:1px solid var(--rule);padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink3);display:flex;gap:6px;align-items:center;user-select:none}
+  .chip .sw{width:8px;height:8px;border-radius:50%;opacity:.4;display:none} #chips.coloured .chip .sw{display:inline-block} .chip.on{color:var(--ink);border-color:var(--ink2)} .chip.on .sw{opacity:1} .chip.clear{border-style:dashed}
+  /* printable report */
+  #report{display:none}
+  @media print{
+    @page{margin:14mm}
+    body{overflow:visible;background:#fff;color:#111} #app{display:none!important} #report{display:block;font:11pt/1.45 var(--sans);color:#111}
+    #report h1{font:600 22pt/1.15 var(--serif);margin:0 0 4pt} #report .sub{color:#555;font-size:10pt;margin-bottom:12pt}
+    #report h2{font:600 13pt var(--serif);margin:14pt 0 6pt;border-top:1px solid #ccc;padding-top:8pt}
+    #report .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8pt} #report .kp div{border:1px solid #ccc;padding:6pt 8pt} #report .kp .v{font:600 16pt var(--serif)} #report .kp .l{font-size:8.5pt;color:#555}
+    #report .two{display:grid;grid-template-columns:1fr 1fr;gap:14pt} #report svg{width:100%;height:auto} #report svg text{fill:#333!important} #report svg .axis line{stroke:#ddd!important}
+    #report table{width:100%;border-collapse:collapse;font-size:9.5pt} #report td,#report th{padding:3pt 4pt;border-bottom:1px solid #ddd;text-align:left;vertical-align:top} #report td.r,#report th.r{text-align:right}
+    #report img{width:100%;border:1px solid #ccc} #report .small{font-size:8.5pt;color:#555} #report .num{font-family:var(--mono)}
+    #report table.cmp .a{color:#2a5d9f} #report table.cmp .d{color:#666} #report table.cmp th{color:#555;font-size:8.5pt;text-transform:uppercase;letter-spacing:.06em}
+    #report
+  }
+  .stat{font:600 15px var(--sans);color:var(--ink);margin:0 0 4px} .stat .small{font-weight:400}
+  .actions{display:flex;gap:6px;margin:10px 0 12px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px} .kpi{border:1px solid var(--rule);background:var(--panel);padding:8px 10px} .kpi .v{font:600 18px var(--serif)} .kpi .l{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.3}
+  /* A/B comparison: A = pinned selection (sea blue), B = current (yellow, as always) */
+  .pin-note{font-size:12.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45} .pin-note b{color:var(--sea);font-weight:600;font-family:var(--mono)} .pin-note i{font-style:normal;color:var(--ink3);font-family:var(--mono)}
+  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px} table.cmp th{font:400 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:right;padding:2px 4px 6px} table.cmp td{padding:5px 4px;border-top:1px solid var(--rule);text-align:right;vertical-align:baseline;white-space:nowrap}
+  table.cmp td:first-child,table.cmp th:first-child{text-align:left;color:var(--ink2);white-space:normal} table.cmp .a{color:var(--sea)} table.cmp .d{color:var(--ink3)}
+  #btn-pin.on{border-color:var(--sea);color:var(--sea)}
+  .subtabs{display:flex;gap:2px;margin-bottom:8px} .subtabs span{flex:1;text-align:center;padding:5px 4px;font-size:12px;color:var(--ink3);border:1px solid var(--rule);cursor:pointer} .subtabs span.on{color:var(--ink);border-color:var(--ink2)}
+  .bk{display:none} .bk.on{display:block} .bk svg{width:100%;height:auto;display:block;overflow:visible} .bk .hint{margin-top:6px}
+  svg .bar-row{cursor:pointer} svg .bar-row:hover rect{fill:var(--ink)!important}
+  #map.drawing{cursor:crosshair}
+  /* installation card */
+  #detail:empty{display:none} #detail{border:1px solid var(--ink3);background:var(--panel);padding:12px 14px;margin-bottom:18px;position:relative}
+  #detail .x{position:absolute;right:10px;top:8px;cursor:pointer;color:var(--ink3);font-size:14px}
+  #detail h3{font:600 17px/1.2 var(--serif);margin:0 0 4px;padding-right:22px} #detail .who{color:var(--ink2);font-size:13px} #detail .ids{margin-top:4px}
+  #detail .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:12px 0 10px} #detail .grid3 div{border:1px solid var(--rule);padding:6px 8px} #detail .grid3 .v{font:600 16px var(--serif)} #detail .grid3 .l{font-size:10.5px;color:var(--ink3);line-height:1.3;margin-top:2px}
+  #detail .blk{margin-top:10px} #detail .blk .lab{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px} #detail .blk p{margin:0;color:var(--ink2);font-size:12.5px;line-height:1.45}
+  #detail svg{width:100%;height:auto;display:block;overflow:visible;margin-top:4px} #detail .acts{display:flex;gap:6px;margin-top:12px}
+  details.foot-d{padding:10px 0} details.foot-d summary{cursor:pointer;font:11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)} details.foot-d p{margin:8px 0 0;color:var(--ink2);font-size:13px}
+  .foot{padding:0 20px;border-top:1px solid var(--rule)}
+  /* map */
+  #mapwrap{position:relative;min-width:0} #map{position:absolute;inset:0}
+  .legend{position:absolute;left:14px;bottom:14px;font-size:12.5px;color:var(--ink2);background:rgba(13,16,21,.88);padding:6px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 28px)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px} .ramp{display:inline-block;width:64px;height:7px;vertical-align:middle;margin:0 6px;background:linear-gradient(90deg,#184f95,#3987e5,#9ec5f4)}
+  .tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);padding:8px 10px;font-size:12.5px;line-height:1.4;max-width:280px;z-index:5;display:none}
+  .tip b{display:block;font-family:var(--serif);font-size:14px} .tip span{color:var(--ink2)}
+  .maplibregl-ctrl-group{background:var(--panel)!important;border:1px solid var(--rule)} .maplibregl-ctrl-group button{filter:invert(1)}
+  @media (max-width:820px){ html,body{overflow:auto} #app{grid-template-columns:1fr;grid-template-rows:52vh 1fr;height:auto;min-height:100%} #mapwrap{order:-1;height:52vh} #panel{border-right:0;border-top:1px solid var(--rule)} .body{overflow:visible} .head h1{font-size:24px} }
+  #report .card{border:1px solid #ccc;padding:8pt 10pt;color:#222} #report .card h3{font:600 13pt var(--serif);margin:0 0 3pt} #report .card .who,#report .card .ids,#report .card .blk p{color:#333;font-size:9.5pt} #report .card .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6pt;margin:6pt 0} #report .card .grid3 div{border:1px solid #ccc;padding:4pt 6pt} #report .card .grid3 .v{font:600 12pt var(--serif)} #report .card .grid3 .l{font-size:8pt;color:#555} #report .card .lab{font-size:8pt;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-top:6pt} #report .card svg{max-width:340pt}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="panel">
+    <div class="head">
+      <h1>EU ETS <em>Installations Atlas</em></h1>
+      <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-14.23</span></div>
+    </div>
+    <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
+    <div class="body">
+      <div class="view story on" id="story"></div>
+      <div class="view" id="explore">
+        <div id="detail"></div>
+        <div class="sec">
+          <div class="lab"><span>Question</span><span style="display:flex;gap:6px"><button class="btn" id="btn-pin" style="padding:2px 8px;font-size:11.5px" title="Freeze the current selection as A, then change the filters: the answer and the breakdowns compare A with the new selection (B)">Compare</button><button class="btn" id="btn-reset" style="padding:2px 8px;font-size:11.5px">Reset</button></span></div>
+          <div class="small" id="cmp-hint" style="margin:-2px 0 8px">Filter a first selection, press <b>Compare</b> to keep it as A, then filter the second one (B). The answer below shows A, B and the difference.</div>
+          <div class="pin-note" id="pin-note" style="display:none"></div>
+          <div class="grp-lab">Who and where</div>
+          <div class="row2"><div class="fld"><label>Country</label><select id="f-country"><option value="all">All countries</option></select></div><div class="fld"><label>Region (NUTS-2)</label><select id="f-region"><option value="all">All regions</option></select></div></div>
+          <div class="row2"><div class="fld" style="position:relative"><label>Operator · all its plants</label><input type="text" id="f-op" placeholder="e.g. RWE Power" autocomplete="off"><div class="sugg" id="sugg-op"></div></div><div class="fld" style="position:relative"><label>Plant</label><input type="text" id="f-pl" placeholder="e.g. Bełchatów" autocomplete="off"><div class="sugg" id="sugg-pl"></div></div></div>
+          <div class="fld" id="terms-wrap" style="display:none"><div class="chips" id="terms"></div></div>
+          <div class="grp-lab">What</div>
+          <div class="fld"><label>Sectors · pick to keep, none = all</label><div class="chips" id="chips"></div></div>
+          <div class="fld"><label>Status</label><select id="f-status"><option value="all">All</option><option value="reporting">Reporting in 2025</option><option value="closed">Closed (permit revoked)</option><option value="stopped">Stopped reporting, not revoked</option><option value="never">Never reported</option></select></div>
+          <div class="grp-lab">How to show it</div>
+          <div class="row2"><div class="fld" style="display:none"><label>Year</label><select id="f-year"></select></div><div class="fld"><label>Colour the map by</label><select id="f-colour"><option value="mono">Emissions (size only)</option><option value="sector">Sector</option><option value="change">Change vs 2021-23</option><option value="alloc">Free allocation coverage</option><option value="status">Status</option></select></div><div class="fld"><label>Minimum CO<sub>2</sub> in 2025 · <span class="num" id="f-min-v">0 Mt</span></label><input type="range" id="f-min" min="0" max="3" step="0.05" value="0"></div></div>
+          <div class="small" id="area-note">Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.</div>
+        </div>
+        <div class="sec">
+          <div class="lab"><span>Answer</span></div>
+          <div class="stat" id="f-stat"></div>
+          <div class="actions"><button class="btn" id="btn-export">Download CSV</button><button class="btn" id="btn-report" title="Compose a one-page report of this selection and open the print dialog (save as PDF)">Report (PDF)</button><button class="btn" id="btn-share">Copy link</button><button class="btn" id="btn-reset2" title="Clear every filter, the drawn area, the pinned A and the open card">Reset all</button></div>
+          <table class="cmp" id="cmp" style="display:none"></table>
+          <div class="kpis" id="kpis"></div>
+        </div>
+        <div class="sec">
+          <div class="lab"><span>Breakdown</span><span class="small">click a bar to filter</span></div>
+          <div class="small" id="cmp-legend" style="display:none;margin:-4px 0 8px"></div>
+          <div class="subtabs" id="subtabs"><span class="on" data-bk="sector">Sector</span><span data-bk="country">Country</span><span data-bk="holder">Operators</span><span data-bk="traj">Over time</span><span data-bk="region">Regions</span><span data-bk="alloc">Allocation</span></div>
+          <div class="bk on" data-bk="sector"><svg id="bar-sector"></svg><div class="hint small">Mt CO₂ 2025 and share of the selection.</div></div>
+          <div class="bk" data-bk="country"><svg id="bar-country"></svg><div class="hint small">Top 10 countries in the selection, Mt CO₂ 2025.</div></div>
+          <div class="bk" data-bk="holder"><svg id="bar-holder"></svg><div class="hint small">Top 10 operators of record (ETS account holders), Mt CO₂ 2025.</div></div>
+          <div class="bk" data-bk="traj"><svg id="traj"></svg><div class="hint small">Sum of verified CO₂ per year for the selection, Mt.</div></div>
+          <div class="bk" data-bk="region"><svg id="bar-region"></svg><div class="hint small">Top 10 NUTS-2 regions in the selection, Mt CO₂ 2025 · click to filter. Per-capita and per-GDP figures appear in the KPIs when one region is selected.</div></div>
+          <div class="bk" data-bk="alloc"><svg id="alloc-chart"></svg><div class="hint small" id="alloc-hint"></div></div>
+        </div>
+        <div class="sec">
+          <div class="lab"><span>Largest in selection</span><span class="small">click for the card</span></div>
+          <table class="t" id="toplist"></table>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <details class="foot-d"><summary>Method and data</summary>
+        <p><b>Source.</b> EU Transaction Log public data download, extract of <span id="m-asof">—</span>, verified emissions 2005-2025. Installations are joined on registry code plus identifier. A value of −1 means "not reported" and is treated as missing, never as zero.</p>
+        <p><b>Baseline.</b> Change is 2025 against each installation's mean over 2021-2023. <b>Closure</b> is counted only when the ETS permit is revoked. <b>Operator</b> is the ETS account holder, usually a subsidiary, not the group parent.</p>
+        <p><b>One error, kept.</b> <span class="num">GB_918</span> (INEOS CHP, Cleveland UK) is geocoded to Cleveland, Ohio: the kind of mistake a map catches. Code, SQL and data: <a href="https://github.com/Yusnelkis/geodep-ets-map">github.com/Yusnelkis/geodep-ets-map</a>. Basemap © CARTO © OpenStreetMap.</p>
+        <p><b>References for the context statements.</b> Every figure on this page is computed from the EUTL extract by <span class="num">code/build_site_data.py</span>. Statements about rules come from: fourth trading period and the Article 27 / 27a small-emitter opt-outs (<a href="https://www.epa.ie/publications/monitoring--assessment/climate-change/eu-emissions-trading-scheme/Free-Allocation-Rules-for-EU-ETS-Phase-IV-Introduction-ETS-Revision.pdf">EPA Ireland, Phase IV free allocation rules</a>; <a href="https://assets.publishing.service.gov.uk/media/5ccb1cf2ed915d50b4fbcf83/Impact_Assessment_-_EU_ETS_Article_27_and_Article_27a_Schemes_for_Phase_IV.pdf">UK impact assessment on Art. 27/27a</a>); the 2023 drop of 16.5 % in ETS stationary emissions, led by power (<a href="https://climate.ec.europa.eu/news-other-reads/news/climate-action-progress-report-2023-shows-largest-annual-drop-emissions-decades-2024-10-31_en">European Commission, Climate Action Progress Report 2023</a>); CBAM phase-in and the free-allocation phase-out 2026–2034 (<a href="https://icapcarbonaction.com/en/news/eu-adopts-simplifications-cbam-rules-ahead-compliance-phase-starting-2026">ICAP</a>; <a href="https://www.dehst.de/EN/Topics/EU-ETS-1/EU-ETS-1-Information/Reform-Prospects/Carbon-Leakage-Protection/carbon-leakage-protection_artikel.html">DEHSt, carbon leakage protection</a>); Bełchatów as the largest single emitter in the EU ETS (<a href="https://ember-energy.org/latest-updates/repeat-offenders-coal-power-plants-top-the-eu-emitters-list/">Ember</a>).</p>
+        <p><b>Regional and national context.</b> Installations are assigned to NUTS-2 regions (2024 version, GISCO/Eurostat polygons at 1:10M) by point in polygon; coastal points left just offshore by the generalised coastline are attached to the nearest region within 5 km and flagged in the data. United Kingdom installations have no region (not in NUTS 2024). Per-capita and per-GDP figures use Eurostat regional population (2024, <span class="num">demo_r_pjanaggr3</span>) and GDP (2023, <span class="num">nama_10r_2gdp</span>); the national share compares ETS CO₂ of 2023 with the national inventory of 2023 excluding LULUCF (<span class="num">env_air_gge</span>). The CBAM phase-out line applies the factors of Article 10a(1a) of the ETS Directive as amended by Directive (EU) 2023/959 (97.5 % in 2026 to 0 in 2034) to the 2025 free allocation of cement, iron and steel, aluminium, fertiliser and hydrogen installations; a 2026 Commission proposal to slow it is not reflected. Nothing is estimated: a region without Eurostat data shows a dash.</p>
+      </details>
+      <div class="small" style="padding:8px 0 12px;border-top:1px solid var(--rule)"><b style="color:var(--ink2);font-weight:600">Yusnelkis Milanés Guisado</b> · Data scientist / AI consultant · <a href="https://github.com/Yusnelkis/geodep-ets-map">source</a></div>
+    </div>
+  </aside>
+  <div id="mapwrap"><div id="map"></div><div class="legend" id="legend"></div><div class="tip" id="tip"></div></div>
+</div>
+<div id="report"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>if (!window.d3) document.write('<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js"><\/script>');</script>
+<script>
+(async function () {
+  const SECTOR_COLOR = {'Iron, steel & metals': '#3987e5', 'Cement & lime': '#d95926', 'Pulp & paper': '#199e70', 'Power & heat': '#c98500', 'Glass, ceramics & minerals': '#d55181', 'Other': '#008300', 'Chemicals': '#9085e9', 'Refineries & coke': '#e66767'};
+  const CORE = new Set(['Cement & lime', 'Iron, steel & metals', 'Refineries & coke']);
+  const POINT = '#edc948', SEAC = '#9ec5f4', NOEM = '#2a2f38', CHALK = '#dfe3e8', BAR = '#8f8c85', AMBER = '#c98500', BLUE = '#3987e5', RED = '#e66767', GREY = '#4a4f58', DIM = '#20252e', INK = '#f2f0ea', INK2 = '#aeaba3', INK3 = '#6f6c65';
+  const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const fmt = d3.format(','), f1 = d3.format('.1f'), pct = v => f1(v) + ' %', signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + f1(Math.abs(v));
+  const mtOrKt = v => v == null ? '—' : v >= 0.1 ? f1(v) + ' Mt' : Math.round(v * 1000) + ' kt';
+  const STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json', SEA = '#0f2a47';
+  const num = v => v === '' || v == null ? null : +v;
+
+  const [rows, S, CTX] = await Promise.all([
+    d3.csv('data/installations.csv', d => ({id: d.id, name: d.name, holder: d.holder, lei: d.lei, country: d.country, nuts2: d.nuts2 || null, city: d.city, postal: d.postal_code, activity: d.activity, activity_code: d.activity_code, nace: d.nace, permit: d.permit_id, sector: d.sector, status: d.status,
+      rank: num(d.rank), first_year: num(d.first_year), last_year: num(d.last_year), revoked_year: num(d.revoked_year), n_years: num(d.n_years) || 0,
+      mt_last: +d.mt_last || 0, mt_2025: num(d.mt_2025), mt_2024: num(d.mt_2024), mt_base: num(d.mt_base), chg: num(d.chg), alloc: num(d.alloc_2025),
+      allocs: [num(d.a2021), num(d.a2022), num(d.a2023), num(d.a2024), num(d.alloc_2025)], excluded: d.excluded_2025 === 'true', lat: +d.lat, lon: +d.lon,
+      years: d3.range(2013, 2026).map(y => num(d['y' + y])), chg0: num(d.chg)})),
+    d3.json('data/summary.json'), d3.json('data/context.json')
+  ]);
+  const T = S.totals, C = Object.fromEntries(S.concentration.map(c => [c.top_n, c.share_pct])), ch = S.change_vs_baseline, core = S.hard_to_abate_core, tr = S.trend, sp = S.spike_2020;
+  const sec = Object.fromEntries(S.sectors.map(s => [s.sector, s])), chs = Object.fromEntries(ch.by_sector.map(s => [s.sector, s])), power = chs['Power & heat'];
+  const st = Object.fromEntries(S.status.map(s => [s.status, s.n])), totalDelta = d3.sum(ch.by_sector, d => d.delta_mt), heavy = [...CORE].map(k => sec[k]), AL = S.allocation_2025;
+  const byName = n => S.top20.find(t => t.name.toLowerCase().includes(n)), neu = byName('neurath'), nie = byName('niederau'), bel = S.top20[0];
+  document.getElementById('asof').textContent = `EUTL · extract ${S.source.extract_as_of}`; document.getElementById('m-asof').textContent = S.source.extract_as_of;
+  document.getElementById('k-n').textContent = fmt(T.installations); document.getElementById('k-mt').textContent = fmt(Math.round(T.mt_2025));
+  // rank within country and within sector (2025), for the card
+  const rankWithin = key => { const m = new Map(); d3.groups(rows.filter(d => d.mt_2025 > 0), d => d[key]).forEach(([k, v]) => v.sort((a, b) => b.mt_2025 - a.mt_2025).forEach((d, i) => m.set(d.id, [i + 1, v.length, d3.sum(v, x => x.mt_2025)]))); return m; };
+  let rkCountry = rankWithin('country'), rkSector = rankWithin('sector');
+  // ---------- year filter: the "current year" fields of every row (mt_2025 = value of the chosen year, mt_2024 = the year before, chg, alloc, rank) follow the selected year ----------
+  // mt_2025 keeps its name for brevity: read it as "Mt in the selected year". Change vs the 2021-23 baseline is only defined for 2024 and 2025.
+  const YT = {year: 2025, mt: 0, n: 0};
+  function applyYear(y) { const i = y - 2013; YT.year = y;
+    rows.forEach(d => { d.mt_2025 = d.years[i]; d.mt_2024 = i > 0 ? d.years[i - 1] : null; d.alloc = y >= 2021 ? d.allocs[y - 2021] : null;
+      d.chg = y === 2025 ? d.chg0 : y === 2024 && d.mt_base && d.mt_2025 != null ? 100 * (d.mt_2025 - d.mt_base) / d.mt_base : null; });
+    const em = rows.filter(d => d.mt_2025 > 0).sort((a, b) => b.mt_2025 - a.mt_2025); rows.forEach(d => d.rank = null); em.forEach((d, k) => d.rank = k + 1);
+    YT.mt = d3.sum(em, d => d.mt_2025); YT.n = em.length; rkCountry = rankWithin('country'); rkSector = rankWithin('sector');
+    const ct = new Map(d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country)); document.querySelectorAll('#f-country option.c').forEach(o => o.textContent = `${o.value} · ${fmt(Math.round(ct.get(o.value) || 0))} Mt`);
+    document.querySelectorAll('.bk .hint').forEach(h => { if (!h.dataset.t) h.dataset.t = h.innerHTML; h.innerHTML = h.dataset.t.replace(/2025/g, y); }); }
+  d3.select('#f-year').selectAll('option').data(d3.range(2025, 2012, -1)).join('option').attr('value', d => d).text(d => d); document.getElementById('f-year').value = 2025; applyYear(2025);
+
+  // ---------- map ----------
+  const { MapboxOverlay, ScatterplotLayer } = deck;
+  const VIEWS = {eu: {center: [10, 51], zoom: 3.7}, rhine: {center: [6.62, 51.0], zoom: 8.4}, bel: {center: [19.33, 51.27], zoom: 8.4}};
+  const maxMt = d3.max(rows, d => d.mt_2025 || 0), rScale = d3.scaleSqrt().domain([0, maxMt]).range([1.6, 26]);
+  const seqYear = d3.scaleSequential(d3.interpolateRgb('#184f95', '#9ec5f4')).domain([2005, 2026]);
+  const sw = c => `<span class="sw" style="background:${c}"></span>`;
+  const rMt = d => d.mt_2025 ? rScale(d.mt_2025) : 1.3;
+  const MODES = {
+    all:    {color: d => hex(d.mt_last > 0 ? '#8a877e' : '#353a43'), radius: () => 1.6, opacity: .7, legend: `${sw('#8a877e')}reported emissions at some point &nbsp; ${sw('#353a43')}never reported`},
+    mono:   {color: d => hex(d.mt_2025 ? POINT : NOEM), radius: rMt, opacity: .8, legend: `${sw(POINT)}size = Mt CO₂ 2025 &nbsp; ${sw(NOEM)}no 2025 emissions`},
+    top:    {color: d => hex(d.rank && d.rank <= 500 ? POINT : DIM), radius: d => d.rank && d.rank <= 500 ? rScale(d.mt_2025) : 1.2, opacity: .85, legend: `${sw(POINT)}top 500 · size = Mt CO₂ 2025 &nbsp; ${sw(DIM)}all others`},
+    sector: {color: d => hex(d.mt_2025 ? SECTOR_COLOR[d.sector] : NOEM), radius: rMt, opacity: .85, legend: Object.entries(SECTOR_COLOR).map(([k, c]) => `<span>${sw(c)}${k}</span>`).join('')},
+    change: {color: d => hex(d.chg == null ? DIM : d.chg <= -10 ? BLUE : d.chg >= 10 ? RED : GREY), radius: d => d.chg == null ? 1 : Math.max(2, rScale(d.mt_2025)), opacity: .85, legend: `${sw(BLUE)}down &gt;10 % &nbsp; ${sw(GREY)}within ±10 % &nbsp; ${sw(RED)}up &gt;10 % &nbsp; size = Mt 2025`},
+    closed: {color: d => hex(d.status === 'closed' ? d3.color(seqYear(d.revoked_year)).formatHex() : '#1a1e26'), radius: d => d.status === 'closed' ? Math.max(2.2, rScale(d.mt_last) * .8) : 1, opacity: .9, legend: `permit revoked <span class="ramp"></span> 2005 → 2026 &nbsp; size = CO₂ in last year reported`},
+    alloc:  {color: d => { if (!d.mt_2025) return hex(DIM); if (!d.alloc) return hex(GREY); const c = d.alloc / d.mt_2025; return hex(c >= 1 ? BLUE : c >= .5 ? POINT : RED); }, radius: rMt, opacity: .85,
+             legend: `${sw(BLUE)}allocation ≥ emissions &nbsp; ${sw(POINT)}covers 50–100 % &nbsp; ${sw(RED)}covers &lt;50 % &nbsp; ${sw(GREY)}no free allocation &nbsp; size = Mt 2025`},
+    status: {color: d => hex(d.status === 'closed' ? BLUE : d.status === 'reporting' ? POINT : GREY), radius: d => d.status === 'closed' ? Math.max(2, rScale(d.mt_last) * .8) : rMt(d), opacity: .85, legend: `${sw(POINT)}reporting in 2025 &nbsp; ${sw(BLUE)}closed (permit revoked) &nbsp; ${sw(GREY)}stopped / never`},
+    core:   {color: d => hex(CORE.has(d.sector) && d.mt_2025 ? POINT : DIM), radius: d => CORE.has(d.sector) && d.mt_2025 ? Math.max(2.2, rScale(d.mt_2025)) : 1, opacity: .9, legend: `${sw(POINT)}cement &amp; lime · iron &amp; steel · refineries &nbsp; ${sw(DIM)}everything else`}
+  };
+  const statusLabel = d => ({reporting: 'reporting in 2025', closed: `closed · permit revoked ${d.revoked_year || ''}`, stopped: 'stopped reporting, not revoked', never: 'never reported'})[d.status];
+  const tipHtml = d => { const em = d.mt_2025 != null ? `${mtOrKt(d.mt_2025)} CO₂ in 2025${d.chg == null ? '' : ` · ${signed(d.chg)} % vs 2021-23`}` : d.mt_last > 0 ? `last reported ${d.last_year}: ${f1(d.mt_last)} Mt` : 'no reported emissions';
+    return `<b>${d.name}</b><span>${d.holder}<br>${d.city}, ${d.country} · ${d.sector}<br>${em}<br>${statusLabel(d)}<br><i style="color:#6f6c65">click for the full card</i></span>`; };
+  const map = new maplibregl.Map({container: 'map', style: STYLE, center: VIEWS.eu.center, zoom: VIEWS.eu.zoom, attributionControl: false, preserveDrawingBuffer: true, canvasContextAttributes: {preserveDrawingBuffer: true}});
+  map.addControl(new maplibregl.AttributionControl({compact: true})); map.addControl(new maplibregl.NavigationControl({showCompass: false}), 'top-right');
+  // basemap: sea tinted; country borders kept but faint; regional and county borders off (they competed with the small dots)
+  map.on('style.load', () => { map.getStyle().layers.forEach(l => { if (/water/i.test(l.id) && l.type === 'fill') map.setPaintProperty(l.id, 'fill-color', SEA); });
+    ['boundary_country_inner', 'boundary_country_outline'].forEach(id => { if (map.getLayer(id)) map.setPaintProperty(id, 'line-opacity', .35); });
+    ['boundary_state', 'boundary_county'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); }); });
+  const tipEl = document.getElementById('tip');
+  const overlay = new MapboxOverlay({interleaved: false, layers: [], glOptions: {preserveDrawingBuffer: true}, deviceProps: {webgl: {preserveDrawingBuffer: true}}, onHover: info => { if (info.object) { tipEl.style.display = 'block'; tipEl.style.left = (info.x + 14) + 'px'; tipEl.style.top = (info.y + 14) + 'px'; tipEl.innerHTML = tipHtml(info.object); } else tipEl.style.display = 'none'; },
+    onClick: info => { if (info.object && !drawing) showDetail(info.object); }});
+  map.addControl(overlay); window.__map = map;
+  let cur = {mode: null, data: null};
+  function show(mode, data = rows, legendOverride) { const P = state.pin; if (mode === cur.mode && data === cur.data && P === cur.pin) return; cur = {mode, data, pin: P}; const M = MODES[mode];
+    const layers = [new ScatterplotLayer({id: 'pts-' + mode, data, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 1, radiusMaxPixels: 30, stroked: false, opacity: M.opacity, getPosition: d => [d.lon, d.lat], getRadius: M.radius, getFillColor: M.color, updateTriggers: {getRadius: mode, getFillColor: mode}})];
+    // the pinned selection A stays on the map as hollow rings, so A and B can be read together
+    if (P) layers.push(new ScatterplotLayer({id: 'pin-a', data: P.data, pickable: false, radiusUnits: 'pixels', radiusMinPixels: 2.5, radiusMaxPixels: 32, filled: false, stroked: true, lineWidthUnits: 'pixels', getLineWidth: 1.2, opacity: .9, getPosition: d => [d.lon, d.lat], getRadius: d => { const v = P.vals.get(d.id); return Math.max(2.5, (v ? rScale(v) : 1.3) + 1.5); }, getLineColor: hex(SEAC)}));
+    overlay.setProps({layers});
+    document.getElementById('legend').innerHTML = (legendOverride || M.legend).replace(/2025/g, YT.year) + (P ?` <span style="border-left:1px solid var(--rule);padding-left:12px"><span class="sw" style="background:transparent;border:1.5px solid ${SEAC};box-sizing:border-box"></span>A · ${P.short} &nbsp; ${sw(POINT)}B · ${shortLabel(state)}</span>` : ''); }
+  const fly = (v, dur = 1400) => map.flyTo({center: v.center, zoom: v.zoom, duration: dur, essential: true});
+  // frame the current selection (2nd-98th percentile of the coordinates, so one overseas site does not zoom the map out to the Atlantic)
+  function flyToData(data) { const p = data.filter(d => d.lat && d.lon); if (!p.length) return; if (p.length === 1) return map.flyTo({center: [p[0].lon, p[0].lat], zoom: 8, duration: 1200});
+    const lons = p.map(d => d.lon).sort(d3.ascending), lats = p.map(d => d.lat).sort(d3.ascending), q = (a, k) => d3.quantileSorted(a, k);
+    map.fitBounds([[q(lons, .02), q(lats, .02)], [q(lons, .98), q(lats, .98)]], {padding: 70, maxZoom: 8.5, duration: 1200}); }
+  function focusMap() { (state.country !== 'all' || state.region !== 'all' || state.terms.size) ? flyToData(lastData) : fly(VIEWS.eu); }
+
+  // ---------- small charts for the story panel ----------
+  const mono = s => s.attr('font-family', 'IBM Plex Mono').attr('font-size', 10.5);
+  const charts = {
+    lorenz(svg) { const W = 340, H = 200, m = {t: 10, r: 14, b: 26, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain([0, 100]).range([0, w]), y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
+      g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d => d + '%').tickSize(-h)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(4).tickFormat(d => d + '%').tickSize(-w));
+      g.append('line').attr('x1', 0).attr('y1', h).attr('x2', w).attr('y2', 0).attr('stroke', INK3).attr('stroke-dasharray', '3 4');
+      g.append('path').datum([{pct_installations: 0, pct_co2: 0}, ...S.lorenz]).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.pct_installations)).y(d => y(d.pct_co2)).curve(d3.curveMonotoneX));
+      const px = x(100 * 500 / T.emitting_2025), py = y(C[500]); g.append('circle').attr('cx', px).attr('cy', py).attr('r', 4).attr('fill', POINT).attr('stroke', '#0d1015').attr('stroke-width', 2);
+      mono(g.append('text').attr('x', px + 8).attr('y', py + 4).attr('fill', INK)).text(`top 500 · ${f1(C[500])} %`); mono(g.append('text').attr('x', w).attr('y', h + 22).attr('text-anchor', 'end').attr('fill', INK3)).text('share of emitting sites, largest first'); },
+    series(svg) { const W = 340, H = 190, m = {t: 18, r: 46, b: 22, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.series; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain(d3.extent(data, d => d.year)).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(data, d => d.mt)]).nice().range([h, 0]);
+      g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(4).tickFormat(d3.format('d')).tickSize(0));
+      [[2021, 'phase 4'], [2023, 'crisis']].forEach(([yr, lab]) => { g.append('line').attr('x1', x(yr)).attr('x2', x(yr)).attr('y1', 0).attr('y2', h).attr('stroke', INK3).attr('stroke-dasharray', '2 3'); mono(g.append('text').attr('x', x(yr) + 4).attr('y', 9).attr('fill', INK3)).text(lab); });
+      g.append('path').datum(data).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', d3.line().x(d => x(d.year)).y(d => y(d.mt)));
+      const f = data[0], l = data[data.length - 1]; [f, l].forEach(d => g.append('circle').attr('cx', x(d.year)).attr('cy', y(d.mt)).attr('r', 3).attr('fill', POINT));
+      mono(g.append('text').attr('x', x(f.year)).attr('y', y(f.mt) - 8).attr('fill', INK)).text(`${fmt(f.mt)} Mt`); mono(g.append('text').attr('x', x(l.year) + 7).attr('y', y(l.mt) + 4).attr('fill', INK)).text(`${fmt(l.mt)}`); },
+    change(svg) { const data = ch.by_sector, W = 340, m = {t: 4, r: 96, b: 4, l: 132}, rowH = 22, w = W - m.l - m.r, h = data.length * rowH; svg.attr('viewBox', `0 0 ${W} ${h + m.t + m.b}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain([-d3.max(data, d => Math.abs(d.delta_mt)), 0]).range([0, w]);
+      const r = g.selectAll('g').data(data).join('g').attr('transform', (d, i) => `translate(0,${i * rowH})`);
+      r.append('text').attr('x', -8).attr('y', 14).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11.5).text(d => d.sector);
+      r.append('rect').attr('x', d => x(Math.min(0, d.delta_mt))).attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, Math.abs(x(d.delta_mt) - x(0)))).attr('fill', BLUE).attr('rx', 2);
+      mono(r.append('text').attr('x', x(0) + 6).attr('y', 14).attr('fill', INK2)).text(d => `${signed(d.delta_mt)} Mt`); g.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', h).attr('stroke', INK3); },
+    alloc(svg) { const data = AL.by_sector.filter(d => d.em_mt > 0.5).map(d => ({k: d.sector, cov: 100 * d.alloc_mt / d.em_mt, a: d.alloc_mt, e: d.em_mt})).sort((a, b) => b.cov - a.cov), W = 340, m = {t: 4, r: 108, b: 4, l: 132}, rowH = 22, w = W - m.l - m.r, h = data.length * rowH; svg.attr('viewBox', `0 0 ${W} ${h + m.t + m.b}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain([0, Math.max(100, d3.max(data, d => d.cov))]).range([0, w]);
+      const r = g.selectAll('g').data(data).join('g').attr('transform', (d, i) => `translate(0,${i * rowH})`);
+      r.append('text').attr('x', -8).attr('y', 14).attr('text-anchor', 'end').attr('fill', INK2).attr('font-size', 11.5).text(d => d.k);
+      r.append('rect').attr('y', 5).attr('height', 12).attr('width', d => Math.max(2, x(d.cov))).attr('fill', d => d.cov >= 100 ? BLUE : POINT).attr('rx', 2);
+      mono(r.append('text').attr('x', d => x(d.cov) + 6).attr('y', 14).attr('fill', INK2)).text(d => `${f1(d.cov)} % · ${f1(d.a)}/${f1(d.e)} Mt`);
+      g.append('line').attr('x1', x(100)).attr('x2', x(100)).attr('y1', 0).attr('y2', h).attr('stroke', INK3).attr('stroke-dasharray', '2 3'); },
+    closures(svg) { const W = 340, H = 200, m = {t: 8, r: 14, b: 24, l: 34}, w = W - m.l - m.r, h = H - m.t - m.b, data = S.last_year_hist; svg.attr('viewBox', `0 0 ${W} ${H}`); const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleBand().domain(data.map(d => d.year)).range([0, w]).padding(.3), y = d3.scaleLinear().domain([0, d3.max(data, d => d.n)]).nice().range([h, 0]);
+      g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues(data.map(d => d.year).filter(v => v % 2 === 0)).tickSize(0));
+      g.selectAll('rect.b').data(data.filter(d => d.year !== 2020)).join('rect').attr('x', d => x(d.year)).attr('y', d => y(d.n)).attr('width', x.bandwidth()).attr('height', d => h - y(d.n)).attr('fill', GREY).attr('rx', 2);
+      const parts = [{k: 'revoked', v: sp.revoked, c: BLUE}, {k: 'excluded', v: sp.excluded_from_2021, c: '#8a877e'}, {k: 'no reason', v: sp.unexplained, c: GREY}]; let acc = 0;
+      parts.forEach(p => { g.append('rect').attr('x', x(2020)).attr('y', y(acc + p.v)).attr('width', x.bandwidth()).attr('height', Math.max(0, y(acc) - y(acc + p.v) - 1.5)).attr('fill', p.c).attr('rx', 1.5); acc += p.v; });
+      let ly = y(sp.total) + 3; const lx = x(2020) + x.bandwidth() + 6; parts.slice().reverse().forEach(p => { mono(g.append('text').attr('x', lx).attr('y', ly).attr('fill', p.c === GREY ? INK2 : p.c)).text(`${fmt(p.v)} ${p.k}`); ly += 14; }); }
+  };
+
+  // ---------- story chapters ----------
+  const chapters = [
+    {k: '01 · The system', h: 'Sixteen thousand dots. Most barely register.', mode: 'all', view: 'eu',
+     p: [`The ETS covers <b>${fmt(T.installations)}</b> stationary installations with a usable coordinate: power stations, refineries, steelworks and cement kilns, but also thousands of small boilers, brickworks and paper mills.`, `In 2025, <b>${fmt(T.emitting_2025)}</b> of them reported verified emissions: <b>${fmt(Math.round(T.mt_2025))}</b> Mt of CO<sub>2</sub>.`]},
+    {k: '02 · The big emitters', h: `Five hundred sites carry ${pct(C[500])} of the carbon.`, mode: 'top', view: 'eu', chart: 'lorenz',
+     p: [`The top 20 installations emit <b>${pct(C[20])}</b> of the total, the top 100 <b>${pct(C[100])}</b>, the top 500 <b>${pct(C[500])}</b>. Decarbonising Europe's industry is, to a first approximation, a problem with a few hundred addresses.`], cap: `Cumulative share of 2025 CO₂ against share of emitting installations, largest first.`},
+    {k: '03 · What they are', h: 'Power is two thirds of the sites and more than half of the carbon.', mode: 'sector', view: 'eu',
+     p: [`Power and heat is <b>${pct(sec['Power & heat'].pct_n)}</b> of installations and <b>${pct(sec['Power & heat'].pct_mt)}</b> of emissions. Cement and lime, iron and steel, and refineries are only <b>${fmt(d3.sum(heavy, d => d.n))}</b> sites but <b>${fmt(Math.round(d3.sum(heavy, d => d.mt_2025)))}</b> Mt.`]},
+    {k: '04 · The trend', h: `Down ${f1(Math.abs(tr.pct_2013_2025))} % since 2013, and still falling.`, mode: 'change', view: 'eu', chart: 'series',
+     p: [`For the same installations, verified emissions went from <b>${fmt(tr.mt_2013)}</b> Mt in 2013 to <b>${fmt(tr.mt_2025)}</b> Mt in 2025. Against each site's own 2021-2023 average the system is down <b>${pct(Math.abs(ch.aggregate_pct))}</b>; the median site is down <b>${pct(Math.abs(ch.median_pct))}</b>. Blue on the map is down, red is up.`], cap: 'Verified CO₂ per year, Mt, mapped installations.'},
+    {k: '05 · Where the drop happened', h: `One sector explains ${pct(100 * power.delta_mt / totalDelta)} of it.`, mode: 'change', view: 'rhine', then: 'bel', chart: 'change',
+     p: [`Power and heat lost <b>${fmt(Math.round(Math.abs(power.delta_mt)))}</b> Mt against its baseline, a <b>${pct(Math.abs(power.chg_pct))}</b> cut; every other sector moved by a few megatonnes. West of Cologne, <b>Neurath</b> and <b>Niederaußem</b> still emitted <b>${f1(neu.mt_2025 + nie.mt_2025)}</b> Mt, Neurath <b>${pct(Math.abs(neu.chg))}</b> below baseline. Then the map flies to <b>Bełchatów</b>, Europe's largest point source at <b>${f1(bel.mt_2025)}</b> Mt, <b>${pct(Math.abs(bel.chg))}</b> below.`], cap: 'Change in Mt, 2025 vs 2021-23 baseline, by sector.', jump: [['Rhineland', 'rhine'], ['Bełchatów', 'bel'], ['Europe', 'eu']]},
+    {k: '06 · Closures, counted properly', h: 'A third of the map is already history.', mode: 'closed', view: 'eu', chart: 'closures',
+     p: [`<b>${fmt(st.closed)}</b> installations have had their ETS permit revoked, shown by year and sized by their last reported CO<sub>2</sub>. Another <b>${fmt(st.stopped)}</b> simply stopped reporting: <b>${fmt(sp.total)}</b> of them in 2020 alone, five times a normal year, but only <b>${fmt(sp.revoked)}</b> were revoked; <b>${fmt(sp.excluded_from_2021)}</b> were excluded from 2021 under the small-emitter opt-out and <b>${fmt(sp.unexplained)}</b> left no reason. That is why a closure here means a revoked permit.`], cap: 'Installations by last year with reported emissions; 2020 split by reason.'},
+    {k: '07 · What has not moved', h: `The hard-to-abate core: ${fmt(Math.round(core.mt_2025))} Mt, almost flat.`, mode: 'core', view: 'eu',
+     p: [`Take coal out and what remains is cement and lime, iron and steel, and refineries: <b>${fmt(core.installations)}</b> installations, down only <b>${pct(Math.abs(core.chg_pct_same_sites))}</b> against their baseline, against <b>${pct(Math.abs(power.chg_pct))}</b> for power. The next phase of European decarbonisation lives in these dots: kilns, furnaces and crackers, where there is no fuel switch to make.`]},
+    {k: '08 · Who is still allocated for free', h: `${fmt(Math.round(AL.alloc_mt))} Mt of free allowances against ${fmt(Math.round(T.mt_2025))} Mt emitted.`, mode: 'alloc', view: 'eu', chart: 'alloc',
+     p: [`In 2025, <b>${fmt(AL.installations_with_allocation)}</b> installations received free allowances worth <b>${fmt(Math.round(AL.alloc_mt))}</b> Mt; <b>${fmt(AL.installations_surplus)}</b> of them received more than they emitted. Electricity production has received no free allocation since 2013 (it is auctioned), so what the power-and-heat group still records corresponds to heat production and transitional cases rather than to electricity; the industries deemed exposed to carbon leakage remain largely covered: metals above their emissions, cement almost fully, refineries and chemicals in part. For the CBAM sectors (cement, iron and steel, aluminium, fertilisers, hydrogen) this free allocation is phased out from 2026, from 97.5 % that year to zero in 2034 under current law.`, `Switch to <b>Explore</b> to see coverage plant by plant, or search an operator.`], cap: 'Free allocation 2025 as a share of verified emissions, by sector.'}
+  ];
+  const storyEl = document.getElementById('story'); let ci = 0, thenTimer = null;
+  function renderChapter(i) {
+    ci = i; const c = chapters[i]; clearTimeout(thenTimer); if (state.year !== 2025) { setYear(2025); cur.mode = null; }
+    storyEl.innerHTML = `<div class="kicker">${c.k}</div><h2>${c.h}</h2>${c.p.map(p => `<p>${p}</p>`).join('')}${c.chart ? `<div class="fig"><svg></svg><div class="cap small">${c.cap}</div></div>` : ''}${c.jump ? `<div class="jump">${c.jump.map(([l, v]) => `<button class="btn" data-view="${v}">${l}</button>`).join('')}</div>` : ''}
+      <div class="nav"><button class="btn" id="prev" ${i === 0 ? 'disabled' : ''}>← Previous</button><div class="dots">${chapters.map((_, j) => `<i class="${j === i ? 'on' : ''}" data-i="${j}"></i>`).join('')}</div><button class="btn" id="next" ${i === chapters.length - 1 ? 'disabled' : ''}>Next →</button></div>`;
+    if (c.chart) charts[c.chart](d3.select(storyEl).select('svg'));
+    storyEl.querySelector('#prev').onclick = () => renderChapter(i - 1); storyEl.querySelector('#next').onclick = () => renderChapter(i + 1);
+    storyEl.querySelectorAll('.dots i').forEach(d => d.onclick = () => renderChapter(+d.dataset.i));
+    storyEl.querySelectorAll('.jump button').forEach(b => b.onclick = () => { clearTimeout(thenTimer); fly(VIEWS[b.dataset.view]); });
+    show(c.mode); fly(VIEWS[c.view]);
+    if (c.then) thenTimer = setTimeout(() => { if (ci === i) fly(VIEWS[c.then], 2800); }, 6000);
+    document.querySelector('.body').scrollTop = 0;
+  }
+
+  // ---------- explore ----------
+  const state = {colour: 'mono', sel: new Set(), status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', terms: new Set(), area: null, bk: 'sector', pin: null, year: 2025};
+  const setYear = y => { state.year = y; applyYear(y); $('f-year').value = y; };
+  // terms are typed: "op:<holder>" (exact operator -> all its plants), "pl:<id>" (one plant), "tx:<text>" (contains, name or operator)
+  const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').replace(/ø/g, 'o').replace(/ß/g, 'ss').toLowerCase();
+  rows.forEach(d => { d._n = norm(d.name); d._h = norm(d.holder); });
+  const matches = (d, q) => d._n.includes(norm(q)) || d._h.includes(norm(q));
+  const termHit = (d, t) => t.startsWith('op:') ? d.holder === t.slice(3) : t.startsWith('pl:') ? d.id === t.slice(3) : matches(d, (t.startsWith('tx:') ? t.slice(3) : t).toLowerCase());
+  const addTerm = (term, kind = 'tx') => { const v = (term || '').trim(); if (v) { state.terms.add(`${kind}:${v}`); state.qo = state.qp = ''; $('f-op').value = ''; $('f-pl').value = ''; hideSugg(); sync(); focusMap(); } };
+  const byId = new Map(rows.map(d => [d.id, d]));
+  const termLabel = t => t.startsWith('op:') ? t.slice(3) : t.startsWith('pl:') ? (byId.get(t.slice(3)) || {name: t.slice(3)}).name : `"${t.startsWith('tx:') ? t.slice(3) : t}"`;
+  const renderTerms = () => { const el = $('terms'); $('terms-wrap').style.display = state.terms.size ? '' : 'none';
+    el.innerHTML = [...state.terms].map(t => `<span class="chip on ${t.slice(0, 2)}" data-v="${t.replace(/"/g, '&quot;')}" title="${t.startsWith('op:') ? 'operator: all its plants' : t.startsWith('pl:') ? 'one plant' : 'text match on plant or operator'}"><span class="sw"></span>${termLabel(t)} <span style="opacity:.6">✕</span></span>`).join('') + (state.terms.size > 1 ? `<span class="chip clear" id="terms-clear">× clear all</span>` : '');
+    el.querySelectorAll('.chip.on').forEach(c => c.onclick = () => { state.terms.delete(c.dataset.v); sync(); }); const ca = el.querySelector('#terms-clear'); if (ca) ca.onclick = () => { state.terms.clear(); sync(); }; };
+  // suggestions: operators (with plant count and Mt) and plants (with operator and country), from the current text
+  const holders = d3.rollups(rows, v => ({n: v.length, mt: d3.sum(v, d => d.mt_2025 || 0)}), d => d.holder).filter(([k]) => k).map(([k, o]) => ({k, ...o})).sort((a, b) => b.mt - a.mt);
+  const hideSugg = () => ['sugg-op', 'sugg-pl'].forEach(id => { $(id).classList.remove('on'); $(id).innerHTML = ''; });
+  function renderSugg(q, kind) { const s = norm(q), box = $('sugg-' + kind); if (s.length < 2) return hideSugg();
+    const ops = kind === 'op' ? holders.filter(h => norm(h.k).includes(s)).slice(0, 8) : [], pls = kind === 'pl' ? rows.filter(d => d._n.includes(s)).sort((a, b) => (b.mt_2025 || 0) - (a.mt_2025 || 0)).slice(0, 8) : [];
+    if (!ops.length && !pls.length) return hideSugg();
+    box.innerHTML = (ops.length ? `<div class="grp">Operators · all their plants</div>` + ops.map(h => `<div class="it" data-k="op" data-v="${h.k.replace(/"/g, '&quot;')}"><span>${h.k}</span><span class="m">${h.n} plants · ${f1(h.mt)} Mt</span></div>`).join('') : '') +
+      (pls.length ? `<div class="grp">Plants</div>` + pls.map(d => `<div class="it" data-k="pl" data-v="${d.id}"><span>${d.name}<br><span class="m">${(d.holder || '').slice(0, 40)}</span></span><span class="m">${d.country} · ${d.mt_2025 != null ? f1(d.mt_2025) + ' Mt' : statusLabel(d)}</span></div>`).join('') : '');
+    box.classList.add('on'); box.querySelectorAll('.it').forEach(it => it.onmousedown = e => { e.preventDefault(); addTerm(it.dataset.v, it.dataset.k); }); }
+  const $ = id => document.getElementById(id);
+  const chipsEl = d3.select('#chips');
+  const chips = chipsEl.selectAll('span.chip.sec').data(Object.keys(SECTOR_COLOR)).join('span').attr('class', 'chip sec').html(k => `${sw(SECTOR_COLOR[k])}${k}`).on('click', (e, k) => { state.sel.has(k) ? state.sel.delete(k) : state.sel.add(k); sync(); });
+  const clear = chipsEl.append('span').attr('class', 'chip clear').text('× clear').on('click', () => { state.sel.clear(); sync(); });
+  const countries = d3.rollups(rows, v => d3.sum(v, d => d.mt_2025 || 0), d => d.country).sort((a, b) => b[1] - a[1]);
+  const REG = CTX.regions, GHG = CTX.national_ghg_mt_2023, CBAM_F = CTX.cbam_phaseout.factors, CBAM = new Set(['29', '6', '24', '5', '25', '23', '4', '26', '27', '41', '38', '43']);
+  const regionLabel = c => `${c} · ${(REG[c] || {}).name || c}`;
+  function fillRegions() { const opts = Object.keys(REG).filter(c => state.country === 'all' || (REG[c].country === state.country || (state.country === 'GR' && REG[c].country === 'EL'))).sort((a, b) => regionLabel(a).localeCompare(regionLabel(b)));
+    d3.select('#f-region').selectAll('option.r').data(opts).join('option').attr('class', 'r').attr('value', d => d).text(d => regionLabel(d)); if (!opts.includes(state.region)) state.region = 'all'; $('f-region').value = state.region; }
+  d3.select('#f-country').selectAll('option.c').data(countries).join('option').attr('class', 'c').attr('value', d => d[0]).text(d => `${d[0]} · ${fmt(Math.round(d[1]))} Mt`);
+  const inPoly = (d, poly) => { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > d.lat) !== (yj > d.lat) && d.lon < (xj - xi) * (d.lat - yi) / (yj - yi) + xi) inside = !inside; } return inside; };
+  const filtered = (st = state) => { const qo = norm(st.qo), qp = norm(st.qp), terms = [...st.terms]; return rows.filter(d => (st.sel.size === 0 || st.sel.has(d.sector)) && (st.status === 'all' || d.status === st.status) && (st.country === 'all' || d.country === st.country) && (st.region === 'all' || d.nuts2 === st.region) && (d.mt_2025 || 0) >= st.min && (!qo || d._h.includes(qo)) && (!qp || d._n.includes(qp)) && (terms.length === 0 || terms.some(t => termHit(d, t))) && (!st.area || inPoly(d, st.area))); };
+  // ---------- A/B comparison: a frozen copy of the filters (A) and the rows it selected; B is always the live selection ----------
+  const snapshot = () => ({colour: state.colour, sel: new Set(state.sel), status: state.status, country: state.country, region: state.region, min: state.min, qo: state.qo, qp: state.qp, terms: new Set(state.terms), area: state.area ? state.area.slice() : null, year: state.year});
+  const hashOf = st => { const p = new URLSearchParams(); if (st.year !== 2025) p.set('y', st.year); if (st.colour !== 'mono') p.set('c', st.colour); if (st.sel.size) p.set('s', [...st.sel].join('|')); if (st.status !== 'all') p.set('st', st.status); if (st.country !== 'all') p.set('co', st.country); if (st.region !== 'all') p.set('r', st.region); if (st.min) p.set('min', st.min); if (st.qo) p.set('qo', st.qo); if (st.qp) p.set('qp', st.qp); if (st.terms.size) p.set('t', [...st.terms].join('|')); return p.toString(); };
+  const stateFromHash = str => { const H = new URLSearchParams(str); return {colour: H.get('c') || 'mono', sel: new Set((H.get('s') || '').split('|').filter(Boolean)), status: H.get('st') || 'all', country: H.get('co') || 'all', region: H.get('r') || 'all', min: +(H.get('min') || 0), qo: H.get('qo') || H.get('q') || '', qp: H.get('qp') || '', terms: new Set((H.get('t') || '').split('|').filter(Boolean)), area: null, year: +(H.get('y') || 2025)}; };
+  const statusText = v => ([...$('f-status').options].find(o => o.value === v) || {}).textContent || v;
+  const describe = st => [st.year !== 2025 ? `year ${st.year}` : null, st.country !== 'all' ? `country: ${st.country}` : null, st.region !== 'all' ? `region: ${regionLabel(st.region)}` : null, st.sel.size ? `sectors: ${[...st.sel].join(', ')}` : null, st.status !== 'all' ? `status: ${statusText(st.status)}` : null, st.min ? `minimum ${f1(st.min)} Mt in 2025` : null, st.qo ? `operator contains "${st.qo}"` : null, st.qp ? `plant contains "${st.qp}"` : null, st.terms.size ? `plants/operators: ${[...st.terms].map(termLabel).join(', ')}` : null, st.area ? `drawn area (${st.area.length} corners)` : null].filter(Boolean).join(' · ') || 'all installations, no filters';
+  // the figures of a selection, as a list of [label, value, formatter, unit] so A and B can be laid side by side
+  function metrics(data, st) {
+    const mt = d3.sum(data, d => d.mt_2025 || 0), both = data.filter(d => d.mt_base && d.mt_2025), base = d3.sum(both, d => d.mt_base), now = d3.sum(both, d => d.mt_2025);
+    const closed = data.filter(d => d.status === 'closed').length, closed5 = data.filter(d => d.status === 'closed' && d.revoked_year >= 2021).length;
+    const alloc = d3.sum(data, d => d.alloc || 0), emAlloc = d3.sum(data.filter(d => d.alloc), d => d.mt_2025 || 0), mt23 = d3.sum(data, d => d.years[10] || 0);
+    const R = st.region !== 'all' && REG[st.region], G = st.country !== 'all' && GHG[st.country];
+    return {n: data.length, mt, base, now, closed, closed5, alloc, emAlloc, mt23, R, G, rows: [
+      ['installations', data.length, fmt], [`emitting in ${st.year}`, data.filter(d => d.mt_2025 > 0).length, fmt], [`Mt CO₂ ${st.year}`, mt, f1], ['% of the ETS', 100 * mt / (YT.mt || 1), f1, 'pp'], ['vs 2021-23 baseline, same sites (%)', base && st.year >= 2024 ? 100 * (now - base) / base : null, signed, 'pp'],
+      [`Mt free allocation ${st.year}`, alloc || null, f1], ['allocation covers (% of those sites)', alloc ? 100 * alloc / (emAlloc || 1) : null, f1, 'pp'], ['closed (permit revoked)', closed, fmt], ['closed since 2021', closed5, fmt],
+      ...(R ? [['t CO₂ per inhabitant of the region', R.pop_2024 ? mt * 1e6 / R.pop_2024 : null, f1], ['t CO₂ per M€ of regional GDP', R.gdp_meur_2023 ? mt * 1e6 / R.gdp_meur_2023 : null, v => fmt(Math.round(v))]] : []),
+      ...(!R && G && mt23 ? [['% of the national GHG inventory 2023', 100 * mt23 / G, f1, 'pp']] : [])]};
+  }
+  // short name of a selection for table headers, chart legends and the map legend ("PL", "PL71 Łódzkie · Cement & lime", "RWE Power AG")
+  const shortLabel = st => { const p = []; if (st.year !== 2025) p.push(String(st.year)); if (st.region !== 'all') p.push(`${st.region} ${(REG[st.region] || {}).name || ''}`.trim()); else if (st.country !== 'all') p.push(st.country);
+    if (st.terms.size) p.push([...st.terms].slice(0, 2).map(termLabel).join(', ') + (st.terms.size > 2 ? ` +${st.terms.size - 2}` : '')); else if (st.qo || st.qp) p.push(`"${st.qo || st.qp}"`);
+    if (st.sel.size) p.push([...st.sel].slice(0, 2).join(', ') + (st.sel.size > 2 ? ` +${st.sel.size - 2}` : '')); if (st.status !== 'all') p.push(statusText(st.status).toLowerCase()); if (st.min) p.push(`≥ ${f1(st.min)} Mt`); if (st.area) p.push('drawn area');
+    const s = p.join(' · ') || 'all installations'; return s.length > 36 ? s.slice(0, 35) + '…' : s; };
+  // vals freezes each row's Mt at pin time, so A keeps its year when B moves to another one
+  const makePin = (st, data) => ({st, data, vals: new Map(data.map(d => [d.id, d.mt_2025 || 0])), m: metrics(data, st), label: describe(st), short: shortLabel(st), hash: hashOf(st)});
+  const dfmt = (d, f, unit) => (d > 0 ? '+' : d < 0 ? '−' : '±') + f(Math.abs(d)) + (unit === 'pp' ? ' pp' : '');
+  function cmpRows(A, B, la, lb) { const keys = [...new Set([...A.rows, ...B.rows].map(r => r[0]))], get = (M, k) => M.rows.find(r => r[0] === k);
+    return `<tr><th></th><th class="a">A · ${la}</th><th>B · ${lb}</th><th>B − A</th></tr>` + keys.map(k => { const a = get(A, k), b = get(B, k), r = a || b, f = r[2], u = r[3], av = a ? a[1] : null, bv = b ? b[1] : null;
+      return `<tr><td>${k}</td><td class="a num">${av == null ? '—' : f(av)}</td><td class="num">${bv == null ? '—' : f(bv)}</td><td class="d num">${av != null && bv != null ? dfmt(bv - av, f === signed ? f1 : f, u) : '—'}</td></tr>`; }).join(''); }
+  // trajectory of the selection: sum of yearly Mt (years with no data skipped)
+  function trajChart(data, pinData, ya, yb) {
+    const W = 360, H = 150, m = {t: 12, r: 44, b: 20, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#traj').attr('viewBox', `0 0 ${W} ${H}`); svg.selectAll('*').remove();
+    const series = arr => d3.range(2013, 2026).map((y, i) => ({y, v: d3.sum(arr, d => d.years[i] || 0)})).filter(p => p.v > 0);
+    const pts = series(data), pa = pinData ? series(pinData) : []; if (pts.length < 2 && pa.length < 2) return;
+    const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`), x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max([...pts, ...pa], p => p.v)]).nice().range([h, 0]);
+    g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2017, 2021, 2025]).tickFormat(d3.format('d')).tickSize(0));
+    const line = d3.line().x(p => x(p.y)).y(p => y(p.v));
+    if (pa.length > 1) { g.append('path').datum(pa).attr('fill', 'none').attr('stroke', SEAC).attr('stroke-width', 1.6).attr('d', line); const la = pa[pa.length - 1]; mono(g.append('text').attr('x', x(la.y) + 6).attr('y', y(la.v) + 4).attr('fill', SEAC)).text(`A ${f1(la.v)}`); }
+    if (pts.length > 1) { g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 2).attr('d', line);
+      const f = pts[0], l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 6).attr('y', y(l.v) + (pa.length > 1 && Math.abs(y(l.v) - y(pa[pa.length - 1].v)) < 12 ? 16 : 4)).attr('fill', INK)).text((pa.length > 1 ? 'B ' : '') + f1(l.v));
+      mono(g.append('text').attr('x', x(f.y)).attr('y', y(f.v) - 6).attr('fill', INK3)).text(`${f1(f.v)} · ${signed(100 * (l.v - f.v) / f.v)} % since ${f.y}`); }
+    // a dot marks the year each selection is read at (A and B can sit on different years of the same line)
+    const mark = (arr, yr, col) => { const p = arr.find(q => q.y === yr); if (p) g.append('circle').attr('cx', x(p.y)).attr('cy', y(p.v)).attr('r', 4).attr('fill', col).attr('stroke', '#0d1015').attr('stroke-width', 1.5); };
+    if (pa.length > 1 && ya) mark(pa, ya, SEAC); if (pts.length > 1 && yb) mark(pts, yb, POINT);
+  }
+  // allocation position 2021-2025 for the selection (emitted vs freely allocated) and the legal phase-out of the CBAM sectors' allocation
+  function allocChart(data) {
+    const W = 360, H = 170, m = {t: 14, r: 14, b: 22, l: 36}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#alloc-chart').attr('viewBox', `0 0 ${W} ${H}`); svg.selectAll('*').remove();
+    const ys = [2021, 2022, 2023, 2024, 2025], em = ys.map(y => d3.sum(data, d => d.years[y - 2013] || 0)), al = ys.map((y, i) => d3.sum(data, d => d.allocs[i] || 0));
+    const cb = data.filter(d => CBAM.has(d.activity_code)), cbAlloc = d3.sum(cb, d => d.alloc || 0), proj = Object.entries(CBAM_F).map(([y, f]) => ({y: +y, v: cbAlloc * f}));
+    if (!em.some(v => v > 0) && !al.some(v => v > 0)) { $('alloc-hint').textContent = 'No emissions or allocation data in the selection.'; return; }
+    const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`), x = d3.scaleLinear().domain([2020.5, 2034.5]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max([...em, ...al, ...proj.map(p => p.v)]) || 1]).nice().range([h, 0]);
+    g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(3).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2021, 2025, 2030, 2034]).tickFormat(d3.format('d')).tickSize(0));
+    const bw = (x(2022) - x(2021)) * 0.36;
+    ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv) - bw).attr('y', y(em[i])).attr('width', bw).attr('height', h - y(em[i])).attr('fill', POINT); g.append('rect').attr('x', x(yv)).attr('y', y(al[i])).attr('width', bw).attr('height', h - y(al[i])).attr('fill', BLUE); });
+    if (cbAlloc > 0) { g.append('path').datum([{y: 2025, v: cbAlloc}, ...proj]).attr('fill', 'none').attr('stroke', BLUE).attr('stroke-width', 1.6).attr('stroke-dasharray', '3 3').attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v))); mono(g.append('text').attr('x', x(2034)).attr('y', y(0) - 6).attr('text-anchor', 'end').attr('fill', INK3)).text('CBAM phase-out'); }
+    mono(g.append('text').attr('x', 0).attr('y', -4).attr('fill', INK3)).text('■ emitted  ■ freely allocated · Mt');
+    const surplus = al[4] - em[4];
+    $('alloc-hint').innerHTML = `2025: ${f1(al[4])} Mt allocated vs ${f1(em[4])} Mt emitted (${surplus >= 0 ? 'surplus' : 'shortfall'} ${f1(Math.abs(surplus))} Mt). ${cbAlloc > 0 ? `CBAM sectors in the selection (cement, iron &amp; steel, aluminium, fertilisers, hydrogen) hold ${f1(cbAlloc)} Mt of free allocation in 2025; under current law it falls to ${f1(cbAlloc * CBAM_F['2030'])} Mt in 2030 and to zero in 2034 (dashed).` : 'No CBAM-sector installations in the selection.'}`;
+  }
+  // clickable horizontal bars (one hue); onPick applies the value as a filter
+  // pin: Map key -> {v, share} of the pinned selection A; when given, every row carries a second, sea-blue bar for A
+  function hbars(svgId, items, colorOf, onPick, pin) {
+    const paired = !!pin, W = 360, m = {l: 128, r: 82}, rowH = paired ? 28 : 21, w = W - m.l - m.r, h = items.length * rowH, svg = d3.select('#' + svgId).attr('viewBox', `0 0 ${W} ${Math.max(h, 4)}`); svg.selectAll('*').remove();
+    const av = d => paired ? (pin.get(d.code || d.k) || {v: 0, share: 0}) : {v: 0, share: 0};
+    const x = d3.scaleLinear().domain([0, d3.max(items, d => Math.max(d.v, av(d).v)) || 1]).range([0, w]);
+    const r = svg.selectAll('g').data(items).join('g').attr('class', 'bar-row').attr('transform', (d, i) => `translate(${m.l},${i * rowH})`).on('click', (e, d) => onPick && onPick(d));
+    r.append('title').text(d => `${d.k} · ${f1(d.v)} Mt · ${f1(d.share)} %${d.n ? ` · ${fmt(d.n)} sites` : ''}${paired ? ` · A: ${f1(av(d).v)} Mt · ${f1(av(d).share)} %` : ''} — click to filter`);
+    r.append('text').attr('x', -8).attr('y', paired ? 16 : 14).attr('text-anchor', 'end').attr('fill', d => d.on ? INK : INK2).attr('font-size', 11).text(d => d.k.length > 20 ? d.k.slice(0, 19) + '…' : d.k);
+    r.append('rect').attr('y', 4).attr('height', paired ? 9 : 12).attr('width', d => Math.max(1.5, x(d.v))).attr('fill', d => colorOf(d)).attr('rx', 2);
+    mono(r.append('text').attr('x', d => x(d.v) + 6).attr('y', paired ? 12 : 14).attr('fill', INK2)).text(d => `${paired ? 'B ' : ''}${f1(d.v)} · ${f1(d.share)} %`);
+    if (paired) { r.append('rect').attr('y', 15).attr('height', 9).attr('width', d => Math.max(1.5, x(av(d).v))).attr('fill', SEAC).attr('rx', 2);
+      mono(r.append('text').attr('x', d => x(av(d).v) + 6).attr('y', 23).attr('fill', SEAC)).attr('font-size', 10).text(d => `A ${f1(av(d).v)} · ${f1(av(d).share)} %`); }
+  }
+  let lastData = rows;
+  function sync(pushHash = true) {
+    chips.classed('on', d => state.sel.has(d)); clear.style('display', state.sel.size ? null : 'none'); renderTerms();
+    // colour follows the sector filter: with sectors selected and no explicit colour mode, colour by (the selected) sectors
+    const autoSector = state.colour === 'mono' && state.sel.size > 0, mode = autoSector ? 'sector' : state.colour;
+    const data = filtered(); lastData = data; const P = state.pin;
+    show(mode, data, autoSector ? [...state.sel].map(k => `<span>${sw(SECTOR_COLOR[k])}${k}</span>`).join('') + `<span>${sw(NOEM)}no ${state.year} emissions</span><span>size = Mt CO₂ ${state.year}</span>` : null);
+    const m = metrics(data, state), mt = m.mt;
+    $('f-stat').innerHTML = `${P ? '<span class="small">B · </span>' : ''}${fmt(data.length)} installations · ${f1(mt)} Mt CO₂ in ${state.year} <span class="small">· ${f1(100 * mt / (YT.mt || 1))} % of the ETS</span>`;
+    $('btn-export').textContent = `Download CSV · ${fmt(data.length)} rows`;
+    $('chips').classList.toggle('coloured', mode === 'sector');
+    // answer: one set of KPIs, or the A | B | difference table when a selection is pinned
+    $('btn-pin').textContent = P ? 'Comparing · unpin A' : 'Compare'; $('btn-pin').classList.toggle('on', !!P);
+    $('pin-note').style.display = P ? '' : 'none'; $('cmp-hint').style.display = P ? 'none' : ''; $('cmp').style.display = P ? '' : 'none'; $('kpis').style.display = P ? 'none' : '';
+    const lb = shortLabel(state); $('cmp-legend').style.display = P ? '' : 'none';
+    if (P) { $('pin-note').innerHTML = `<b>A</b> ${P.label}<br><i>B</i> ${describe(state)}${P.hash === hashOf(state) ? ' <span style="color:var(--ink3)">· now change a filter to set B</span>' : ''}`; $('cmp').innerHTML = cmpRows(P.m, m, P.short, lb);
+      $('cmp-legend').innerHTML = `${sw(SEAC)}<b style="color:var(--sea);font-weight:600">A</b> · ${P.short} &nbsp;&nbsp; ${sw(POINT)}<b style="color:var(--ink);font-weight:600">B</b> · ${lb}`; }
+    else { const ctxK = []; if (m.R) { const R = m.R; ctxK.push([R.pop_2024 ? f1(mt * 1e6 / R.pop_2024) : '—', `t CO₂ per inhabitant · ${R.name} (population ${R.pop_2024 ? fmt(R.pop_2024) : '—'}, 2024)`]); ctxK.push([R.gdp_meur_2023 ? fmt(Math.round(mt * 1e6 / R.gdp_meur_2023)) : '—', `t CO₂ per million € of regional GDP (2023)`]); }
+      else if (m.G && m.mt23) ctxK.push([f1(100 * m.mt23 / m.G) + ' %', `of ${state.country}'s national GHG in 2023 (${f1(m.mt23)} of ${f1(m.G)} Mt CO₂e, Eurostat)`]);
+      $('kpis').innerHTML = [
+        [f1(mt), `Mt CO₂ ${state.year}`], [m.base && state.year >= 2024 ? signed(100 * (m.now - m.base) / m.base) + ' %' : '—', state.year >= 2024 ? 'vs 2021-23 baseline, same sites' : 'vs 2021-23 baseline (only for 2024 and 2025)'],
+        [m.alloc ? f1(m.alloc) : '—', `Mt free allocation ${state.year}${state.year < 2021 ? ' (allocation data from 2021)' : ''}${m.alloc ? ` · covers ${f1(100 * m.alloc / (m.emAlloc || 1))} % of those sites` : ''}`], [fmt(m.closed), `closed (permit revoked), ${fmt(m.closed5)} since 2021`], ...ctxK
+      ].map(([v, l]) => `<div class="kpi"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join(''); }
+    const agg = key => d3.rollups(data, v => ({v: d3.sum(v, d => d.mt_2025 || 0), n: v.length}), d => d[key]).map(([k, o]) => ({k: k || '(none)', v: o.v, n: o.n, share: 100 * o.v / (mt || 1)})).sort((a, b) => b.v - a.v);
+    const pinAgg = key => P ? new Map(d3.rollups(P.data, v => d3.sum(v, d => P.vals.get(d.id) || 0), d => d[key]).map(([k, v]) => [k || '(none)', {v, share: 100 * v / (P.m.mt || 1)}])) : null;
+    hbars('bar-sector', agg('sector').map(d => ({...d, on: state.sel.has(d.k)})), d => mode === 'sector' ? SECTOR_COLOR[d.k] : POINT, d => { state.sel.has(d.k) ? state.sel.delete(d.k) : state.sel.add(d.k); sync(); }, pinAgg('sector'));
+    hbars('bar-country', agg('country').slice(0, 10), () => POINT, d => { state.country = d.k; $('f-country').value = d.k; fillRegions(); sync(); focusMap(); }, pinAgg('country'));
+    hbars('bar-holder', agg('holder').slice(0, 10).map(d => ({...d, on: state.terms.has('op:' + d.k)})), d => state.terms.size && !state.terms.has('op:' + d.k) ? GREY : POINT, d => { if (d.k === '(none)') return; const t = 'op:' + d.k; state.terms.has(t) ? state.terms.delete(t) : state.terms.add(t); sync(); focusMap(); }, pinAgg('holder'));
+    trajChart(data, P && P.data, P && P.st.year, state.year);
+    hbars('bar-region', d3.rollups(data.filter(d => d.nuts2), v => d3.sum(v, d => d.mt_2025 || 0), d => d.nuts2).map(([k, v]) => ({k: regionLabel(k), code: k, v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v).slice(0, 10), () => POINT, d => { state.region = d.code; $('f-region').value = d.code; sync(); focusMap(); }, pinAgg('nuts2'));
+    allocChart(data);
+    const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
+    d3.select('#toplist').html(top.map((d, i) => `<tr data-id="${d.id}"><td class="n num">${i + 1}</td><td>${d.name} <span class="h">· ${d.holder} · ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td></tr>`).join(''));
+    document.querySelectorAll('#toplist tr').forEach(tr => tr.onclick = () => { const d = rows.find(r => r.id === tr.dataset.id); map.flyTo({center: [d.lon, d.lat], zoom: 9, duration: 1400}); showDetail(d); });
+    if (pushHash) { let hs = hashOf(state); if (P) hs += (hs ? '&' : '') + 'a=' + encodeURIComponent(P.hash); history.replaceState(null, '', hs ? '#' + hs : location.pathname); }
+  }
+  document.querySelectorAll('#subtabs span').forEach(s => s.onclick = () => { state.bk = s.dataset.bk; document.querySelectorAll('#subtabs span').forEach(x => x.classList.toggle('on', x === s)); document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.bk === state.bk)); });
+
+  // ---------- installation card ----------
+  const km = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLon = (b.lon - a.lon) * Math.PI / 180, s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(s)); };
+  function showDetail(d) {
+    const el = $('detail'), yrs = d3.range(2013, 2026), rc = rkCountry.get(d.id), rs = rkSector.get(d.id);
+    const cov = d.alloc && d.mt_2025 ? 100 * d.alloc / d.mt_2025 : null, gap = d.alloc != null && d.mt_2025 != null ? d.alloc - d.mt_2025 : null;
+    const near = rows.filter(r => r !== d && Math.abs(r.lat - d.lat) < .3 && Math.abs(r.lon - d.lon) < .45 && km(r, d) <= 25 && r.mt_2025 >= 0.01).sort((a, b) => b.mt_2025 - a.mt_2025);
+    const timeline = [d.first_year ? `first reported ${d.first_year}` : null, d.n_years ? `${d.n_years} years with emissions` : null, d.last_year ? `last ${d.last_year}` : null, d.revoked_year ? `permit revoked ${d.revoked_year}` : null, d.excluded ? 'flagged excluded in 2025 (small-emitter opt-out)' : null].filter(Boolean).join(' · ');
+    const yoy = d.mt_2025 != null && d.mt_2024 ? ` · ${signed(100 * (d.mt_2025 - d.mt_2024) / d.mt_2024)} % vs ${state.year - 1}` : '', Y = state.year;
+    // the allocation chart earns its place only when allocation and emissions diverge; a balanced position is already the third number
+    const showAlloc = d.allocs.some(v => v) && (cov == null || cov < 100 || cov > 120);
+    el.innerHTML = `<span class="x" id="dx" title="close">✕</span><h3>${d.name}</h3>
+      <div class="who"><span class="small">Operator</span> ${d.holder} · ${d.city}${d.postal ? ' ' + d.postal : ''}, ${d.country}</div>
+      <div class="ids small">${d.activity}${d.activity_code ? ` <span class="num">(${d.activity_code})</span>` : ''} · NACE <span class="num">${d.nace || '—'}</span> · ${d.sector} · <span class="num">ETS ${d.id}${d.permit ? ` · permit ${d.permit}` : ''}</span></div>
+      <div class="grid3">
+        <div><div class="v num">${mtOrKt(d.mt_2025)}</div><div class="l">CO₂ ${Y}${yoy}</div></div>
+        <div><div class="v num">${d.chg != null ? signed(d.chg) + ' %' : '—'}</div><div class="l">${Y >= 2024 ? `vs own 2021-23 mean${d.mt_base ? ` (${f1(d.mt_base)} Mt)` : ''}` : 'vs 2021-23 mean · only for 2024-25'}</div></div>
+        <div><div class="v num">${cov != null ? f1(cov) + ' %' : d.alloc ? mtOrKt(d.alloc) : '—'}</div><div class="l">${cov != null ? `free allocation covers · ${gap >= 0 ? 'surplus' : 'shortfall'} ${mtOrKt(Math.abs(gap))}` : d.alloc ? `free allocation ${Y}` : Y < 2021 ? 'allocation data from 2021' : `no free allocation ${Y}`}</div></div>
+      </div>
+      <div class="blk"><div class="lab">Position in ${Y}</div><p>${d.rank ? `<b>#${d.rank}</b> of ${fmt(YT.n)} in the ETS` : `no ${Y} emissions`}${rc ? ` · <b>#${rc[0]}</b> of ${fmt(rc[1])} in ${d.country} (${f1(100 * d.mt_2025 / rc[2])} % of its ETS CO₂)` : ''}${rs ? ` · <b>#${rs[0]}</b> in ${d.sector.toLowerCase()}` : ''}<br>${statusLabel(d)}${timeline ? ` · ${timeline}` : ''}</p></div>
+      <div class="blk"><div class="lab">Trajectory 2013–2025 · Mt CO₂${d.mt_base ? ' · dashed = 2021-23 mean' : ''}</div><svg id="d-traj"></svg></div>
+      ${showAlloc ? `<div class="blk"><div class="lab">Free allocation vs emissions 2021–2025 · Mt</div><svg id="d-alloc"></svg></div>` : ''}
+      <div class="blk"><div class="lab">Around it</div><p>${near.length ? `<a href="#" id="d-near">${fmt(near.length)} other emitting installation${near.length > 1 ? 's' : ''} within 25 km · ${f1(d3.sum(near, r => r.mt_2025))} Mt</a> <span class="small">· click to keep only this 25 km circle</span>` : 'No other emitting installation within 25 km.'}</p></div>
+      <div class="acts"><button class="btn" id="d-add">+ Add plant to the list</button><button class="btn" id="d-op">+ Add its operator</button><button class="btn" id="d-zoom">Zoom</button></div><div class="fb" id="d-fb"></div>`;
+    el.querySelector('#dx').onclick = () => { el.innerHTML = ''; };
+    // the list of plants/operators is a filter: what you add here is what the answer below is about (other filters still apply)
+    const fb = () => { const a = el.querySelector('#d-add'), o = el.querySelector('#d-op'); a.disabled = state.terms.has('pl:' + d.id); o.disabled = state.terms.has('op:' + d.holder);
+      el.querySelector('#d-fb').innerHTML = state.terms.size ? `List: <b>${[...state.terms].map(termLabel).join(', ')}</b> → ${fmt(lastData.length)} installations · ${f1(d3.sum(lastData, r => r.mt_2025 || 0))} Mt. The answer below is about this list.` : ''; }; fb();
+    const nearA = el.querySelector('#d-near'); if (nearA) nearA.onclick = e => { e.preventDefault(); applyCircleArea(d); };
+    el.querySelector('#d-zoom').onclick = () => map.flyTo({center: [d.lon, d.lat], zoom: 11, duration: 1400});
+    el.querySelector('#d-add').onclick = () => { addTerm(d.id, 'pl'); fb(); };
+    el.querySelector('#d-op').onclick = () => { addTerm(d.holder, 'op'); fb(); };
+    // trajectory
+    const pts = yrs.map((y, i) => ({y, v: d.years[i]})).filter(p => p.v != null);
+    if (pts.length) { const W = 340, H = 92, m = {t: 8, r: 40, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-traj').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(pts, p => Math.max(p.v, d.mt_base || 0))]).nice().range([h, 0]);
+      g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2019, 2025]).tickFormat(d3.format('d')).tickSize(0));
+      if (d.mt_base) g.append('line').attr('x1', x(2021)).attr('x2', x(2025)).attr('y1', y(d.mt_base)).attr('y2', y(d.mt_base)).attr('stroke', INK3).attr('stroke-dasharray', '3 3');
+      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
+      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', POINT);
+      const selp = pts.find(p => p.y === Y); if (selp && Y !== 2025) g.append('circle').attr('cx', x(selp.y)).attr('cy', y(selp.v)).attr('r', 4.5).attr('fill', 'none').attr('stroke', INK).attr('stroke-width', 1.2);
+      const l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 5).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v)); }
+    // allocation vs emissions 2021-2025
+    if (showAlloc) { const ys = [2021, 2022, 2023, 2024, 2025], em = ys.map(y => d.years[y - 2013] || 0), W = 340, H = 70, m = {t: 4, r: 8, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-alloc').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+      const x = d3.scaleBand().domain(ys).range([0, w]).padding(.35), y = d3.scaleLinear().domain([0, d3.max([...em, ...d.allocs.map(v => v || 0)])]).nice().range([h, 0]);
+      g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w));
+      ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv)).attr('y', y(em[i])).attr('width', x.bandwidth() / 2).attr('height', h - y(em[i])).attr('fill', POINT).attr('rx', 1); g.append('rect').attr('x', x(yv) + x.bandwidth() / 2).attr('y', y(d.allocs[i] || 0)).attr('width', x.bandwidth() / 2).attr('height', h - y(d.allocs[i] || 0)).attr('fill', BLUE).attr('rx', 1); });
+      mono(g.append('text').attr('x', w).attr('y', -0).attr('text-anchor', 'end').attr('fill', INK3)).text('■ emitted  ■ allocated').selectAll(); }
+    if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click();
+    document.querySelector('.body').scrollTop = 0;
+  }
+  // ---------- draw an area on the map (control at top right): click corners, Finish / Enter / double-click closes ----------
+  let drawing = false, pts = [];
+  const areaGeo = () => ({type: 'FeatureCollection', features: [
+    ...(pts.length > 2 ? [{type: 'Feature', geometry: {type: 'Polygon', coordinates: [[...pts, pts[0]]]}}] : pts.length > 1 ? [{type: 'Feature', geometry: {type: 'LineString', coordinates: pts}}] : []),
+    ...pts.map(p => ({type: 'Feature', geometry: {type: 'Point', coordinates: p}}))]});
+  function paintArea() { const src = map.getSource('area'); if (src) src.setData(areaGeo()); else { map.addSource('area', {type: 'geojson', data: areaGeo()});
+    map.addLayer({id: 'area-fill', type: 'fill', source: 'area', filter: ['==', '$type', 'Polygon'], paint: {'fill-color': CHALK, 'fill-opacity': .08}});
+    map.addLayer({id: 'area-line', type: 'line', source: 'area', filter: ['!=', '$type', 'Point'], paint: {'line-color': CHALK, 'line-width': 1.5, 'line-dasharray': [2, 2]}});
+    map.addLayer({id: 'area-pts', type: 'circle', source: 'area', filter: ['==', '$type', 'Point'], paint: {'circle-radius': 4, 'circle-color': CHALK, 'circle-stroke-color': '#0d1015', 'circle-stroke-width': 1.5}}); } }
+  const ctl = document.createElement('div'); ctl.className = 'maplibregl-ctrl draw-ctl';
+  ctl.innerHTML = `<button id="dc-draw">✎ Draw area</button><button id="dc-finish" style="display:none">✓ Finish (or Enter)</button><button id="dc-clear" style="display:none">✕ Clear area</button><div class="hint" id="dc-hint">Keep only the installations inside a shape you draw.</div>`;
+  map.addControl({onAdd: () => ctl, onRemove: () => ctl.remove()}, 'top-right');
+  const dcDraw = ctl.querySelector('#dc-draw'), dcFinish = ctl.querySelector('#dc-finish'), dcClear = ctl.querySelector('#dc-clear'), dcHint = ctl.querySelector('#dc-hint');
+  function setAreaNote() { const n = $('area-note'); if (!n) return; n.innerHTML = state.area ? `Area: <b>drawn shape</b> (${state.area.length} corners) · <a href="#" id="an-clear">clear</a>` : 'Area: none · use <b>Draw area</b> on the map (top right) to keep only the installations inside a shape you draw.'; const a = n.querySelector('#an-clear'); if (a) a.onclick = e => { e.preventDefault(); clearArea(); }; }
+  function startDraw() { drawing = true; pts = []; state.area = null; paintArea(); $('map').classList.add('drawing'); map.doubleClickZoom.disable(); dcDraw.classList.add('on'); dcDraw.textContent = '✎ Drawing…'; dcFinish.style.display = ''; dcClear.style.display = 'none'; dcHint.textContent = 'Click the map to add corners (3 or more). Finish, Enter or double-click to close; Escape to cancel.'; if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click(); }
+  function endDraw(apply) { drawing = false; $('map').classList.remove('drawing'); map.doubleClickZoom.enable(); dcDraw.classList.remove('on'); dcDraw.textContent = '✎ Draw area'; dcFinish.style.display = 'none';
+    if (apply && pts.length > 2) { state.area = pts.slice(); dcClear.style.display = ''; dcHint.textContent = `Area applied: ${pts.length} corners. Filters combine with it.`; } else { pts = []; state.area = null; dcClear.style.display = 'none'; dcHint.textContent = 'Keep only the installations inside a shape you draw.'; }
+    paintArea(); setAreaNote(); sync(); }
+  function clearArea() { pts = []; state.area = null; paintArea(); dcClear.style.display = 'none'; dcHint.textContent = 'Keep only the installations inside a shape you draw.'; setAreaNote(); sync(); }
+  // from the card: a 25 km circle around one installation becomes the drawn area (36 corners), so the cluster can be read as a selection
+  function applyCircleArea(d, rkm = 25) { pts = d3.range(36).map(i => { const a = 2 * Math.PI * i / 36; return [d.lon + rkm / (111.32 * Math.cos(d.lat * Math.PI / 180)) * Math.cos(a), d.lat + rkm / 110.57 * Math.sin(a)]; });
+    state.area = pts.slice(); paintArea(); dcClear.style.display = ''; dcHint.textContent = `Area: 25 km around ${d.name}.`; setAreaNote(); sync(); map.fitBounds([[d3.min(pts, p => p[0]), d3.min(pts, p => p[1])], [d3.max(pts, p => p[0]), d3.max(pts, p => p[1])]], {padding: 60, duration: 1200}); }
+  dcDraw.onclick = () => drawing ? endDraw(false) : startDraw(); dcFinish.onclick = () => endDraw(true); dcClear.onclick = clearArea;
+  map.on('click', e => { if (!drawing) return; const p = [e.lngLat.lng, e.lngLat.lat], last = pts[pts.length - 1]; if (last && Math.abs(last[0] - p[0]) < 1e-6 && Math.abs(last[1] - p[1]) < 1e-6) return; pts.push(p); paintArea(); if (pts.length >= 3) { state.area = pts.slice(); sync(false); } dcHint.textContent = `${pts.length} corner${pts.length > 1 ? 's' : ''} · Finish, Enter or double-click to close.`; });
+  map.on('dblclick', e => { if (!drawing) return; e.preventDefault(); endDraw(true); });
+  document.addEventListener('keydown', e => { if (!drawing || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return; if (e.key === 'Enter') endDraw(true); if (e.key === 'Escape') endDraw(false); });
+  $('btn-export').onclick = () => { const cols = ['id', 'name', 'holder', 'lei', 'country', 'city', 'postal', 'activity', 'nace', 'permit', 'sector', 'status', 'rank', 'first_year', 'last_year', 'revoked_year', 'n_years', 'excluded', 'mt_last', 'mt_2025', 'mt_2024', 'mt_base', 'chg', 'alloc', 'lat', 'lon'];
+    const esc = v => v == null ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v;
+    const csv = [cols.concat(d3.range(2013, 2026).map(y => 'mt_' + y), d3.range(2021, 2026).map(y => 'alloc_' + y)).join(','), ...lastData.map(d => cols.map(c => esc(d[c])).concat(d.years.map(esc), d.allocs.map(esc)).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'})); a.download = `ets_installations_selection_${lastData.length}.csv`; a.click(); };
+  // one-page report: question (filters), answer (KPIs), breakdowns, largest, map image, method -> browser print dialog (save as PDF)
+  // capture inside the render callbacks (a WebGL canvas read outside its draw is black unless the buffer is preserved)
+  function mapImage() { return new Promise(resolve => {
+    const mc = map.getCanvas(), W = mc.width, H = mc.height, copy = () => { const k = document.createElement('canvas'); k.width = W; k.height = H; return k; };
+    const base = copy(), pts = copy(); let gotBase = false, gotPts = false, resolved = false;
+    const finish = () => { if (resolved) return; resolved = true; const c = copy(), ctx = c.getContext('2d'); ctx.fillStyle = '#101318'; ctx.fillRect(0, 0, W, H); if (gotBase) ctx.drawImage(base, 0, 0); if (gotPts) ctx.drawImage(pts, 0, 0); try { resolve(c.toDataURL('image/jpeg', .85)); } catch (e) { resolve(null); } };
+    const dc = document.querySelector('#map canvas:not(.maplibregl-canvas)'), deckInst = overlay._deck, needPts = !!(dc && deckInst);
+    const check = () => { if (gotBase && (gotPts || !needPts)) finish(); };
+    map.once('render', () => { try { base.getContext('2d').drawImage(map.getCanvas(), 0, 0); gotBase = true; } catch (e) {} check(); }); map.triggerRepaint();
+    if (needPts) { deckInst.setProps({onAfterRender: () => { try { pts.getContext('2d').drawImage(dc, 0, 0, W, H); gotPts = true; } catch (e) {} deckInst.setProps({onAfterRender: null}); check(); }}); deckInst.redraw('report'); }
+    setTimeout(finish, 1500);
+  }); }
+  async function buildReport() {
+    const data = lastData, P = state.pin, m = metrics(data, state), mt = m.mt, base = m.base, now = m.now, closed = m.closed, alloc = m.alloc, emAlloc = m.emAlloc;
+    const agg = key => d3.rollups(data, v => d3.sum(v, d => d.mt_2025 || 0), d => d[key]).map(([k, v]) => ({k: k || '(none)', v, share: 100 * v / (mt || 1)})).sort((a, b) => b.v - a.v);
+    const tbl = (items, label) => `<table><tr><th>${label}</th><th class="r">Mt CO₂ ${state.year}</th><th class="r">share</th></tr>${items.map(d => `<tr><td>${d.k}</td><td class="r num">${f1(d.v)}</td><td class="r num">${f1(d.share)} %</td></tr>`).join('')}</table>`;
+    const top = data.filter(d => d.mt_2025).sort((a, b) => b.mt_2025 - a.mt_2025).slice(0, 10);
+    const card = (() => { const el = $('detail'); if (!el.innerHTML.trim()) return ''; const c = el.cloneNode(true); c.querySelectorAll('.x, .acts').forEach(n => n.remove()); return '<h2>Installation</h2><div class="card">' + c.innerHTML + '</div>'; })();
+    const img = await mapImage();
+    $('report').innerHTML = `<h1>EU ETS Installations Atlas · selection report</h1>
+      <div class="sub">${P ? `A (pinned): ${P.label} · B: ${describe(state)}` : 'Filters: ' + describe(state)} · generated ${new Date().toISOString().slice(0, 10)} · source: EU Transaction Log public data, extract ${S.source.extract_as_of}</div>
+      ${P ? `<table class="cmp">${cmpRows(P.m, m, P.short, shortLabel(state))}</table>` : `<div class="kp"><div><div class="v num">${fmt(data.length)}</div><div class="l">installations</div></div><div><div class="v num">${f1(mt)}</div><div class="l">Mt CO₂ ${state.year} · ${f1(100 * mt / (YT.mt || 1))} % of the ETS</div></div><div><div class="v num">${base && state.year >= 2024 ? signed(100 * (now - base) / base) + ' %' : '—'}</div><div class="l">vs 2021-23 baseline, same sites</div></div><div><div class="v num">${alloc ? f1(alloc) : '—'}</div><div class="l">Mt free allocation ${state.year}${alloc ? ` · covers ${f1(100 * alloc / (emAlloc || 1))} %` : ''}</div></div></div>`}
+      ${card}
+      ${img ? `<h2>Map of the selection${P ? ` · A (${P.short}) as hollow rings, B (${shortLabel(state)}) as filled dots` : ''}</h2><img src="${img}" alt="map">` : ''}
+      <h2>Breakdown</h2><div class="two"><div>${tbl(agg('sector'), 'Sector')}</div><div>${tbl(agg('country').slice(0, 10), 'Country (top 10)')}</div></div>
+      <div class="two" style="margin-top:10pt"><div>${tbl(agg('holder').slice(0, 10), 'Operator of record (top 10)')}</div><div><table><tr><th>Largest installations</th><th class="r">Mt ${state.year}</th><th class="r">vs 21-23</th></tr>${top.map((d, i) => `<tr><td>${i + 1}. ${d.name}<br><span class="small">${d.holder} · ${d.city}, ${d.country}</span></td><td class="r num">${f1(d.mt_2025)}</td><td class="r num">${d.chg == null ? '—' : signed(d.chg) + ' %'}</td></tr>`).join('')}</table></div></div>
+      <p class="small">Figures are for ${state.year}. Closures in the selection: ${fmt(closed)} installations with the ETS permit revoked. Change is ${state.year} against each installation's mean of 2021-2023 (years with emissions above zero), for installations reporting in both periods. Free allocation coverage is computed over the installations that received allowances. Operator is the ETS account holder, usually a subsidiary, not the group parent. Coordinates as verified in the GEODEP pipeline; one known error (GB_918) is kept on purpose. Basemap © CARTO © OpenStreetMap. Tool: yusnelkis.github.io/geodep-ets-map · code: github.com/Yusnelkis/geodep-ets-map</p>`;
+  }
+  $('btn-report').onclick = async () => { $('btn-report').textContent = 'Composing…'; await buildReport(); $('btn-report').textContent = 'Report (PDF)'; setTimeout(() => window.print(), 150); };
+  $('btn-share').onclick = e => { navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'Link copied'; setTimeout(() => e.target.textContent = 'Copy link', 1500); }); };
+  $('btn-pin').onclick = () => { state.pin = state.pin ? null : makePin(snapshot(), lastData); cur.mode = null; sync(); };
+  $('f-year').addEventListener('change', e => { setYear(+e.target.value); cur.mode = null; sync(); });
+  $('btn-reset').onclick = () => { Object.assign(state, {colour: 'mono', status: 'all', country: 'all', region: 'all', min: 0, qo: '', qp: '', area: null, pin: null}); state.sel.clear(); if (state.year !== 2025) setYear(2025); state.terms.clear(); pts = []; paintArea(); dcClear.style.display = 'none'; setAreaNote(); $('f-colour').value = 'mono'; $('f-status').value = 'all'; $('f-country').value = 'all'; fillRegions(); $('f-min').value = 0; $('f-min-v').textContent = '0 Mt'; $('f-op').value = ''; $('f-pl').value = ''; $('detail').innerHTML = ''; cur.mode = null; sync(); fly(VIEWS.eu); };
+  $('f-colour').addEventListener('change', e => { state.colour = e.target.value; cur.mode = null; sync(); });
+  $('f-status').addEventListener('change', e => { state.status = e.target.value; sync(); });
+  $('f-country').addEventListener('change', e => { state.country = e.target.value; fillRegions(); sync(); focusMap(); });
+  $('f-region').addEventListener('change', e => { state.region = e.target.value; sync(); focusMap(); });
+  $('btn-reset2').onclick = () => $('btn-reset').click();
+  $('f-min').addEventListener('input', e => { state.min = +e.target.value; $('f-min-v').textContent = f1(state.min) + ' Mt'; sync(); });
+  [['f-op', 'op', 'qo'], ['f-pl', 'pl', 'qp']].forEach(([id, kind, key]) => { const box = () => $('sugg-' + kind);
+    $(id).addEventListener('input', e => { state[key] = e.target.value.trim(); renderSugg(state[key], kind); sync(); });
+    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const hl = box().querySelector('.it.hl') || box().querySelector('.it'); if (hl && box().classList.contains('on')) addTerm(hl.dataset.v, hl.dataset.k); else if (e.target.value.trim()) addTerm(e.target.value, 'tx'); }
+      if (e.key === 'Escape') hideSugg(); if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { const its = [...box().querySelectorAll('.it')]; if (!its.length) return; e.preventDefault(); const i = its.findIndex(x => x.classList.contains('hl')); its.forEach(x => x.classList.remove('hl')); its[(i + (e.key === 'ArrowDown' ? 1 : -1) + its.length) % its.length].classList.add('hl'); } });
+    $(id).addEventListener('blur', () => setTimeout(hideSugg, 150)); });
+  const H0 = new URLSearchParams(location.hash.slice(1)), hasHash = [...H0.keys()].length > 0;
+  if (hasHash) { state.colour = H0.get('c') || 'mono'; (H0.get('s') || '').split('|').filter(Boolean).forEach(k => state.sel.add(k)); state.status = H0.get('st') || 'all'; state.country = H0.get('co') || 'all'; state.region = H0.get('r') || 'all'; state.min = +(H0.get('min') || 0); state.qo = H0.get('qo') || H0.get('q') || ''; state.qp = H0.get('qp') || ''; (H0.get('t') || '').split('|').filter(Boolean).forEach(v => state.terms.add(v));
+    $('f-colour').value = state.colour; $('f-status').value = state.status; $('f-country').value = state.country; fillRegions(); $('f-min').value = state.min; $('f-min-v').textContent = f1(state.min) + ' Mt'; $('f-op').value = state.qo; $('f-pl').value = state.qp;
+    // year selector parked (2026-09-14, user request): the control is hidden and the year is always 2025; the machinery (applyYear, y= in the hash) stays for when it comes back
+    if (H0.get('a')) { const ast = stateFromHash(H0.get('a')); ast.year = 2025; state.pin = makePin(ast, filtered(ast)); } }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t)); document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === t.dataset.tab));
+    clearTimeout(thenTimer); if (t.dataset.tab === 'story') renderChapter(ci); else { cur.mode = null; sync(); focusMap(); }
+  });
+  fillRegions();
+  if (hasHash) document.querySelector('.tab[data-tab="explore"]').click(); else renderChapter(0);
+})().catch(err => { console.error(err); document.getElementById('asof').textContent = 'data failed to load: ' + err.message; });
+</script>
+</body>
+</html>
