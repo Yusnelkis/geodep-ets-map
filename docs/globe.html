@@ -27,7 +27,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 (async function () {
-  const DATA = '#1a4a8a', SEA = '#0d3b66', SPACE = '#062f3d', SEA_INTRO = '#8593a0';
+  const DATA = '#1a4a8a', SEA = '#0d3b66', SPACE = '#071f3a', SEA_INTRO = '#8593a0';
   const rows = await d3.csv('data/installations.csv', d => ({name: d.name, holder: d.holder, country: d.country, mt: d.mt_2025 === '' ? null : +d.mt_2025, chg: d.chg === '' ? null : +d.chg, lat: +d.lat, lon: +d.lon}));
   const em = rows.filter(d => d.mt > 0 && d.lat && d.lon), maxMt = d3.max(em, d => d.mt);
   const geo = {type: 'FeatureCollection', features: em.map(d => ({type: 'Feature', geometry: {type: 'Point', coordinates: [d.lon, d.lat]}, properties: {n: d.name, h: d.holder, c: d.country, mt: d.mt, r: Math.sqrt(d.mt / maxMt), chg: d.chg == null ? -999 : Math.max(-50, Math.min(50, d.chg))}}))};
@@ -43,7 +43,7 @@
     ['boundary_state', 'boundary_county'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
     map.addSource('sites', {type: 'geojson', data: geo});
     map.addLayer({id: 'sites', type: 'circle', source: 'sites', paint: {
-      'circle-color': INTRO ? ['case', ['<', ['get', 'chg'], -100], '#ffffff', ['interpolate', ['linear'], ['get', 'chg'], -50, '#14aecb', 0, '#2b3f78', 50, '#e0457b']] : DATA, 'circle-opacity': INTRO ? .9 : .8, 'circle-stroke-color': INTRO ? '#062f3d' : '#ffffff', 'circle-stroke-width': INTRO ? .3 : .6,
+      'circle-color': INTRO ? ['case', ['<', ['get', 'chg'], -100], '#ffffff', ['interpolate', ['linear'], ['get', 'chg'], -50, '#33c4de', 0, '#2e3466', 50, '#e5628c']] : DATA, 'circle-opacity': INTRO ? .9 : .8, 'circle-stroke-color': INTRO ? '#071f3a' : '#ffffff', 'circle-stroke-width': INTRO ? .3 : .6,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, ['+', 1.2, ['*', 9, ['get', 'r']]], 6, ['+', 2, ['*', 26, ['get', 'r']]]],
       }, layout: {'circle-sort-key': ['-', 1, ['get', 'r']]}});
   });
