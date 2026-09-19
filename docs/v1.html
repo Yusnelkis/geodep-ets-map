@@ -110,7 +110,7 @@
     <div class="head">
       <h1>EU ETS <em>Installations Atlas</em></h1>
       <div class="sub">Europe's industrial CO<sub>2</sub> emitters, site by site. Verified emissions, free allocation and closures of every EU ETS installation, 2013–2025.</div>
-      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-19.v1d</span></div>
+      <div class="meta small"><span id="asof">EU Transaction Log</span> · <span id="k-n">—</span> installations · <span id="k-mt">—</span> Mt in 2025 · <span class="num" title="page build">build 2026-09-19.v1e</span></div>
     </div>
     <div class="tabs"><div class="tab on" data-tab="story">Guided reading</div><div class="tab" data-tab="explore">Explore</div></div>
     <div class="body">
@@ -517,15 +517,15 @@
       const x = d3.scaleLinear().domain([2013, 2025]).range([0, w]), y = d3.scaleLinear().domain([0, d3.max(pts, p => Math.max(p.v, d.mt_base || 0))]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w)); g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickValues([2013, 2019, 2025]).tickFormat(d3.format('d')).tickSize(0));
       if (d.mt_base) g.append('line').attr('x1', x(2021)).attr('x2', x(2025)).attr('y1', y(d.mt_base)).attr('y2', y(d.mt_base)).attr('stroke', INK3).attr('stroke-dasharray', '3 3');
-      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', POINT).attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
-      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', POINT);
+      g.append('path').datum(pts).attr('fill', 'none').attr('stroke', '#4ea8ff').attr('stroke-width', 1.8).attr('d', d3.line().x(p => x(p.y)).y(p => y(p.v)));
+      g.selectAll('circle').data(pts).join('circle').attr('cx', p => x(p.y)).attr('cy', p => y(p.v)).attr('r', 2).attr('fill', '#4ea8ff');
       const selp = pts.find(p => p.y === Y); if (selp && Y !== 2025) g.append('circle').attr('cx', x(selp.y)).attr('cy', y(selp.v)).attr('r', 4.5).attr('fill', 'none').attr('stroke', INK).attr('stroke-width', 1.2);
       const l = pts[pts.length - 1]; mono(g.append('text').attr('x', x(l.y) + 5).attr('y', y(l.v) + 4).attr('fill', INK)).text(f1(l.v)); }
     // allocation vs emissions 2021-2025
     if (showAlloc) { const ys = [2021, 2022, 2023, 2024, 2025], em = ys.map(y => d.years[y - 2013] || 0), W = 340, H = 70, m = {t: 4, r: 8, b: 16, l: 30}, w = W - m.l - m.r, h = H - m.t - m.b, svg = d3.select('#d-alloc').attr('viewBox', `0 0 ${W} ${H}`), g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
       const x = d3.scaleBand().domain(ys).range([0, w]).padding(.35), y = d3.scaleLinear().domain([0, d3.max([...em, ...d.allocs.map(v => v || 0)])]).nice().range([h, 0]);
       g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0)); g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(2).tickSize(-w));
-      ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv)).attr('y', y(em[i])).attr('width', x.bandwidth() / 2).attr('height', h - y(em[i])).attr('fill', POINT).attr('rx', 1); g.append('rect').attr('x', x(yv) + x.bandwidth() / 2).attr('y', y(d.allocs[i] || 0)).attr('width', x.bandwidth() / 2).attr('height', h - y(d.allocs[i] || 0)).attr('fill', BLUE).attr('rx', 1); });
+      ys.forEach((yv, i) => { g.append('rect').attr('x', x(yv)).attr('y', y(em[i])).attr('width', x.bandwidth() / 2).attr('height', h - y(em[i])).attr('fill', '#4ea8ff').attr('rx', 1); g.append('rect').attr('x', x(yv) + x.bandwidth() / 2).attr('y', y(d.allocs[i] || 0)).attr('width', x.bandwidth() / 2).attr('height', h - y(d.allocs[i] || 0)).attr('fill', '#dfe3e8').attr('rx', 1); });
       mono(g.append('text').attr('x', w).attr('y', -0).attr('text-anchor', 'end').attr('fill', INK3)).text('■ emitted  ■ allocated').selectAll(); }
     if (!document.querySelector('.tab[data-tab="explore"]').classList.contains('on')) document.querySelector('.tab[data-tab="explore"]').click();
     document.querySelector('.body').scrollTop = 0;
